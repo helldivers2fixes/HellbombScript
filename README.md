@@ -1,5 +1,7 @@
 # 💣Hellbomb💣 Script for fixing Helldivers 2 Issues
 
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/c4b12eab-68d6-4bdf-9389-40691b0675ed)
+
 
 ## How to Use:
 
