@@ -1,12 +1,6 @@
 ﻿# Hellbomb Script
-# Do not run the Game or Steam as the Administrator!
 
-# Remove-Item $env:APPDATA\Arrowhead\Helldivers2\*.*
-# Remove-Item ${env:PROGRAMFILES(x86)}"\Steam\steamapps\common\Helldivers 2\bin\GameGuard\*.*"
-
-#Requires -RunAsAdministrator
 Set-StrictMode -Version 3.0
-# For now, we're just testing... so print the things
 Function PrintVars {
     
     If ($AppIDFound = $true) {
