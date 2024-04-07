@@ -157,7 +157,7 @@ ForEach ($line in $($LibraryData -split "`r`n"))
         $BuildID = ($GameData[$LineOfBuildID-1]|%{$_.split('"') | Select-Object -Skip 2})
         $GameFolderName = ($GameData[$LineOfInstallDir-1]|%{$_.split('"') | Select-Object -Skip 2})
         # Update the AppInstallPath with the FULL path
-        $AppInstallPath = ($AppInstallPath + "\steamapps\common\" + $GameFolderName)
+        $AppInstallPath = ($AppInstallPath + "\steamapps\common\" + $GameFolderName[1])
         Break
     }
 
