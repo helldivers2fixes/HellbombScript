@@ -1,8 +1,8 @@
-﻿# Hellbomb Script
+# Hellbomb Script
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
 
-Set-StrictMode -Version 3.0
 Function PrintVars {
-    
     If ($AppIDFound = $true) {
         Clear
         Write-Host ("AppID: " + $AppID + " is located in directory:") -ForegroundColor Green
@@ -17,7 +17,6 @@ Function PrintVars {
 }
 
 Function Reset-GameGuard {
-    
     # Delete GameGuard files
     $Error.Clear()
     Try { Remove-Item $AppInstallPath\bin\GameGuard\*.*}
@@ -45,11 +44,16 @@ Function Clear-AppData {
     Menu
 }
 
-Function Helldivers-Running {
-    If (Get-Process -ProcessName helldivers2 -ErrorAction SilentlyContinue) {
-        Write-Host "⚠️ Helldivers 2 is currently running. ⚠️`n
-        Please close the game first. Exiting...." -ForegroundColor Red
-        Exit
+Function Check-IsProcessRunning {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$True)]
+        [Object[]]$InputObject
+    )
+
+    If (Get-Process -ProcessName $InputObject.ProcessName -ErrorAction SilentlyContinue) {
+    Write-Host $InputObject.ErrorMsg -ForegroundColor Red
+    Exit
     }
 }
 
@@ -80,7 +84,6 @@ Function Check-BlacklistedDrivers {
                 $FoundBlacklistedDevice = $true
             }
         }
-        
     }
     If ($FoundBlacklistedDevice -eq $False) {
         Write-Host "No currently-known blacklisted devices found." -ForegroundColor Green
@@ -90,7 +93,7 @@ Function Check-BlacklistedDrivers {
 
 Function Network-Checks {
     $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object -Property DisplayName -EQ ("Helldivers"+[char]0x2122+" 2")
-    If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -eq 2) {
+    If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
         Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
     }
     Else {
@@ -99,6 +102,26 @@ Function Network-Checks {
     Return
 }
 
+Function Reset-Steam {
+    $SteamProcess = [PSCustomObject]@{
+    ProcessName  = 'steam'
+    ErrorMsg = '⚠️ Steam is currently running. ⚠️
+    Please close Steam first. Exiting....'
+    }
+    Check-IsProcessRunning $SteamProcess
+    # Remove CEF Cache
+    Remove-Item $env:LOCALAPPDATA\Steam\* -Recurse
+    $PropertyName = "Parent"
+    Get-ChildItem -Path $SteamPath -File -Recurse |
+    Where-Object { (%{if([bool]$_.PSObject.Properties["PSParentPath"])
+    {$_.Name -ne "steam.exe" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
+    "*"+$SteamPath+"\steamapps*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
+    "*"+$SteamPath+"\userdata*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
+    "*"+$SteamPath+"\logs*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
+    "*"+$SteamPath+"\dumps*"}})} | Remove-Item
+    Start-Process $SteamPath\steam.exe
+    Return
+}
 
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
@@ -107,8 +130,9 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks", "Provides various status checks."),
         [System.Management.Automation.Host.ChoiceDescription]::new("&Clear AppData", "Clears your profile data. Settings will be reset, but progress will not be lost.")
         [System.Management.Automation.Host.ChoiceDescription]::new("&Blacklisted Driver Check", "Checks computer for devices that are known to cause issues with HD2.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Usually fixes MSVCR110.dll errors.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset GameGuard ", "Performs a full reset of GameGuard. If Windows Ransomware Protection is enabled, may trigger security alert.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset GameGuard ", "Performs a full GameGuard reset. If Windows Ransomware Protection is enabled, may trigger security alert.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset Steam ", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
         [System.Management.Automation.Host.ChoiceDescription]::new("E&xit", "Exits the script.")
     )
     $Default = 0
@@ -126,10 +150,11 @@ Function Menu {
             Menu}
         4{Reset-GameGuard
             Menu}
-        5{Return}
+        5{Reset-Steam
+            Menu}
+        6{Return}
         }
 }
-
 
 # Set AppID
 $AppID = "553850"
@@ -160,7 +185,13 @@ ForEach ($line in $($LibraryData -split "`r`n"))
         $AppInstallPath = ($AppInstallPath + "\steamapps\common\" + $GameFolderName[1])
         Break
     }
-
 }
-Helldivers-Running
+
+$HelldiversProcess = [PSCustomObject]@{
+    ProcessName  = 'helldivers2'
+    ErrorMsg = '⚠️ Helldivers 2 is currently running. ⚠️
+    Please close the game and re-run this script. Exiting....'
+}
+
+Check-IsProcessRunning $HelldiversProcess
 Menu
