@@ -63,7 +63,10 @@ Function Install-VCRedist {
     $Error.Clear()
     Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2012.exe -ArgumentList "/q" -Wait}
     Catch {Write-Host "Error occurred installing 2012 Visual C++ Redistributable" -ForegroundColor Red}
-    If (!$Error) {Write-Host "2012 Visual C++ Redistributable installed successfully!" -ForegroundColor Green}
+    If (!$Error) {
+        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
+        Write-Host "2012 Visual C++ Redistributable installed successfully!" -ForegroundColor Green
+    }
     Return
 }
 
