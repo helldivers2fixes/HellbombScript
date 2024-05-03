@@ -95,12 +95,13 @@ Function Check-BlacklistedDrivers {
 }
 
 Function Network-Checks {
-    $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object -Property DisplayName -EQ ("Helldivers"+[char]0x2122+" 2")
+    $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
+    Write-Host (("Checking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2") -ForegroundColor Cyan
     If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
         Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
     }
     Else {
-        Write-Host "⚠️ The Windows Firewall is blocking Helldivers 2. Please add 2 Inbound rules, one for TCP and one for UDP." -ForegroundColor Red
+        Write-Host ("⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.") -ForegroundColor Red
     }
     Return
 }
