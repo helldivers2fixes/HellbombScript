@@ -129,20 +129,20 @@ Function Reset-Steam {
 
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
-    $Prompt = "Enter your choice"
+    $Prompt = "Enter your choice:"
     $Choices = @(
-        [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks`n", "Provides various status checks."),
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Clear AppData`n", "Clears your profile data. Settings will be reset, but progress will not be lost.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Blacklisted Driver Check`n", "Checks computer for devices that are known to cause issues with HD2.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012`n", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset GameGuard`n", "Performs a full GameGuard reset. If Windows Ransomware Protection is enabled, may trigger security alert.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam`n", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks", "Provides various status checks.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Clear AppData", "Clears your profile data. Settings will be reset, but progress will not be lost.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Blacklisted Driver Check", "Checks computer for devices that are known to cause issues with HD2.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset GameGuard", "Performs a full GameGuard reset. If Windows Ransomware Protection is enabled, may trigger security alert.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
         [System.Management.Automation.Host.ChoiceDescription]::new("E&xit", "Exits the script.")
     )
     $Default = 0
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
         switch ($choice) {
-        0{  PrintVars
+        0{PrintVars
             Network-Checks
             Check-BlacklistedDrivers
             Menu}
