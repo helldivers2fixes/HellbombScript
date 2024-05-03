@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-Function PrintVars {
+Function Print-Vars {
     If ($AppIDFound = $true) {
         Clear
         Write-Host ("AppID: " + $AppID + " is located in directory:") -ForegroundColor Green
@@ -98,10 +98,19 @@ Function Network-Checks {
     $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
     Write-Host (("Checking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2") -ForegroundColor Cyan
     If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
-        Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
+        Write-Host "`nHelldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
     }
     Else {
         Write-Host ("⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.") -ForegroundColor Red
+    }
+    Return
+}
+
+Function Check-AMDNVIDIACombo {
+    If ((Get-CimInstance Win32_Processor | Where-Object {$_.Name -like "AMD*"}) -and (Get-CimInstance Win32_VideoController | Where-Object {$_.Name -like "NVIDIA*"}))
+    {
+        Write-Host "`n⚠️ AMD CPU & NVIDIA GPU detected. For proper operation, ensure the latest AMD Chipset drivers are installed from:" -ForegroundColor Red
+        Write-Host "https://www.amd.com/en/support/download/drivers.html" -ForegroundColor Yellow
     }
     Return
 }
@@ -142,9 +151,10 @@ Function Menu {
     $Default = 0
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
         switch ($choice) {
-        0{PrintVars
+        0{Print-Vars
             Network-Checks
             Check-BlacklistedDrivers
+            Check-AMDNVIDIACombo
             Menu}
         1{Clear-AppData
             Menu}
