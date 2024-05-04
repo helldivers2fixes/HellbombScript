@@ -7,8 +7,10 @@
 ## How to Use:
 
  1. **Open** PowerShell (no need to run as an Administrator)
- 2. **Copy** entire script
- 3. **Paste** into PowerShell (right-clicking **only** will paste)
- 4. Press **Enter** until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
- 6. Choose a selection using the corresponding letters
- 7. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+ 2. Click on [the PowerShell script]([url](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1))
+ 3. **Copy** entire script ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81)
+
+ 5. **Paste** into PowerShell (right-clicking **only** will paste)
+ 6. Press **Enter** until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
+ 7. Choose a selection using the corresponding letters
+ 8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
