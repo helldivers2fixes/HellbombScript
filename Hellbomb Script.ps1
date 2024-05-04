@@ -110,7 +110,7 @@ $array = @()
     #Open each Subkey and use GetValue Method to return the required values for each
 
     foreach($key in $subkeys){
-        if ($UninstallKey+”\\”+$key -and $reg.OpenSubKey($thisKey)) {
+        if ($UninstallKey+”\\”+$key -and $reg.OpenSubKey($UninstallKey+”\\”+$key)) {
         $thisKey=($UninstallKey+”\\”+$key)
         $thisSubKey=$reg.OpenSubKey($thisKey) 
 
