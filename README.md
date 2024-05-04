@@ -17,8 +17,15 @@
  8. Choose a selection using the corresponding letters
  9. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
+**Security Info:**
+
 VirusTotal results: https://www.virustotal.com/gui/file/13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8 for HellbombScript.ps1
+You can check the File Hash by:
 
-You can check the File Hash by saving the script as a .ps1. Changing to that directory, and running Get-FileHash HellbombScript.ps1
+1. Saving the script as a .ps1
+2. Changing to the directory where the script is saved
+3. Running ``Get-FileHash 'Hellbomb Script.ps1' -eq 13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8`` should return ``True``
 
-It should match the VirusTotal file hash. No security software should detect is as malicious.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8``.
+
+No security software should detect the script as malicious.
