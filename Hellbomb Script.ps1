@@ -94,6 +94,71 @@ Function Check-BlacklistedDrivers {
     Return
 }
 
+Function Check-ProblematicPrograms {
+# This portion modified from:
+# https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
+
+$array = @()
+    #Define the variable to hold the location of Currently Installed Programs
+    $UninstallKey=”SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall”
+    #Create an instance of the Registry Object and open the HKLM base key
+    $reg=[microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64) 
+    #Drill down into the Uninstall key using the OpenSubKey Method
+    $regkey=$reg.OpenSubKey($UninstallKey)
+    #Retrieve an array of string that contain all the subkey names
+    $subkeys=$regkey.GetSubKeyNames()
+    #Open each Subkey and use GetValue Method to return the required values for each
+
+    foreach($key in $subkeys){
+        if ($UninstallKey+”\\”+$key -and $reg.OpenSubKey($thisKey)) {
+        $thisKey=($UninstallKey+”\\”+$key)
+        $thisSubKey=$reg.OpenSubKey($thisKey) 
+
+        $obj = New-Object PSObject
+        $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value $($thisSubKey.GetValue(“DisplayName”))
+        $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value $($thisSubKey.GetValue(“DisplayVersion”))
+        $obj | Add-Member -MemberType NoteProperty -Name “InstallLocation” -Value $($thisSubKey.GetValue(“InstallLocation”))
+        $obj | Add-Member -MemberType NoteProperty -Name “Publisher” -Value $($thisSubKey.GetValue(“Publisher”))
+        $array += $obj
+        }
+    }
+
+# Remove empties
+$array = $array | Where {$_.DisplayName -ne $null} | Sort-Object -Property DisplayName
+    
+$ProblematicPrograms = @()
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="AMD Chipset Software";RecommendedVersion='6.02.07.2300';Installed=$false;Notes="Outdated versions are known to cause issues."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Cepstral SwiftTalker";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause crashes in the past."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="ESET";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder." }
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Hamachi";RecommendedVersion='0.0';Installed=$false;Notes="Causes all kinds of issues. Recommend uninstall or disable IN DEVICE MANAGER."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="iCue";RecommendedVersion='0.0';Installed=$false;Notes="Outdated versions are known to cause issues."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="MSI Afterburner";RecommendedVersion='4.6.5';Installed=$false;Notes="Outdated versions are known to cause issues."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Outplayed";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Overwolf";RecommendedVersion='0.0'; Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Master";RecommendedVersion='2.13.0.2908';Installed=$false;Notes="Known to cause RAM leaks and general issues. Recommend uninstalling."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.3';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='0.0';Notes="Reported to cause issues."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='0.0';Notes="Causes low FPS. Uninstall or launch HD2 and THEN shutdown Webroot."}
+
+$bool = $false
+ForEach ($program in $ProblematicPrograms)
+{
+    ForEach($installedApp in $array)
+    {
+        $bool = $false
+        If ($installedApp.DisplayName -like "*"+$program.ProgramName+"*" -and ([System.Version]$program.RecommendedVersion -gt [System.Version]$installedApp.DisplayVersion)) {
+        $bool=$true
+        Break
+        }
+    }
+    If ($bool) {$program.Installed = $true}
+    
+}
+
+Write-Host ($ProblematicPrograms | Where-Object {$_.Installed -eq $true} | Sort-Object ProgramName | Format-Table -Property ProgramName,RecommendedVersion,Notes -AutoSize | Out-String) -ForegroundColor Yellow
+Return
+}
+
 Function Network-Checks {
     $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
     Write-Host (("Checking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2") -ForegroundColor Cyan
@@ -155,6 +220,7 @@ Function Menu {
             Network-Checks
             Check-BlacklistedDrivers
             Check-AMDNVIDIACombo
+            Check-ProblematicPrograms
             Menu}
         1{Clear-AppData
             Menu}
