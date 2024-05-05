@@ -28,4 +28,4 @@ You can check the File Hash by:
 
 The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``764b413af50f028a8a1bdff4854248164f26b6152efb9a7ee0e7cb11ef4d6854``.
 
-No security software should detect the script as malicious.
+No security software should detect the script as malicious. Well unless you're using Kingsoft... idk why but it seems to think almost everything is a Virus 😆
