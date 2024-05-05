@@ -135,6 +135,7 @@ $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="iCue";Recom
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="MSI Afterburner";RecommendedVersion='4.6.5';Installed=$false;Notes="Outdated versions are known to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Outplayed";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Overwolf";RecommendedVersion='0.0'; Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Radmin";RecommendedVersion='0.0';Installed=$false;Notes="Will cause network issues. Recommend uninstalling or disabling in DEVICE MANAGER."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Master";RecommendedVersion='2.13.0.2908';Installed=$false;Notes="Known to cause RAM leaks and general issues. Recommend uninstalling."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.3';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='0.0';Notes="Reported to cause issues."}
