@@ -19,13 +19,13 @@
 
 **Security Info:**
 
-VirusTotal results: https://www.virustotal.com/gui/file/13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8 for HellbombScript.ps1
+VirusTotal results: [https://www.virustotal.com/gui/file/764b413af50f028a8a1bdff4854248164f26b6152efb9a7ee0e7cb11ef4d6854](https://www.virustotal.com/gui/file/764b413af50f028a8a1bdff4854248164f26b6152efb9a7ee0e7cb11ef4d6854) for HellbombScript.ps1
 You can check the File Hash by:
 
 1. Saving the script as a .ps1
 2. Changing to the directory where the script is saved
-3. Running ``Get-FileHash 'Hellbomb Script.ps1' -eq 13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8`` should return ``True``
+3. Running ``Get-FileHash 'Hellbomb Script.ps1' -eq 764b413af50f028a8a1bdff4854248164f26b6152efb9a7ee0e7cb11ef4d6854`` should return ``True``
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``13b0da102a3d229d54a4887f07d6d2be77d7e362fc227613b1fce0d3f66182e8``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``764b413af50f028a8a1bdff4854248164f26b6152efb9a7ee0e7cb11ef4d6854``.
 
 No security software should detect the script as malicious.
