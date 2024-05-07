@@ -77,7 +77,7 @@ Function Check-BlacklistedDrivers {
         'Nahimic'
         'Sonic'      
     )
-    Write-Host "`nChecking for devices that are known to cause issues." -ForegroundColor Cyan
+    Write-Host "`nChecking for devices that are known to cause issues..." -ForegroundColor Cyan
     $DeviceDatabase = Get-PnpDevice
     ForEach ($device in $DeviceDatabase) {
         ForEach ($baddevice in $BadDeviceList) {
@@ -141,9 +141,10 @@ $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Maste
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.3';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Surfshark";RecommendedVersion='0.0';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='0.0';Notes="Reported to cause issues."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='0.0';Notes="Causes low FPS. Uninstall or launch HD2 and THEN shutdown Webroot."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='0.0';Notes="Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot."}
 
 $bool = $false
+Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
 ForEach ($program in $ProblematicPrograms)
 {
     ForEach($installedApp in $array)
@@ -158,13 +159,22 @@ ForEach ($program in $ProblematicPrograms)
     
 }
 
-Write-Host ($ProblematicPrograms | Where-Object {$_.Installed -eq $true} | Sort-Object ProgramName | Format-Table -Property ProgramName,RecommendedVersion,Notes -AutoSize | Out-String) -ForegroundColor Yellow
+$result = $null
+$result = $ProblematicPrograms | Where-Object {$_.Installed -eq $true}
+
+If ($result -ne $null) {
+    Write-Host "`nFound the following programs that are known to cause issues:`n" -ForegroundColor Red
+    Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName,RecommendedVersion,Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
+}
+Else {
+    Write-Host "Checks complete. No problematic programs found!" -ForegroundColor Green
+    }
 Return
 }
 
 Function Network-Checks {
     $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
-    Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2") -ForegroundColor Cyan
+    Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
     If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
         Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
     }
