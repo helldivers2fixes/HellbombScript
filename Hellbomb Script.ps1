@@ -130,7 +130,7 @@ $ProblematicPrograms = @()
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="AMD Chipset Software";RecommendedVersion='6.02.07.2300';Installed=$false;Notes="Outdated versions are known to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Cepstral SwiftTalker";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause crashes in the past."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="ESET";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder." }
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Hamachi";RecommendedVersion='0.0';Installed=$false;Notes="Causes all kinds of issues. Recommend uninstall or disable IN DEVICE MANAGER."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Hamachi";RecommendedVersion='0.0';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="iCue";RecommendedVersion='0.0';Installed=$false;Notes="Outdated versions are known to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="MSI Afterburner";RecommendedVersion='4.6.5';Installed=$false;Notes="Outdated versions are known to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Outplayed";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
@@ -138,6 +138,7 @@ $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Overwolf";R
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Radmin";RecommendedVersion='0.0';Installed=$false;Notes="Will cause network issues. Recommend uninstalling or disabling in DEVICE MANAGER."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Master";RecommendedVersion='2.13.0.2908';Installed=$false;Notes="Known to cause RAM leaks and general issues. Recommend uninstalling."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.3';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Surfshark";RecommendedVersion='0.0';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='0.0';Notes="Reported to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='0.0';Notes="Causes low FPS. Uninstall or launch HD2 and THEN shutdown Webroot."}
 
