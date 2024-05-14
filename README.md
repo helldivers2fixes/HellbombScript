@@ -30,3 +30,6 @@ You can check the File Hash by:
 The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``7d03fe183c4f632671f7a0f508ffbaac5f32a22f19bb298e23944fdd0f19eccb``.
 
 No security software should detect the script as malicious.
+
+**The Script Closes PowerShell without Showing the Menu**
+If this happens, helldivers2.exe is still running because it didn't exit properly. Restart the computer and then run the script.
