@@ -139,7 +139,7 @@ $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Overwolf";R
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Radmin";RecommendedVersion='0.0';Installed=$false;Notes="Will cause network issues. Recommend uninstalling or disabling in DEVICE MANAGER."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Razer Cortex";RecommendedVersion='0.0';Installed=$false;Notes="Known to cause CPU Threading issues & possibly other issues. Recommend disabling/uninstalling."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Master";RecommendedVersion='2.13.0.2908';Installed=$false;Notes="Known to cause RAM leaks & general issues. Recommend uninstalling."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.3';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.1';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Surfshark";RecommendedVersion='0.0';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='0.0';Notes="Reported to cause issues."}
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='0.0';Notes="Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot."}
