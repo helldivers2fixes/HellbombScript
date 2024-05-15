@@ -22,7 +22,7 @@ Function Reset-GameGuard {
     Try { Remove-Item $AppInstallPath\bin\GameGuard\*.*}
     Catch {Write-Host ("Error occurred deleting GameGuard files in " +
     $AppInstallPath+"\bin\GameGuard") -ForegroundColor Red}
-    If (!$Error) {Write-Host "AppData shader_cache folder cleared successfully!" -ForegroundColor Green}
+    If (!$Error) {Write-Host "Helldivers 2\bin\GameGuard cleared successfully!" -ForegroundColor Green}
     # Uninstall GameGuard
     $Error.Clear()
     Try { Start-Process $AppInstallPath\tools\gguninst.exe -Wait}
