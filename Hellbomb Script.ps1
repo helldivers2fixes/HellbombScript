@@ -16,6 +16,22 @@ Function Print-Vars {
     Return
 }
 
+# Function adapted from: https://stackoverflow.com/questions/20886243/press-any-key-to-continue#:~:text=Function%20pause%20(%24message)
+Function pause ($message)
+{
+    # Check if running Powershell ISE
+    if (Test-Path variable:global:psISE)
+    {
+        Add-Type -AssemblyName System.Windows.Forms
+        [System.Windows.Forms.MessageBox]::Show("$message")
+    }
+    else
+    {
+        Write-Host "$message" -ForegroundColor Yellow
+        $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+}
+
 Function Reset-GameGuard {
     # Delete GameGuard files
     $Error.Clear()
@@ -32,7 +48,7 @@ Function Reset-GameGuard {
     $Error.Clear()
     Try { Start-Process $AppInstallPath\tools\GGSetup.exe -Wait}
     Catch {Write-Host "Error occurred installing GameGuard" -ForegroundColor Red}
-    If (!$Error) {Write-Host "GameGuard Installed Successfully" -ForegroundColor Green}
+    If (!$Error) {Write-Host "GameGuard installed successfully" -ForegroundColor Green}
     Return
 }
 
@@ -53,6 +69,7 @@ Function Check-IsProcessRunning {
 
     If (Get-Process -ProcessName $InputObject.ProcessName -ErrorAction SilentlyContinue) {
     Write-Host $InputObject.ErrorMsg -ForegroundColor Red
+    pause "Press any key to Exit..."
     Exit
     }
 }
@@ -100,15 +117,15 @@ Function Check-ProblematicPrograms {
 # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
 
 $array = @()
-    #Define the variable to hold the location of Currently Installed Programs
+    # Define the variable to hold the location of Currently Installed Programs
     $UninstallKey=”SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall”
-    #Create an instance of the Registry Object and open the HKLM base key
+    # Create an instance of the Registry Object and open the HKLM base key
     $reg=[microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64) 
-    #Drill down into the Uninstall key using the OpenSubKey Method
+    # Drill down into the Uninstall key using the OpenSubKey Method
     $regkey=$reg.OpenSubKey($UninstallKey)
-    #Retrieve an array of string that contain all the subkey names
+    # Retrieve an array of string that contain all the subkey names
     $subkeys=$regkey.GetSubKeyNames()
-    #Open each Subkey and use GetValue Method to return the required values for each
+    # Open each Subkey and use GetValue Method to return the required values for each
 
     foreach($key in $subkeys){
         if ($UninstallKey+”\\”+$key -and $reg.OpenSubKey($UninstallKey+”\\”+$key)) {
@@ -197,8 +214,10 @@ Function Check-AMDNVIDIACombo {
 Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
     ProcessName  = 'steam'
-    ErrorMsg = '⚠️ Steam is currently running. ⚠️
-    Please close Steam first. Exiting....'
+    ErrorMsg = '
+    ⚠️ Steam is currently running. ⚠️
+        Please close Steam first.
+        '
     }
     Check-IsProcessRunning $SteamProcess
     # Remove CEF Cache
@@ -220,10 +239,10 @@ Function Menu {
     $Prompt = "Enter your choice:"
     $Choices = @(
         [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks", "Provides various status checks.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Clear AppData", "Clears your profile data. Settings will be reset, but progress will not be lost.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("&Clear HD2 Settings (AppData)", "Clears your profile data. Settings will be reset, but progress will not be lost.")
         [System.Management.Automation.Host.ChoiceDescription]::new("&Blacklisted Driver Check", "Checks computer for devices that are known to cause issues with HD2.")
         [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Reset GameGuard", "Performs a full GameGuard reset. If Windows Ransomware Protection is enabled, may trigger security alert.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("Re-install &GameGuard", "Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.")
         [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
         [System.Management.Automation.Host.ChoiceDescription]::new("E&xit", "Exits the script.")
     )
@@ -283,8 +302,10 @@ ForEach ($line in $($LibraryData -split "`r`n"))
 
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName  = 'helldivers2'
-    ErrorMsg = '⚠️ Helldivers 2 is currently running. ⚠️
-    Please close the game and re-run this script. Exiting....'
+    ErrorMsg = '
+    ⚠️ The Helldivers 2 process is currently running. ⚠️
+         Please close the game. If the game appears closed, restart the system, and re-run this script.    
+    '
 }
 Clear
 Check-IsProcessRunning $HelldiversProcess
