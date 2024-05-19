@@ -1,7 +1,6 @@
 # 💣Hellbomb💣 Script for fixing Helldivers 2 Issues
 
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/cc30472b-83ab-4b2f-90b9-2f1ec2170e50)
-
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/d08d4fec-ebb0-4d3f-b84d-4dfd45e8bc55)
 
 
 ## How to Use:
@@ -41,5 +40,5 @@ Running the Status Checks:
 ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/f35b87dc-0329-431f-bc30-1dd4b89f366c)
 
 Selecting Help (?) from the menu:
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/b3c7313b-dd93-4c3f-a907-d77d5d4fac0f)
 
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/fb9b7443-e688-4347-83c1-62c9c51b92b6)
