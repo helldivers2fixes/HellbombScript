@@ -234,6 +234,16 @@ Function Reset-Steam {
     Return
 }
 
+Function Open-AdvancedGraphics {
+    Start-Process ms-settings:display-advancedgraphics
+    Write-Host "`nVerify HellDivers 2 is set to use the correct GPU.",
+    "`nIf HD2 is not listed, click " -NoNewLine -ForegroundColor Cyan
+    Write-Host "Add desktop app " -NoNewline -ForegroundColor Yellow
+    Write-Host "and browse to:" -ForegroundColor Cyan
+    Write-Host $AppInstallPath,"\bin\helldivers2.exe" -ForegroundColor Yellow
+    Return
+}
+
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
@@ -244,6 +254,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
         [System.Management.Automation.Host.ChoiceDescription]::new("Re-install &GameGuard", "Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.")
         [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
+        [System.Management.Automation.Host.ChoiceDescription]::new("Set HD2 G&PU", "Brings up the Windows GPU settings.")
         [System.Management.Automation.Host.ChoiceDescription]::new("E&xit", "Exits the script.")
     )
     $Default = 0
@@ -265,7 +276,9 @@ Function Menu {
             Menu}
         5{Reset-Steam
             Menu}
-        6{Return}
+        6{Open-AdvancedGraphics
+            Menu}
+        7{Return}
         }
 }
 
