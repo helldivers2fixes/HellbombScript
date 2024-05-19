@@ -21,7 +21,7 @@
 
 ## Security Info:
 
-VirusTotal results: https://www.virustotal.com/gui/file/7da18c838425a0576300237ecce52a97511029d51deb8e37d513a4812a7803d8
+**VirusTotal Results:** https://www.virustotal.com/gui/file/7da18c838425a0576300237ecce52a97511029d51deb8e37d513a4812a7803d8
 
 The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``7da18c838425a0576300237ecce52a97511029d51deb8e37d513a4812a7803d8``.
 
@@ -32,6 +32,8 @@ You can compare the File Hash to the Virus Total link to ensure that the Virus T
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
 4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 7da18c838425a0576300237ecce52a97511029d51deb8e37d513a4812a7803d8``
 5. The statement should return/evaluate to ``True``
+
+**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/7da18c838425a0576300237ecce52a97511029d51deb8e37d513a4812a7803d8
 
 No security software should detect the script as malicious.
 ## Screenshots:
