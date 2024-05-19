@@ -191,8 +191,8 @@ Return
 }
 
 Function Network-Checks {
-    $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
     Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
+    $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
     If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
         Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
     }
@@ -250,7 +250,6 @@ Function Menu {
     $Choices = @(
         [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks", "Provides various status checks.")
         [System.Management.Automation.Host.ChoiceDescription]::new("&Clear HD2 Settings (AppData)", "Clears your profile data. Settings will be reset, but progress will not be lost.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Blacklisted Driver Check", "Checks computer for devices that are known to cause issues with HD2.")
         [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
         [System.Management.Automation.Host.ChoiceDescription]::new("Re-install &GameGuard", "Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.")
         [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
@@ -268,17 +267,15 @@ Function Menu {
             Menu}
         1{Clear-AppData
             Menu}
-        2{Check-BlacklistedDrivers
+        2{Install-VCRedist
             Menu}
-        3{Install-VCRedist
+        3{Reset-GameGuard
             Menu}
-        4{Reset-GameGuard
+        4{Reset-Steam
             Menu}
-        5{Reset-Steam
+        5{Open-AdvancedGraphics
             Menu}
-        6{Open-AdvancedGraphics
-            Menu}
-        7{Return}
+        6{Return}
         }
 }
 
