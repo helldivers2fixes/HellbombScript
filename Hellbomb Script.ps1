@@ -90,6 +90,7 @@ Function Install-VCRedist {
 Function Check-BlacklistedDrivers {
     $FoundBlacklistedDevice = $False
     $BadDeviceList = @(
+        'A-Volute'
         'Hamachi'
         'Nahimic'
         'Sonic'      
