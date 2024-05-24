@@ -1,7 +1,6 @@
 # 💣Hellbomb💣 Script for fixing Helldivers 2 Issues
 
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/d08d4fec-ebb0-4d3f-b84d-4dfd45e8bc55)
-
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/004ccb81-356a-4d89-80f5-63363060b561)
 
 ## How to Use:
 
@@ -39,8 +38,10 @@ No security software should detect the script as malicious.
 ## Screenshots:
 
 Running the Status Checks:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/f35b87dc-0329-431f-bc30-1dd4b89f366c)
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/6b922c41-39bc-41e4-b535-bfd81e6f47a4)
+
 
 Selecting Help (?) from the menu:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/b3c7313b-dd93-4c3f-a907-d77d5d4fac0f)
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/02cacb2b-bc4a-4cd9-9447-949b40c1630a)
+
 
