@@ -145,7 +145,8 @@ $array = @()
                 $Error.Clear()
                 Try {$null = [System.Version]$s}
                 Catch {
-                        Write-Host ('Error occurred converting program version number ' + ($thisSubKey.GetValue(“DisplayVersion”))) ' for ' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                        Write-Host ('Error occurred converting program version number ' +
+                        ($thisSubKey.GetValue(“DisplayVersion”))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
                         # Set version to 0.0.0 due to version error
                         $s = '0.0.0'
                     }                          
