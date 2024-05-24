@@ -69,20 +69,20 @@ Function Check-IsProcessRunning {
 
     If (Get-Process -ProcessName $InputObject.ProcessName -ErrorAction SilentlyContinue) {
     Write-Host $InputObject.ErrorMsg -ForegroundColor Red
-    pause "Press any key to Exit..."
+    pause 'Press any key to Exit...'
     Exit
     }
 }
 
 Function Install-VCRedist {
-    $VCRedist = "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe"
+    $VCRedist = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
     Invoke-WebRequest $VCRedist -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
     $Error.Clear()
     Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2012.exe -ArgumentList "/q" -Wait}
     Catch {Write-Host "Error occurred installing 2012 Visual C++ Redistributable" -ForegroundColor Red}
     If (!$Error) {
         Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
-        Write-Host "2012 Visual C++ Redistributable installed successfully!" -ForegroundColor Green
+        Write-Host '2012 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
     }
     Return
 }
@@ -136,7 +136,18 @@ $array = @()
         $s = $null
         if (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue(“DisplayVersion”)))))
             {
-                $s = $thisSubKey.GetValue(“DisplayVersion”).split(' ')[0]
+                $s = $thisSubKey.GetValue(“DisplayVersion”)
+                $s = $s.Trim()
+                $s = $s -replace '^[a-zA-Z]+'
+                $s = $s -replace '[a-zA-Z]$'
+
+                $Error.Clear()
+                Try {$null = [System.Version]$s}
+                Catch {
+                        Write-Host ('Error occurred converting the version number ' + ($thisSubKey.GetValue(“DisplayVersion”))) ' for ' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                        # Set version to 0.0.0 due to version error
+                        $s = '0.0.0'
+                    }                          
             }
 
         $obj = New-Object PSObject
@@ -152,21 +163,21 @@ $array = @()
 $array = $array | Where {$_.DisplayName -ne $null} | Sort-Object -Property DisplayName
     
 $ProblematicPrograms = @()
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="AMD Chipset Software";RecommendedVersion='6.02.07.2300';Installed=$false;Notes="Outdated versions are known to cause issues."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Cepstral SwiftTalker";RecommendedVersion='100.100';Installed=$false;Notes="Known to cause crashes in the past."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="ESET";RecommendedVersion='100.100';Installed=$false;Notes="Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder." }
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Hamachi";RecommendedVersion='100.100';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="iCue";RecommendedVersion='100.100';Installed=$false;Notes="Outdated versions are known to cause issues."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="MSI Afterburner";RecommendedVersion='4.6.5';Installed=$false;Notes="Outdated versions are known to cause issues."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Outplayed";RecommendedVersion='100.100';Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Overwolf";RecommendedVersion='100.100'; Installed=$false;Notes="Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Radmin";RecommendedVersion='100.100';Installed=$false;Notes="Will cause network issues. Recommend uninstalling or disabling in DEVICE MANAGER."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Razer Cortex";RecommendedVersion='100.100';Installed=$false;Notes="Known to cause CPU Threading issues & possibly other issues. Recommend disabling/uninstalling."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Ryzen Master";RecommendedVersion='2.13.0.2908';Installed=$false;Notes="Known to cause RAM leaks & general issues. Recommend uninstalling."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Samsung Magician";RecommendedVersion='8.1';Installed=$false;Notes="Outdated versions are known to completely prevent connectivity."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Surfshark";RecommendedVersion='100.100';Installed=$false;Notes="Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER"}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Wargaming.net Game Center";Installed=$false;RecommendedVersion='100.100';Notes="Reported to cause issues."}
-$ProblematicPrograms += New-Object PSObject -Property @{ProgramName="Webroot";Installed=$false;RecommendedVersion='100.100';Notes="Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot."}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='AMD Chipset Software';RecommendedVersion='6.02.07.2300';Installed=$false;Notes='Outdated versions are known to cause issues.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Cepstral SwiftTalker';RecommendedVersion='100.100';Installed=$false;Notes='Known to cause crashes in the past.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='ESET';RecommendedVersion='100.100';Installed=$false;Notes='Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder.' }
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Hamachi';RecommendedVersion='100.100';Installed=$false;Notes='Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='iCue';RecommendedVersion='100.100';Installed=$false;Notes='Outdated versions are known to cause issues.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='MSI Afterburner';RecommendedVersion='4.6.5';Installed=$false;Notes='Outdated versions are known to cause issues.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Outplayed';RecommendedVersion='100.100';Installed=$false;Notes='Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Overwolf';RecommendedVersion='100.100'; Installed=$false;Notes='Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Radmin';RecommendedVersion='100.100';Installed=$false;Notes='Will cause network issues. Recommend uninstalling or disabling in DEVICE MANAGER.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Razer Cortex';RecommendedVersion='100.100';Installed=$false;Notes='Known to cause CPU Threading issues & possibly other issues. Recommend disabling/uninstalling.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Ryzen Master';RecommendedVersion='2.13.0.2908';Installed=$false;Notes='Known to cause RAM leaks & general issues. Recommend uninstalling.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Samsung Magician';RecommendedVersion='8.1';Installed=$false;Notes='Outdated versions are known to completely prevent connectivity.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Surfshark';RecommendedVersion='100.100';Installed=$false;Notes='Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Wargaming.net Game Center';Installed=$false;RecommendedVersion='100.100';Notes='Reported to cause issues.'}
+$ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Webroot';Installed=$false;RecommendedVersion='100.100';Notes='Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.'}
 
 $bool = $false
 Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
@@ -192,7 +203,7 @@ If ($result -ne $null) {
     Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName,RecommendedVersion,Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
 }
 Else {
-    Write-Host "Checks complete. No problematic programs found!" -ForegroundColor Green
+    Write-Host 'Checks complete. No problematic programs found!' -ForegroundColor Green
     }
 Return
 }
@@ -201,10 +212,10 @@ Function Network-Checks {
     Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
     $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where DisplayName -in ("Helldivers"+[char]0x2122+" 2"),"Helldivers 2"
     If ($HD2FirewallRules -ne $null -and $HD2FirewallRules.Count -gt 1) {
-        Write-Host "Helldivers 2 has Inbound rules set in the Windows Firewall." -ForegroundColor Green
+        Write-Host 'Helldivers 2 has Inbound rules set in the Windows Firewall.' -ForegroundColor Green
     }
     Else {
-        Write-Host ("⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.") -ForegroundColor Red
+        Write-Host ('⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.') -ForegroundColor Red
     }
     Return
 }
@@ -255,13 +266,13 @@ Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
     $Choices = @(
-        [System.Management.Automation.Host.ChoiceDescription]::new("&HD2 Status Checks", "Provides various status checks.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Clear HD2 Settings (AppData)", "Clears your profile data. Settings will be reset, but progress will not be lost.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("&Install VC++ Redist 2012", "Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("Re-install &GameGuard", "Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("Re&set Steam", "Performs a reset of Steam. This can fix various issues including VRAM memory leaks.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("Set HD2 G&PU", "Brings up the Windows GPU settings.")
-        [System.Management.Automation.Host.ChoiceDescription]::new("E&xit", "Exits the script.")
+        [System.Management.Automation.Host.ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('&Install VC++ Redist 2012', 'Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $Default = 0
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
