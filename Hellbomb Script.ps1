@@ -264,6 +264,65 @@ Function Open-AdvancedGraphics {
     Return
 }
 
+function Test-PrivateIP {
+    <#
+        .SYNOPSIS
+            Use to determine if a given IP address is within the IPv4 private address space ranges.
+
+        .DESCRIPTION
+            Returns $true or $false for a given IP address string depending on whether or not is is within the private IP address ranges.
+
+        .PARAMETER IP
+            The IP address to test.
+
+        .EXAMPLE
+            Test-PrivateIP -IP 172.16.1.2
+
+        .EXAMPLE
+            '10.1.2.3' | Test-PrivateIP
+    #>
+    param(
+        [parameter(Mandatory,ValueFromPipeline)]
+        [string]
+        $IP
+    )
+    process {
+
+        if ($IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') {
+            $true
+        }
+        else {
+            $false
+        }
+    }    
+}
+
+function Test-DualNAT{
+
+    Write-Host "`nRunning Dual-NAT test...this will take a minute" -ForegroundColor Cyan
+    $server = 'google.com'
+    $ip = Resolve-DnsName -Type A $server |
+          Select-Object -Expand IPAddress
+
+    $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0]
+    $privateIPs = @()
+    ForEach ($hop in $tracedroute.TraceRoute)
+    {
+        If (Test-PrivateIP $hop)
+        {
+            $privateIPs += $hop 
+        }
+    }
+
+    If ($privateIPs.Count -gt 1)
+    {
+        Write-Host 'Possible Dual-NAT connection detected.' -ForegroundColor Yellow
+        Write-Host "IPs are:"
+        Write-Host $privateIPs -Separator "`n"
+    }
+    pause "`nPress any key to continue..."
+}
+
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
@@ -274,6 +333,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Dual NAT &Test', 'Tests network for Dual NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $Default = 0
@@ -295,7 +355,9 @@ Function Menu {
             Menu}
         5{Open-AdvancedGraphics
             Menu}
-        6{Return}
+        6{Test-DualNat
+            Menu}
+        7{Return}
         }
 }
 
