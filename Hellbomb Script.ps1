@@ -115,7 +115,8 @@ Function Check-BlacklistedDrivers {
 Function Check-ProblematicPrograms {
 # This portion modified from:
 # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
-
+Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
+Write-Host "`nYou will receive errors converting program version numbers. This is normal." -ForegroundColor Cyan
 $array = @()
     # Define the variable to hold the location of Currently Installed Programs
     $UninstallKey=”SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall”
@@ -144,7 +145,7 @@ $array = @()
                 $Error.Clear()
                 Try {$null = [System.Version]$s}
                 Catch {
-                        Write-Host ('Error occurred converting the version number ' + ($thisSubKey.GetValue(“DisplayVersion”))) ' for ' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                        Write-Host ('Error occurred converting program version number ' + ($thisSubKey.GetValue(“DisplayVersion”))) ' for ' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
                         # Set version to 0.0.0 due to version error
                         $s = '0.0.0'
                     }                          
@@ -180,7 +181,6 @@ $ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Wargaming.n
 $ProblematicPrograms += New-Object PSObject -Property @{ProgramName='Webroot';Installed=$false;RecommendedVersion='100.100';Notes='Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.'}
 
 $bool = $false
-Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
 ForEach ($program in $ProblematicPrograms)
 {
     ForEach($installedApp in $array)
