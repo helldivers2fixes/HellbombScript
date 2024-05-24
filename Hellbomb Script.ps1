@@ -132,9 +132,16 @@ $array = @()
         $thisKey=($UninstallKey+”\\”+$key)
         $thisSubKey=$reg.OpenSubKey($thisKey) 
 
+        # Remove extraneous version strings if not null
+        $s = $null
+        if (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue(“DisplayVersion”)))))
+            {
+                $s = $thisSubKey.GetValue(“DisplayVersion”).split(' ')[0]
+            }
+
         $obj = New-Object PSObject
         $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value $($thisSubKey.GetValue(“DisplayName”))
-        $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value $($thisSubKey.GetValue(“DisplayVersion”))
+        $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value $s
         $obj | Add-Member -MemberType NoteProperty -Name “InstallLocation” -Value $($thisSubKey.GetValue(“InstallLocation”))
         $obj | Add-Member -MemberType NoteProperty -Name “Publisher” -Value $($thisSubKey.GetValue(“Publisher”))
         $array += $obj
