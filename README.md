@@ -20,19 +20,19 @@
 
 ## Security Info:
 
-**VirusTotal Results:** https://www.virustotal.com/gui/file/00e7f20f0c6d750bb74b4c0599593a7c3e91c0a7b573dd5205acf41c20daa1a8
+**VirusTotal Results:** https://www.virustotal.com/gui/file/496a429b1d0549ae327289d39423ad4246ea498e643c26db5eece1908ec762e0
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``00e7f20f0c6d750bb74b4c0599593a7c3e91c0a7b573dd5205acf41c20daa1a8``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``496a429b1d0549ae327289d39423ad4246ea498e643c26db5eece1908ec762e0``.
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
 1. Save the script as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 00e7f20f0c6d750bb74b4c0599593a7c3e91c0a7b573dd5205acf41c20daa1a8``
+4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 496a429b1d0549ae327289d39423ad4246ea498e643c26db5eece1908ec762e0``
 5. The statement should return/evaluate to ``True``
 
-**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/00e7f20f0c6d750bb74b4c0599593a7c3e91c0a7b573dd5205acf41c20daa1a8
+**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/496a429b1d0549ae327289d39423ad4246ea498e643c26db5eece1908ec762e0
 
 No security software should detect the script as malicious.
 ## Screenshots:
