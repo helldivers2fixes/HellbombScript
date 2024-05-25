@@ -219,6 +219,50 @@ Function Network-Checks {
     Else {
         Write-Host ('⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.') -ForegroundColor Red
     }
+
+    Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
+# Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
+$psi = New-object System.Diagnostics.ProcessStartInfo 
+$psi.CreateNoWindow = $true 
+$psi.UseShellExecute = $false 
+$psi.RedirectStandardOutput = $true 
+$psi.RedirectStandardError = $true 
+$psi.FileName = 'curl.exe' 
+$psi.Arguments = @('-X HEAD -I http://www.microsoft.com/pkiops/crl/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crl') 
+$process = New-Object System.Diagnostics.Process 
+$process.StartInfo = $psi 
+[void]$process.Start()
+$output = $process.StandardOutput.ReadToEnd() 
+$process.WaitForExit() 
+$output = $output.Split("`n")
+
+Write-Host 'HTTP  CRL access ' -NoNewline
+If ($output[0].Trim() -eq 'HTTP/1.1 200 OK')
+{
+    Write-Host 'OK' -ForegroundColor Green
+} Else
+    {
+        Write-Host 'FAIL' -ForegroundColor Red
+        Write-Host 'Security software may be blocking the connection.' -ForegroundColor Yellow
+    }
+
+$psi.Arguments = @('-X HEAD -I https://www.microsoft.com/pkiops/crl/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crl') 
+$process = New-Object System.Diagnostics.Process 
+$process.StartInfo = $psi 
+[void]$process.Start()
+$output = $process.StandardOutput.ReadToEnd() 
+$process.WaitForExit() 
+$output = $output.Split("`n")
+
+Write-Host 'HTTPS CRL access ' -NoNewline
+If ($output[0].Trim() -eq 'HTTP/1.1 200 OK')
+{
+    Write-Host 'OK' -ForegroundColor Green
+} Else
+    {
+        Write-Host 'FAIL' -ForegroundColor Red
+    }
+    
     Return
 }
 
