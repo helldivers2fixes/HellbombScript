@@ -67,8 +67,12 @@ Function Check-IsProcessRunning {
     }
 }
 Function Install-VCRedist {
-    $VCRedist = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
-    Invoke-WebRequest $VCRedist -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
+    # Turn off progress bar to speed up download
+    $ProgressPreference = 'SilentlyContinue'
+    Write-Host "`nDownloading VCRedist 2012..."  -Foreground Cyan
+    $VCRedist2012 = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
+    Invoke-WebRequest $VCRedist2012 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
+    Write-Host 'Installing... look for UAC prompts'  -Foreground Cyan
     $Error.Clear()
     Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2012.exe -ArgumentList "/q" -Wait }
     Catch { Write-Host "Error occurred installing 2012 Visual C++ Redistributable" -ForegroundColor Red }
@@ -76,6 +80,31 @@ Function Install-VCRedist {
         Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
         Write-Host '2012 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
     }
+    Write-Host "`nDownloading VCRedist 2013..."  -Foreground Cyan
+    $VCRedist2013 = 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe'
+    Invoke-WebRequest $VCRedist2013 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2013.exe
+    Write-Host 'Installing... look for UAC prompts'  -Foreground Cyan
+    $Error.Clear()
+    Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2013.exe -ArgumentList "/q" -Wait }
+    Catch { Write-Host "Error occurred installing 2013 Visual C++ Redistributable" -ForegroundColor Red }
+    If (!$Error) {
+        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2013.exe
+        Write-Host '2013 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
+    }
+    Write-Host "`nDownloading VCRedist 2015-2022..."-Foreground Cyan
+    $VCRedist2019 = 'https://download.visualstudio.microsoft.com/download/pr/1754ea58-11a6-44ab-a262-696e194ce543/3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A/VC_redist.x64.exe'
+    Invoke-WebRequest $VCRedist2019 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
+    Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
+    $Error.Clear()
+    Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2019.exe -ArgumentList "/q /norestart" -Wait }
+    Catch { Write-Host "Error occurred installing 2019 Visual C++ Redistributable" -ForegroundColor Red }
+    If (!$Error) {
+        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
+        Write-Host '2019 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
+    }
+    # Re-enable Progress Bar
+    Pause "`nPlease restart the computer before continuing." -ForegroundColor Yellow
+    $ProgressPreference = 'Continue'
     Return
 }
 Function Check-BlacklistedDrivers {
@@ -325,7 +354,7 @@ Function Menu {
     $Choices = @(
         [System.Management.Automation.Host.ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('&Install VC++ Redist 2012', 'Installs the Microsoft Visual C++ Redistributable 2012. Required for HD2. Can fix MSVCR110.dll errors.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and dll errors.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
