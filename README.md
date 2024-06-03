@@ -1,6 +1,8 @@
 # 💣Hellbomb💣 Script for fixing Helldivers 2 Issues
 
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/004ccb81-356a-4d89-80f5-63363060b561)
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/901687d6-1991-4fe4-8cfc-8d662f11b33e)
+
+
 
 ## How to Use:
 
@@ -12,7 +14,7 @@
     
        <img src = "https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" height=50>
        
- 6. **Paste** into PowerShell Must use Ctrl + V (Right-clicking in terminal to paste will cause errors if running as Admin).
+ 6. **Paste** into PowerShell Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
  7. Acknowledge the warning prompt and click **Paste Anyway**
  8. Press **Enter** until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
  9. Choose a selection using the corresponding letters
@@ -20,28 +22,31 @@
 
 ## Security Info:
 
-**VirusTotal Results:** https://www.virustotal.com/gui/file/1a7de4fc5f00c1408298a8dc61b745b1f501d6a04890d8962e8d4722f55c4205
+**VirusTotal Results:** https://www.virustotal.com/gui/file/BE239F8624A971F1742AD9524F4F4CCC61519671D073631C040F542FB8693E56
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``1a7de4fc5f00c1408298a8dc61b745b1f501d6a04890d8962e8d4722f55c4205``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``BE239F8624A971F1742AD9524F4F4CCC61519671D073631C040F542FB8693E56``.
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
 1. Save the script as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 1a7de4fc5f00c1408298a8dc61b745b1f501d6a04890d8962e8d4722f55c4205``
+4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq BE239F8624A971F1742AD9524F4F4CCC61519671D073631C040F542FB8693E56``
 5. The statement should return/evaluate to ``True``
 
-**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/1a7de4fc5f00c1408298a8dc61b745b1f501d6a04890d8962e8d4722f55c4205
+**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/BE239F8624A971F1742AD9524F4F4CCC61519671D073631C040F542FB8693E56
 
 No security software should detect the script as malicious.
 ## Screenshots:
 
 Running the Status Checks:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/6b922c41-39bc-41e4-b535-bfd81e6f47a4)
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/ebba092a-4c62-4963-bfe9-5d353b983d26)
+
 
 
 Selecting Help (?) from the menu:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/02cacb2b-bc4a-4cd9-9447-949b40c1630a)
+![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/584dde89-139c-47a3-afd0-c2ece81f2379)
+
+
 
 
