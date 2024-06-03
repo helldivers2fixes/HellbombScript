@@ -121,7 +121,7 @@ Function Check-BlacklistedDrivers {
         ForEach ($baddevice in $BadDeviceList) {
             If ($device.FriendlyName -like "*$baddevice*") {
                 Write-Host ("⚠️ " + $device.FriendlyName +
-                    " device detected! Known compatibiltiy issues!
+                    " device detected! Known compatibility issues!
                 Please disable.") -ForegroundColor Red
                 $FoundBlacklistedDevice = $true
             }
@@ -370,7 +370,7 @@ Function Toggle-BTAGService {
     If(-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544'))
 {
     Write-Host 'This command requires Administrator privileges.',
-    "`nTo run PowerShell with admin priveleges:",
+    "`nTo run PowerShell with admin privileges:",
     "`nRight-click on PowerShell and click Run as Administrator",
     "`nThen run the script again.`n" -ForegroundColor Cyan
     } else
