@@ -270,6 +270,20 @@ Function Check-AMDNVIDIACombo {
     }
     Return
 }
+Function Check-BTAGService {
+    if ((Get-Service -Name 'Bluetooth Audio Gateway Service').Status -eq 'Running')
+    {
+        Write-Host "`n⚠️ Bluetooth Audio Gateway Service is running.",
+        "`nThis will cause audio routing issues with Bluetooth Headphones.",
+        "`nToggle this service ON or OFF from the menu (Select option B)"  -ForegroundColor Yellow
+    }
+    else
+    {
+        Write-Host "`nBluetooth Audio Gateway Service: DISABLED",
+        "`nIf using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
+    }
+    Return
+}
 Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
         ProcessName = 'steam'
@@ -302,7 +316,7 @@ Function Open-AdvancedGraphics {
     Write-Host $AppInstallPath, "\bin\helldivers2.exe" -ForegroundColor Yellow
     Return
 }
-function Test-PrivateIP {
+Function Test-PrivateIP {
     <#
         .SYNOPSIS
             Use to determine if a given IP address is within the IPv4 private address space ranges.
@@ -329,7 +343,7 @@ function Test-PrivateIP {
         }
     }
 }
-function Test-DualNAT {
+Function Test-DualNAT {
     Write-Host "`nRunning Dual-NAT test... this will take a minute" -ForegroundColor Cyan
     $server = 'cloudflare.com'
     $ip = Resolve-DnsName -Type A $server |
@@ -352,6 +366,38 @@ function Test-DualNAT {
     }
     Pause "`nPress any key to continue..."
 }
+Function Toggle-BTAGService {
+    If(-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544'))
+{
+    Write-Host 'This command requires Administrator privileges.',
+    "`nTo run PowerShell with admin priveleges:",
+    "`nRight-click on PowerShell and click Run as Administrator",
+    "`nThen run the script again.`n" -ForegroundColor Cyan
+    } else
+    {
+        if ((Get-Service -Name BTAGService).Status -eq 'Running')
+        {
+            Set-Service -Name BTAGService -StartupType Disabled
+            Stop-Service -Name BTAGService
+            Start-Sleep -Seconds 1.5
+            Write-Host "`nBluetooth Audio Gateway Service", 
+            "is now " -ForegroundColor Cyan
+            Write-Host (Get-Service -Name 'Bluetooth Audio Gateway Service').Status -ForegroundColor Yellow            
+        } else      
+
+        {
+            if ((Get-Service -Name 'BTAGService').Status -eq 'Stopped')
+            {
+                Set-Service -Name BTAGService -StartupType Automatic
+                Set-Service -Name BTAGService -Status Running
+                Start-Sleep -Seconds 1.5
+                Write-Host "`nBluetooth Audio Gateway Service", 
+                "is now " -ForegroundColor Cyan
+                Write-Host (Get-Service -Name 'Bluetooth Audio Gateway Service').Status -ForegroundColor Green
+            }
+        }
+    }
+}
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
@@ -363,6 +409,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Dual NAT &Test', 'Tests network for Dual NAT.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service Toggle', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $Default = 0
@@ -373,6 +420,7 @@ Function Menu {
             Network-Checks
             Check-BlacklistedDrivers
             Check-AMDNVIDIACombo
+            Check-BTAGService
             Check-ProblematicPrograms
             Menu
         }
@@ -400,7 +448,11 @@ Function Menu {
             Test-DualNat
             Menu
         }
-        7 { Return }
+        7 {
+            Toggle-BTAGService
+            Menu
+        }
+        8 { Return }
     }
 }
 # Set AppID
