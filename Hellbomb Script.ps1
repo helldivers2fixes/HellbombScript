@@ -330,11 +330,11 @@ function Test-PrivateIP {
     }
 }
 function Test-DualNAT {
-    Write-Host "`nRunning Dual-NAT test...this will take a minute" -ForegroundColor Cyan
-    $server = 'google.com'
+    Write-Host "`nRunning Dual-NAT test... this will take a minute" -ForegroundColor Cyan
+    $server = 'cloudflare.com'
     $ip = Resolve-DnsName -Type A $server |
         Select-Object -Expand IPAddress
-    $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0]
+    $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0] -WarningAction:SilentlyContinue
     $privateIPs = @()
     ForEach ($hop in $tracedroute.TraceRoute) {
         If (Test-PrivateIP $hop) {
@@ -342,9 +342,13 @@ function Test-DualNAT {
         }
     }
     If ($privateIPs.Count -gt 1) {
-        Write-Host 'Possible Dual-NAT connection detected.' -ForegroundColor Yellow
-        Write-Host "IPs are:"
+        Write-Host '⚠️ Possible Dual-NAT connection detected.' -ForegroundColor Yellow
+        Write-Host 'Private IPs detected are:'
         Write-Host $privateIPs -Separator "`n"
+        Write-Host "`nIf you're not sure what these results mean, the IP results are safe to share with others." -ForegroundColor Cyan
+    }
+    else {
+        Write-Host "`nNo Dual-NAT connection detected." -ForegroundColor Green
     }
     Pause "`nPress any key to continue..."
 }
