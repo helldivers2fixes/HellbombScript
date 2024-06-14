@@ -272,15 +272,15 @@ Function Check-AMDNVIDIACombo {
     Return
 }
 Function Check-BTAGService {
-    if ((Get-Service -Name 'Bluetooth Audio Gateway Service').Status -eq 'Running')
+    if ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
-        Write-Host "`n⚠️ Bluetooth Audio Gateway Service is running.",
+        Write-Host "`n⚠️ Bluetooth Audio Gateway (BTAG) Service is running.",
         "`nThis will cause audio routing issues with Bluetooth Headphones.",
         "`nToggle this service ON or OFF from the menu (Select option B)"  -ForegroundColor Yellow
     }
     else
     {
-        Write-Host "`nBluetooth Audio Gateway Service: DISABLED",
+        Write-Host "`nBluetooth Audio Gateway (BTAG) Service: DISABLED",
         "`nIf using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
     }
     Return
@@ -383,18 +383,18 @@ Function Toggle-BTAGService {
             Start-Sleep -Seconds 1.5
             Write-Host "`nBluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
-            Write-Host (Get-Service -Name 'Bluetooth Audio Gateway Service').Status -ForegroundColor Yellow            
+            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow            
         } else      
 
         {
-            if ((Get-Service -Name 'BTAGService').Status -eq 'Stopped')
+            if ((Get-Service -Name BTAGService).Status -eq 'Stopped')
             {
                 Set-Service -Name BTAGService -StartupType Automatic
                 Set-Service -Name BTAGService -Status Running
                 Start-Sleep -Seconds 1.5
                 Write-Host "`nBluetooth Audio Gateway Service", 
                 "is now " -ForegroundColor Cyan
-                Write-Host (Get-Service -Name 'Bluetooth Audio Gateway Service').Status -ForegroundColor Green
+                Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Green
             }
         }
     }
