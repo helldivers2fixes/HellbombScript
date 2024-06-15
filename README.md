@@ -22,7 +22,7 @@
     
        <img src = "https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" height=50>
        
- 6. **Paste** into PowerShell Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
+ 6. **Paste** into PowerShell. Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
  7. Acknowledge the warning prompt and click **Paste Anyway**
  8. Press **Enter** until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
  9. Choose a selection using the corresponding letters
