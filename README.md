@@ -24,7 +24,7 @@
        
  6. **Paste** into PowerShell. Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
  7. Acknowledge the warning prompt and click **Paste Anyway**
- 8. Press **Enter** until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
+ 8. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
  9. Choose a selection using the corresponding letters
  10. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
