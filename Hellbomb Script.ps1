@@ -179,6 +179,7 @@ Function Check-ProblematicPrograms {
     $array = $array | Where-Object { $_.DisplayName -ne $null } | Sort-Object -Property DisplayName
     $ProblematicPrograms = @()
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes in the past.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'ESET'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
