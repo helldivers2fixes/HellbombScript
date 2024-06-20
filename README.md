@@ -7,7 +7,7 @@
 ## How to Use:
 
 Grab the latest EXE from the Releases on the right-hand side. Or you can copy and paste the script manually per instructions below.
-EXE [VirusTotal](https://www.virustotal.com/gui/file/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) link. Seems AV software hates the EXE, but Hybrid Analysis loves it more than the PowerShell script 😆
+EXE [VirusTotal](https://www.virustotal.com/gui/file/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
  1. **Open** PowerShell (no need to run as an Administrator)
     
