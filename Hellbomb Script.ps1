@@ -421,7 +421,7 @@ Function Menu {
         0 {
             Show-Variables
             Test-Network
-            Check-BlacklistedDrivers
+            Find-BlacklistedDrivers
             Test-AMDNVIDIACombo
             Test-BTAGService
             Test-Programs
