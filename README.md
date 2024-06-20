@@ -6,6 +6,9 @@
 
 ## How to Use:
 
+Grab the latest EXE from the Releases on the right-hand side. Or you can copy and paste the script manually per instructions below.
+EXE [VirusTotal](https://www.virustotal.com/gui/file/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/117688a9f23e067a7b93978252baf3dc408989abdefef6b2a626b24c61a4dc14) link. Seems AV software hates the EXE, but Hybrid Analysis loves it more than the PowerShell script 😆
+
  1. **Open** PowerShell (no need to run as an Administrator)
     
        ⚠️ If the error in the image occurs when you select the **HD2 Status Checks** option, follow the Note below.
@@ -30,19 +33,19 @@
 
 ## Security Info:
 
-**VirusTotal Results:** https://www.virustotal.com/gui/file/ca925095ff2dffc5e64319dceda11b7926621f329ab6a5e048f34a18b35d5e87
+**VirusTotal Results:** https://www.virustotal.com/gui/file/f0382e5ff42a0fedf2e62c5efdf3b105d857c735470a525ae8d995ceb8385679
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``ca925095ff2dffc5e64319dceda11b7926621f329ab6a5e048f34a18b35d5e87``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``f0382e5ff42a0fedf2e62c5efdf3b105d857c735470a525ae8d995ceb8385679``.
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
 1. Save the script as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq ca925095ff2dffc5e64319dceda11b7926621f329ab6a5e048f34a18b35d5e87``
+4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq f0382e5ff42a0fedf2e62c5efdf3b105d857c735470a525ae8d995ceb8385679``
 5. The statement should return/evaluate to ``True``
 
-**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/ca925095ff2dffc5e64319dceda11b7926621f329ab6a5e048f34a18b35d5e87
+**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/f0382e5ff42a0fedf2e62c5efdf3b105d857c735470a525ae8d995ceb8385679
 
 No security software should detect the script as malicious (except KingSoft, because it ❤️ false positives).
 ## Screenshots:
