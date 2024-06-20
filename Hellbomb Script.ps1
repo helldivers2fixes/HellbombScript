@@ -179,7 +179,7 @@ Function Test-Programs {
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
 
     $ProblematicPrograms = @()
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Outdated versions are known to cause various issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Your version may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html Old versions cause various issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes in the past.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'ESET'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder.' }
@@ -267,13 +267,6 @@ Function Test-Network {
     }
     Return
 }
-Function Test-AMDNVIDIACombo {
-    If ((Get-CimInstance Win32_Processor | Where-Object { $_.Name -like "AMD*" }) -and (Get-CimInstance Win32_VideoController | Where-Object { $_.Name -like "NVIDIA*" })) {
-        Write-Host "`n⚠️ AMD CPU & NVIDIA GPU detected. For proper operation, ensure the latest AMD Chipset drivers are installed from:" -ForegroundColor Red
-        Write-Host "https://www.amd.com/en/support/download/drivers.html" -ForegroundColor Yellow
-    }
-    Return
-}
 Function Test-BTAGService {
     if ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
@@ -299,7 +292,7 @@ Function Reset-Steam {
     Get-IsProcessRunning $SteamProcess
     # Remove CEF Cache
     Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
-    Remove-Item $env:LOCALAPPDATA\Steam\* -Recurse
+    Remove-Item $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
     Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
     $PropertyName = "Parent"
     Get-ChildItem -Path $SteamPath -File -Recurse |
@@ -427,7 +420,6 @@ Function Menu {
             Show-Variables
             Test-Network
             Find-BlacklistedDrivers
-            Test-AMDNVIDIACombo
             Test-BTAGService
             Test-Programs
             Menu
