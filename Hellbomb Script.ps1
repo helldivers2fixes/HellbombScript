@@ -22,7 +22,7 @@ Function pause ($message) {
         [System.Windows.Forms.MessageBox]::Show("$message")
     }
     else {
-        Write-Host "$message" -ForegroundColor Yellow
+        Write-Host "$message"`n -ForegroundColor Yellow
         $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
@@ -44,7 +44,7 @@ Function Reset-GameGuard {
     $Error.Clear()
     Try { Start-Process $AppInstallPath\tools\GGSetup.exe -Wait }
     Catch { Write-Host "Error occurred installing GameGuard" -ForegroundColor Red }
-    If (!$Error) { Write-Host "GameGuard installed successfully" -ForegroundColor Green }
+    If (!$Error) { Write-Host "GameGuard installed successfully"`n -ForegroundColor Green }
     Return
 }
 Function Remove-HD2AppData {
@@ -136,7 +136,7 @@ Function Test-Programs {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
     Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
-    Write-Host "`nYou will receive errors converting program version numbers. This is normal." -ForegroundColor Cyan
+    Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
     $array = @()
     # Define the variable to hold the location of Currently Installed Programs
     $UninstallKey = ”SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall”
@@ -177,8 +177,9 @@ Function Test-Programs {
     }
     # Remove empties
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
+
     $ProblematicPrograms = @()
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Outdated versions are known to cause various issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes in the past.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'ESET'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes. Please disable or add Exclusions for the .des files in the tools folder.' }
@@ -214,7 +215,7 @@ Function Test-Programs {
         Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName, RecommendedVersion, Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
     }
     Else {
-        Write-Host 'Checks complete. No problematic programs found!' -ForegroundColor Green
+        Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
     }
     Return
 }
@@ -297,7 +298,9 @@ Function Reset-Steam {
     }
     Get-IsProcessRunning $SteamProcess
     # Remove CEF Cache
+    Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item $env:LOCALAPPDATA\Steam\* -Recurse
+    Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
     $PropertyName = "Parent"
     Get-ChildItem -Path $SteamPath -File -Recurse |
         Where-Object { (ForEach-Object { if ([bool]$_.PSObject.Properties["PSParentPath"]) {
@@ -307,6 +310,8 @@ Function Reset-Steam {
                         "*" + $SteamPath + "\logs*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
                         "*" + $SteamPath + "\dumps*"
                     } }) } | Remove-Item
+    Write-Host 'Steam Data cleared successfully!' -ForegroundColor Green
+    Write-Host 'Launching Steam now...'`n -ForegroundColor Cyan
     Start-Process $SteamPath\steam.exe
     Return
 }
@@ -316,7 +321,7 @@ Function Open-AdvancedGraphics {
     "`nIf HD2 is not listed, click " -NoNewline -ForegroundColor Cyan
     Write-Host "Add desktop app " -NoNewline -ForegroundColor Yellow
     Write-Host "and browse to:" -ForegroundColor Cyan
-    Write-Host $AppInstallPath, "\bin\helldivers2.exe" -ForegroundColor Yellow
+    Write-Host $AppInstallPath, "\bin\helldivers2.exe"`n -ForegroundColor Yellow
     Return
 }
 Function Test-PrivateIP {
@@ -385,7 +390,7 @@ Function Switch-BTAGService {
             Start-Sleep -Seconds 1.5
             Write-Host "`nBluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
-            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow            
+            Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Yellow            
         } else      
 
         {
@@ -396,7 +401,7 @@ Function Switch-BTAGService {
                 Start-Sleep -Seconds 1.5
                 Write-Host "`nBluetooth Audio Gateway Service", 
                 "is now " -ForegroundColor Cyan
-                Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Green
+                Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Green
             }
         }
     }
