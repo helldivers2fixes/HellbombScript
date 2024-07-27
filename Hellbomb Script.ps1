@@ -134,7 +134,7 @@ Function Find-BlacklistedDrivers {
 }
 Function Find-CPUInfo {
         Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
-        $AffectedCPUStrings = @("5950X", "13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+        $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         $cpuInfo = Get-CimInstance -ClassName Win32_Processor
         $cpuName = $cpuInfo.Name.Trim()
         $containsAny = $false
