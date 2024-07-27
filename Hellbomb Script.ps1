@@ -265,6 +265,17 @@ Function Test-Network {
     Else {
         Write-Host 'FAIL' -ForegroundColor Red
     }
+
+    Write-Host "`nTesting OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
+    If ( Test-Connection -TargetName "oneocsp.microsoft.com" -ResolveDestination -Quiet )
+    {
+        Write-Host "OCSP Connection " -NoNewLine
+        Write-Host 'OK' -Foreground Green
+    }
+    Else {
+        Write-Host 'OCSP Connection FAIL' -ForegroundColor Red
+        Write-Host 'Do you have a Pi-Hole or other DNS-blocking security software? Please whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
+    }
     Return
 }
 Function Test-BTAGService {
