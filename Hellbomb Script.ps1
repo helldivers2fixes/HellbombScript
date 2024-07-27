@@ -132,6 +132,30 @@ Function Find-BlacklistedDrivers {
     }
     Return
 }
+Function Find-CPUInfo {
+        Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
+        $AffectedCPUStrings = @("5950X", "13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+        $cpuInfo = Get-CimInstance -ClassName Win32_Processor
+        $cpuName = $cpuInfo.Name.Trim()
+        $containsAny = $false
+        foreach ($sub in $AffectedCPUStrings) {
+            if (($cpuName).Contains($sub)) {
+                $containsAny = $true
+                break
+            }
+        }
+        If ($containsAny)
+        {
+            Write-Host "`nAffected CPU Model Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$cpuName" -ForeGroundColor White
+            Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
+            Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
+            Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+            Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is defective.`n`nPress any key to continue..." -ForegroundColor Yellow
+            Return
+        }
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine; Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+        Return
+}
 Function Test-Programs {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
@@ -429,6 +453,7 @@ Function Menu {
     switch ($choice) {
         0 {
             Show-Variables
+            Find-CPUInfo
             Test-Network
             Find-BlacklistedDrivers
             Test-BTAGService
