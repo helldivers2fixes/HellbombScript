@@ -291,7 +291,7 @@ Function Test-Network {
     }
 
     Write-Host "`nTesting OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
-    If ( Test-Connection 'oneocsp.microsoft.com' -Quiet )
+    If ( Test-NetConnection 'oneocsp.microsoft.com' -ErrorAction SilentlyContinue -InformationLevel Quiet )
     {
         Write-Host "OCSP Connection " -NoNewLine
         Write-Host 'OK' -Foreground Green
