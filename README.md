@@ -7,7 +7,7 @@
 ## How to Use:
 
 Grab the latest EXE from the Releases on the right-hand side. Or you can copy and paste the script manually per instructions below.
-EXE [VirusTotal](https://www.virustotal.com/gui/file/2efae8e32da17800ba7725489b883d7df72588b84b1f2ffde638b78dc26bce9b) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/2efae8e32da17800ba7725489b883d7df72588b84b1f2ffde638b78dc26bce9b) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
+EXE [VirusTotal](https://www.virustotal.com/gui/file/20cbe05f1343088e94cecb853b64d97e61b0c57d230522b044251557ba2f27b6) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/20cbe05f1343088e94cecb853b64d97e61b0c57d230522b044251557ba2f27b6) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
  1. **Open** PowerShell (no need to run as an Administrator)
     
@@ -33,19 +33,19 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/2efae8e32da17800ba7725489b8
 
 ## Security Info:
 
-**VirusTotal Results:** https://www.virustotal.com/gui/file/661a1feaf624c0d2bc6cb44832544f22cd1dbe0952f6758cb48810fac47f4b1e
+**VirusTotal Results:** https://www.virustotal.com/gui/file/30fdf85dd8de7c8a4e0fcb331fd7f9ee2351e561b72d000b9c6f64aa8b3e58a5
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``661a1feaf624c0d2bc6cb44832544f22cd1dbe0952f6758cb48810fac47f4b1e``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``30fdf85dd8de7c8a4e0fcb331fd7f9ee2351e561b72d000b9c6f64aa8b3e58a5``.
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
 1. Save the script as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 661a1feaf624c0d2bc6cb44832544f22cd1dbe0952f6758cb48810fac47f4b1e``
+4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 30fdf85dd8de7c8a4e0fcb331fd7f9ee2351e561b72d000b9c6f64aa8b3e58a5``
 5. The statement should return/evaluate to ``True``
 
-**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/661a1feaf624c0d2bc6cb44832544f22cd1dbe0952f6758cb48810fac47f4b1e
+**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/30fdf85dd8de7c8a4e0fcb331fd7f9ee2351e561b72d000b9c6f64aa8b3e58a5
 
 No security software should detect the script as malicious (except KingSoft, because it ❤️ false positives).
 ## Screenshots:
