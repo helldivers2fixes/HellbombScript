@@ -252,6 +252,51 @@ Function Test-Network {
     Else {
         Write-Host ('⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.') -ForegroundColor Red
     }
+
+    Write-Host "Clearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
+    Clear-DnsClientCache
+    Write-Host " complete!`n"
+
+    [string[]]$RequiredDomains = 
+    'akamaihd.net',
+    'api.live.prod.thehelldiversgame.com',
+    'cluster-a.playfabapi.com',
+    'gameguard.co.kr',
+    'mgr.gameguard.co.kr',
+    'ocsp.digicert.com',
+    'playfabapi.com',
+    'pss-cloud.net',
+    'steamcommunity.com',
+    'steamcontent.com',
+    'steamgames.com',
+    'steampowered.com',
+    'steamstatic.com',
+    'steamusercontent.com',
+    'testament.api.wwsga.me'
+
+
+    ForEach ($domain in $RequiredDomains)
+    {
+        Write-Host 'Resolving ' -NoNewline -ForegroundColor Cyan
+        Write-Host $domain -NoNewline
+    
+        # If not running in ISE, let's make it pretty
+        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host')
+        {
+            $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
+            [Console]::SetCursorPosition(46 , $y)
+        }
+    
+        If (Resolve-DnsName -Name $domain -DnsOnly -ErrorAction SilentlyContinue)
+        {        
+            Write-Host ' OK' -ForegroundColor Green
+        }
+        Else
+        {
+            Write-Host ' FAILED' -ForegroundColor Yellow
+        }
+    }
+    
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     $psi = New-Object System.Diagnostics.ProcessStartInfo
