@@ -51,7 +51,8 @@ No security software should detect the script as malicious (except KingSoft, bec
 ## Screenshots:
 
 Running the Status Checks:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/ebba092a-4c62-4963-bfe9-5d353b983d26)
+![image](https://github.com/user-attachments/assets/54e64e25-26c7-4462-9c49-a10390948f75)
+
 
 
 
