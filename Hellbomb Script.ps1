@@ -262,6 +262,7 @@ Function Test-Network {
     'api.live.prod.thehelldiversgame.com',
     'cluster-a.playfabapi.com',
     'gameguard.co.kr',
+    'gameguard.thehelldiversgame.com',
     'mgr.gameguard.co.kr',
     'ocsp.digicert.com',
     'playfabapi.com',
