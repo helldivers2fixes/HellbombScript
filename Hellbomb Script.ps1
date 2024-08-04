@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 Function Show-Variables {
-    If ($global:AppIDFound = $true) {
+    If ($global:AppIDFound -eq $true) {
         Clear-Host
         Write-Host ("AppID: " + $AppID + " is located in directory:") -ForegroundColor Green
         Write-Host $AppInstallPath -ForegroundColor White
