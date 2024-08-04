@@ -6,6 +6,8 @@
 
 ## How to Use:
 
+Close Helldivers. If you get an error that it's still running, you may need to sign out of Windows or restart (the game didn't exit cleanly).
+
 Grab the latest EXE from the Releases on the right-hand side. Or you can copy and paste the script manually per instructions below.
 EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
@@ -28,7 +30,7 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b66
  6. **Paste** into PowerShell. Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
  7. Acknowledge the warning prompt and click **Paste Anyway**
  8. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
- 9. Choose a selection using the corresponding letters
+ 9. Choose a selection using the corresponding letters. Press ``Enter`` to confirm the selection.
  10. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
 ## Security Info:
