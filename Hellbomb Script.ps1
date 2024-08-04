@@ -253,7 +253,7 @@ Function Test-Network {
         Write-Host ('⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.') -ForegroundColor Red
     }
 
-    Write-Host "Clearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
+    Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
     Clear-DnsClientCache
     Write-Host " complete!`n"
 
