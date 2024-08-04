@@ -56,7 +56,8 @@ Running the Status Checks:
 
 
 Selecting Help (?) from the menu:
-![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/584dde89-139c-47a3-afd0-c2ece81f2379)
+![image](https://github.com/user-attachments/assets/73d16568-8063-4ee3-a6b6-b17facc87041)
+
 
 
 
