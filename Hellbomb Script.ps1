@@ -280,8 +280,8 @@ Function Test-Network {
         Write-Host 'Resolving ' -NoNewline -ForegroundColor Cyan
         Write-Host $domain -NoNewline
     
-        # If not running in ISE, let's make it pretty
-        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host')
+        # If not running in ISE or old PowerShell, let's make it pretty
+        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0')
         {
             $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
             [Console]::SetCursorPosition(46 , $y)
