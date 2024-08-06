@@ -300,6 +300,8 @@ Function Test-Network {
     
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
+    # This overly-complicated mess with curl is used to ensure that a HTTP and an HTTPS request are used. I'm not sure Invoke-WebRequest
+    # will actually do an HTTP request and an HTTPS request.
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
