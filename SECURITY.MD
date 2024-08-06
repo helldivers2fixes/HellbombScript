@@ -1,5 +1,7 @@
 ## Security Info:
 
+EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
+
 **VirusTotal Results:** https://www.virustotal.com/gui/file/ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1
 
 The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1``.
