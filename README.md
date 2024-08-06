@@ -8,7 +8,7 @@
 
 Close Helldivers. If you get an error that it's still running, you may need to sign out of Windows or restart (the game didn't exit cleanly).
 
-Grab the latest EXE from the Releases on the right-hand side. If it closes immedimmediately, you'll need to run it with Admin privileges.
+Grab the latest EXE from the Releases on the right-hand side. If it closes immediately, you'll need to run it with Admin privileges.
 Or you can copy and paste the script manually per instructions below.
 EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
