@@ -40,10 +40,12 @@ jobs:
           recurse: true
           # Include your own basic security rules. Removing this option will run all the rules
           includeRule: '"PSAvoidGlobalAliases", "PSAvoidUsingConvertToSecureStringWithPlainText"'
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
           output: results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v3
         with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
           sarif_file: results.sarif
