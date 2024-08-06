@@ -8,7 +8,7 @@
 
 Close Helldivers. If you get an error that it's still running, you may need to sign out of Windows or restart (the game didn't exit cleanly).
 
-Grab the latest EXE from the Releases on the right-hand side. If it closes immedimmediately, you'll need to run it with Admin privleges.
+Grab the latest EXE from the Releases on the right-hand side. If it closes immedimmediately, you'll need to run it with Admin privileges.
 Or you can copy and paste the script manually per instructions below.
 EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
@@ -19,7 +19,7 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b66
      ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
        Note: For a few users, the script errors when running the **Get-NetFirewallRule** command-let (which only reads Firewall rules. No changes are made to the firewall).
-       If this happens, you may need to run PowerShell with Administrator privlieges.
+       If this happens, you may need to run PowerShell with Administrator privileges.
        (Before opening PowerShell, right-click it and click "Run as Administrator").
        This _shouldn't_ be the norm for most users, and should be avoided unless you receive the error depicted above.
     
