@@ -10,7 +10,6 @@ Close Helldivers. If you get an error that it's still running, you may need to s
 
 Grab the latest EXE from the Releases on the right-hand side. If it closes immediately, you'll need to run it with Admin privileges.
 Or you can copy and paste the script manually per instructions below.
-EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/0ed6ce60daaa1507ff288731b661273b7dfc20e0cbb8f65e430494cfcd108cc0) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
 
  1. **Open** PowerShell (no need to run as an Administrator)
     
@@ -34,23 +33,6 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/0ed6ce60daaa1507ff288731b66
  9. Choose a selection using the corresponding letters. Press ``Enter`` to confirm the selection.
  10. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Security Info:
-
-**VirusTotal Results:** https://www.virustotal.com/gui/file/ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1
-
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1``.
-
-You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
-
-1. Save the script as Hellbomb Script.ps1
-2. Change to the directory where the script is saved
-3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1``
-5. The statement should return/evaluate to ``True``
-
-**Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/ca1998c8d70a6ef9c548efebeacb56974e8bbee95b1716c98cb89973f00d4dc1
-
-No security software should detect the script as malicious (except KingSoft, because it ❤️ false positives).
 ## Screenshots:
 
 Running the Status Checks:
