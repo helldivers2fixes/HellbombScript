@@ -2,23 +2,23 @@
 
 ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/901687d6-1991-4fe4-8cfc-8d662f11b33e)
 
+## Using the EXE:
 
+1.) Grab the latest EXE from the Releases on the right-hand side and run it. If it closes immediately, you'll need to run it with Admin privileges.
 
-## How to Use:
+2.) Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
 
-Close Helldivers. If you get an error that it's still running, you may need to sign out of Windows or restart (the game didn't exit cleanly).
+3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-Grab the latest EXE from the Releases on the right-hand side. If it closes immediately, you'll need to run it with Admin privileges.
-Or you can copy and paste the script manually per instructions below.
+## Using the Script in PowerShell Console (Manual Method)
+Copy and paste the script manually per instructions below.
 
- 1. **Open** PowerShell (no need to run as an Administrator)
+ 1. **Open** PowerShell (no need to run as an Administrator unless you get lots of red text when running the **HD2 Status Checks** as depicted below)
     
-       ⚠️ If the error in the image occurs when you select the **HD2 Status Checks** option, follow the Note below.
+      ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
-     ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
-    
-       Note: For a few users, the script errors when running the **Get-NetFirewallRule** command-let (which only reads Firewall rules. No changes are made to the firewall).
-       If this happens, you may need to run PowerShell with Administrator privileges.
+       Why? For a few users, the script errors when running the **Get-NetFirewallRule** command-let which **reads** Firewall rules. No changes are made to the firewall.
+       If this happens, run PowerShell with Administrator privileges.
        (Before opening PowerShell, right-click it and click "Run as Administrator").
        This _shouldn't_ be the norm for most users, and should be avoided unless you receive the error depicted above.
     
@@ -33,10 +33,11 @@ Or you can copy and paste the script manually per instructions below.
  9. Choose a selection using the corresponding letters. Press ``Enter`` to confirm the selection.
  10. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Screenshots:
+## Screenshots (formatting will differ based on PowerShell version):
 
-Running the Status Checks:
-![image](https://github.com/user-attachments/assets/54e64e25-26c7-4462-9c49-a10390948f75)
+Running the HD2 Status Checks (H) in PowerShell 7:
+
+![HellbombScript](https://github.com/user-attachments/assets/227b2ee7-60a1-4e29-8eff-54dec4d512fa)
 
 
 
