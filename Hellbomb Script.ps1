@@ -290,11 +290,11 @@ Function Test-Network {
     
         If (Resolve-DnsName -Name $domain -DnsOnly -ErrorAction SilentlyContinue)
         {        
-            Write-Host ' OK' -ForegroundColor Green
+            Write-Host ' [OK]' -ForegroundColor Green
         }
         Else
         {
-            Write-Host ' FAILED' -ForegroundColor Yellow
+            Write-Host ' [FAIL]' -ForegroundColor Red
         }
     }
     
@@ -317,10 +317,10 @@ Function Test-Network {
     $output = $output.Split("`n")
     Write-Host 'HTTP  CRL access ' -NoNewline
     If ($output[0].Trim() -eq 'HTTP/1.1 200 OK') {
-        Write-Host 'OK' -ForegroundColor Green
+        Write-Host '[OK]' -ForegroundColor Green
     }
     Else {
-        Write-Host 'FAIL' -ForegroundColor Red
+        Write-Host '[FAIL]' -ForegroundColor Red
         Write-Host 'Security software may be blocking the connection.' -ForegroundColor Yellow
     }
     $psi.Arguments = @('-X HEAD -I https://www.microsoft.com/pkiops/crl/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crl')
@@ -332,23 +332,99 @@ Function Test-Network {
     $output = $output.Split("`n")
     Write-Host 'HTTPS CRL access ' -NoNewline
     If ($output[0].Trim() -eq 'HTTP/1.1 200 OK') {
-        Write-Host 'OK' -ForegroundColor Green
+        Write-Host '[OK]' -ForegroundColor Green
     }
     Else {
-        Write-Host 'FAIL' -ForegroundColor Red
+        Write-Host '[FAIL]' -ForegroundColor Red
     }
 
     Write-Host "`nTesting OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
     If ( Test-NetConnection 'oneocsp.microsoft.com' -ErrorAction SilentlyContinue -InformationLevel Quiet )
     {
         Write-Host "OCSP Connection " -NoNewLine
-        Write-Host 'OK' -Foreground Green
+        Write-Host ' [OK]' -Foreground Green
     }
     Else {
-        Write-Host 'OCSP Connection FAIL' -ForegroundColor Red
+        Write-Host 'OCSP Connection' -NoNewLine
+        Write-Host ' [FAIL]' -ForegroundColor Red
         Write-Host 'Do you have a Pi-Hole or other DNS-blocking security software? Please whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
+    Test-ClientDnsConfig
     Return
+}
+function Test-DnsResolution
+{
+    param (
+        [string]$hostname,
+        [string[]]$dnsServers
+    )
+
+    foreach ($server in $dnsServers)
+    {
+        try
+        {
+            Resolve-DnsName -Name $hostname -Server $server -ErrorAction Stop | Out-Null
+            Write-Host '[PASS]' -ForegroundColor Green -NoNewline
+            Write-Host " DNS Server $server successfully resolved $hostname"
+        }
+        catch
+        {
+            Write-Host '[FAIL]' -ForegroundColor Red -NoNewline
+            Write-Host " DNS Server $server failed to resolve $hostname"
+        }
+    }
+}
+
+function Test-ClientDnsConfig
+{
+    # Define the hostname to test
+    $hostname = "www.google.com"
+
+    # Get the main network adapter with the default route
+    $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
+
+    # Get the DNS servers for IPv4
+    $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
+
+    # Get the DNS servers for IPv6
+    $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
+
+    # Print and test DNS servers for IPv4
+    if ($dnsServersIPv4)
+    {
+        Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
+        Write-Host "[PASS]" -ForegroundColor Green -NoNewline
+        Write-Host " Detected IPv4 DNS servers:"
+        $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_" }
+    
+        Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
+        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
+    }
+    else
+    {
+        Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
+        Write-Host '      Your internet is probably down right now.'
+    }
+
+    # Print and test DNS servers for IPv6
+    if ($dnsServersIPv6)
+    {
+        Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
+        Write-Host "[PASS]" -ForegroundColor Green -NoNewline
+        Write-Host ' Detected IPv6 DNS server(s):'
+        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_" }
+    
+        Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
+        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
+    }
+    else
+    {
+        Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
+        Write-Host ' No IPv6 DNS servers found!'
+        Write-Host 'Consider setting an IPv6 DNS server like'
+        Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
+        Write-Host ' on your network adapter.'
+    }
 }
 Function Test-BTAGService {
     if ((Get-Service -Name BTAGService).Status -eq 'Running')
