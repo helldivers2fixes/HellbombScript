@@ -113,14 +113,22 @@ Function Install-VCRedist
     Write-Host "`nDownloading VCRedist 2015-2022..."-Foreground Cyan
     $VCRedist2019 = 'https://download.visualstudio.microsoft.com/download/pr/1754ea58-11a6-44ab-a262-696e194ce543/3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A/VC_redist.x64.exe'
     Invoke-WebRequest $VCRedist2019 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
-    Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
-    $Error.Clear()
-    Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2019.exe -ArgumentList "/q /norestart" -Wait }
-    Catch { Write-Host "Error occurred installing 2019 Visual C++ Redistributable" -ForegroundColor Red }
-    If (!$Error)
+    If ( (Get-FileHash $env:USERPROFILE\Downloads\VisualC++Redist2019.exe).Hash -eq '3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A')
     {
+        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
+        $Error.Clear()
+        Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2019.exe -ArgumentList "/q /norestart" -Wait }
+        Catch { Write-Host "Error occurred installing 2019 Visual C++ Redistributable" -ForegroundColor Red }
+        If (!$Error)
+        {
+            Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
+            Write-Host '2019 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
+        }
+    }
+    Else
+    {
+        Write-Host 'Installer file hash verification failed. Aborting VC++Redist2019 install.' -ForegroundColor Yellow
         Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
-        Write-Host '2019 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
     }
     # Re-enable Progress Bar
     Pause "`nPlease restart the computer before continuing." -ForegroundColor Yellow
