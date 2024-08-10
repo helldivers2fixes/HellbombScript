@@ -230,6 +230,17 @@ Function Test-Programs {
     # Remove empties
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
 
+    # Hack to check if Surfshark is installed without requiring the script to need Admin privileges 
+    $surfsharkPath1 = "C:\Program Files\Surfshark"
+    $surfsharkPath2 = "C:\Program Files (x86)\Surfshark"
+
+    if ( (Test-Path $surfsharkPath1) -or (Test-Path $surfsharkPath2)) {
+        $obj = New-Object PSObject
+        $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'SurfShark'
+        $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+        $array += $obj
+        }
+
     $ProblematicPrograms = @()
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Your version may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html Old versions cause various issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
