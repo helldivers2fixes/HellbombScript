@@ -299,7 +299,8 @@ Function Test-Programs {
 }
 Function Test-Network {
     Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
-    $HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
+    # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
+    [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -ne $HD2FirewallRules -and $HD2FirewallRules.Count -gt 1) {
         Write-Host 'Helldivers 2 has Inbound rules set in the Windows Firewall.' -ForegroundColor Green
     }
