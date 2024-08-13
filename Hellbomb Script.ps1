@@ -31,14 +31,19 @@ Function Install-EXE
 {
     param (
         [Parameter(Mandatory = $true, Position = 0)]
+        [ValidateNotNullOrEmpty()]
         [string] $DownloadURL,
         [Parameter(Mandatory = $true, Position = 1)]
+        [ValidateNotNullOrEmpty()]
         [string] $DownloadPath,
         [Parameter(Mandatory = $true, Position = 2)]
+        [ValidateNotNullOrEmpty()]
         [string] $FileName,
         [Parameter(Mandatory = $true, Position = 3)]
+        [ValidateNotNullOrEmpty()]
         [string] $SHA256Hash,
         [Parameter(Mandatory = $true, Position = 4)]
+        [ValidateNotNullOrEmpty()]
         [string] $CommonName
     )
     # Turn off progress bar to speed up download
