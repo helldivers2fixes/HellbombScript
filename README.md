@@ -37,7 +37,8 @@ Copy and paste the script manually per instructions below.
 
 Running the HD2 Status Checks (H) in PowerShell 7:
 
-![HellbombScript](https://github.com/user-attachments/assets/227b2ee7-60a1-4e29-8eff-54dec4d512fa)
+![HellbombScript](https://github.com/user-attachments/assets/b7ca4e29-d90d-4f5a-96db-71e92f3d1bb9)
+
 
 
 
