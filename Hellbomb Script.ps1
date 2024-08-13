@@ -61,25 +61,25 @@ Function Install-EXE
             If ( $installProcess.ExitCode -ne 0)
             {
                 Write-Host "`nUAC prompt was canceled, or another error occurred installing $CommonName`n" -ForegroundColor Red
-                sleep 2
+                Remove-Item ($DownloadPath + $FileName)
+                # Re-enable Progress Bar
+                $ProgressPreference = 'Continue'
                 Return
             }
         }
         Catch { Write-Host "Error occurred installing $CommonName" -ForegroundColor Red }
         If (!$Error)
         {
-            Remove-Item ($DownloadPath + $FileName)
             Write-Host "$CommonName installed successfully!" -ForegroundColor Green
         }
     }
     Else
     {
         Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
-        Remove-Item ($DownloadPath + $FileName)
     }
+    Remove-Item ($DownloadPath + $FileName)
     # Re-enable Progress Bar
     $ProgressPreference = 'Continue'
-   
 }
 
 Function Reset-GameGuard {
