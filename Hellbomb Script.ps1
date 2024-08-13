@@ -26,6 +26,57 @@ Function pause ($message) {
         $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
+
+Function Install-EXE
+{
+    param (
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string] $DownloadURL,
+        [Parameter(Mandatory = $true, Position = 1)]
+        [string] $DownloadPath,
+        [Parameter(Mandatory = $true, Position = 2)]
+        [string] $FileName,
+        [Parameter(Mandatory = $true, Position = 3)]
+        [string] $SHA256Hash,
+        [Parameter(Mandatory = $true, Position = 4)]
+        [string] $CommonName
+    )
+    # Turn off progress bar to speed up download
+    $ProgressPreference = 'SilentlyContinue'
+    Write-Host "`nDownloading $CommonName..." -Foreground Cyan
+    Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
+    If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash)
+    {
+        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
+        $Error.Clear()
+        Try
+        {
+            $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
+            
+            If ( $installProcess.ExitCode -ne 0)
+            {
+                Write-Host "`nUAC prompt was canceled, or another error occurred installing $CommonName`n" -ForegroundColor Red
+                sleep 2
+                Return
+            }
+        }
+        Catch { Write-Host "Error occurred installing $CommonName" -ForegroundColor Red }
+        If (!$Error)
+        {
+            Remove-Item ($DownloadPath + $FileName)
+            Write-Host "$CommonName installed successfully!" -ForegroundColor Green
+        }
+    }
+    Else
+    {
+        Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
+        Remove-Item ($DownloadPath + $FileName)
+    }
+    # Re-enable Progress Bar
+    $ProgressPreference = 'Continue'
+   
+}
+
 Function Reset-GameGuard {
     # Delete GameGuard files
     $Error.Clear()
@@ -68,72 +119,20 @@ Function Get-IsProcessRunning {
 }
 Function Install-VCRedist
 {
-    # Turn off progress bar to speed up download
-    $ProgressPreference = 'SilentlyContinue'
-    Write-Host "`nDownloading VCRedist 2012..." -Foreground Cyan
-    $VCRedist2012 = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
-    Invoke-WebRequest $VCRedist2012 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
-    If ( (Get-FileHash $env:USERPROFILE\Downloads\VisualC++Redist2012.exe).Hash -eq '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064')
-    {
-        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
-        $Error.Clear()
-        Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2012.exe -ArgumentList "/q" -Wait }
-        Catch { Write-Host "Error occurred installing 2012 Visual C++ Redistributable" -ForegroundColor Red }
-        If (!$Error)
-        {
-            Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
-            Write-Host '2012 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
-        }
-    }
-    Else
-    {
-        Write-Host 'Installer file hash verification failed. Aborting VC++Redist2012 install.' -ForegroundColor Yellow
-        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2012.exe
-    }
-    Write-Host "`nDownloading VCRedist 2013..." -Foreground Cyan
-    $VCRedist2013 = 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe'
-    Invoke-WebRequest $VCRedist2013 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2013.exe
-    If ( (Get-FileHash $env:USERPROFILE\Downloads\VisualC++Redist2013.exe).Hash -eq 'E554425243E3E8CA1CD5FE550DB41E6FA58A007C74FAD400274B128452F38FB8')
-    {
-        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
-        $Error.Clear()
-        Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2013.exe -ArgumentList "/q" -Wait }
-        Catch { Write-Host "Error occurred installing 2013 Visual C++ Redistributable" -ForegroundColor Red }
-        If (!$Error)
-        {
-            Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2013.exe
-            Write-Host '2013 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
-        }
-    }
-    Else
-    {
-        Write-Host 'Installer file hash verification failed. Aborting VC++Redist2013 install.' -ForegroundColor Yellow
-        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2013.exe
-    }
-    Write-Host "`nDownloading VCRedist 2015-2022..."-Foreground Cyan
-    $VCRedist2019 = 'https://download.visualstudio.microsoft.com/download/pr/1754ea58-11a6-44ab-a262-696e194ce543/3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A/VC_redist.x64.exe'
-    Invoke-WebRequest $VCRedist2019 -OutFile $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
-    If ( (Get-FileHash $env:USERPROFILE\Downloads\VisualC++Redist2019.exe).Hash -eq '3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A')
-    {
-        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
-        $Error.Clear()
-        Try { Start-Process $env:USERPROFILE\Downloads\VisualC++Redist2019.exe -ArgumentList "/q /norestart" -Wait }
-        Catch { Write-Host "Error occurred installing 2019 Visual C++ Redistributable" -ForegroundColor Red }
-        If (!$Error)
-        {
-            Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
-            Write-Host '2019 Visual C++ Redistributable installed successfully!' -ForegroundColor Green
-        }
-    }
-    Else
-    {
-        Write-Host 'Installer file hash verification failed. Aborting VC++Redist2019 install.' -ForegroundColor Yellow
-        Remove-Item $env:USERPROFILE\Downloads\VisualC++Redist2019.exe
-    }
-    # Re-enable Progress Bar
+        Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
+        -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2012.exe' `
+        -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
+
+    Install-EXE -DownloadURL 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' `
+        -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2013.exe' `
+        -SHA256Hash 'E554425243E3E8CA1CD5FE550DB41E6FA58A007C74FAD400274B128452F38FB8' -CommonName '2013 Visual C++ Redistributable'
+
+    Install-EXE -DownloadURL 'https://download.visualstudio.microsoft.com/download/pr/1754ea58-11a6-44ab-a262-696e194ce543/3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A/VC_redist.x64.exe' `
+        -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2019.exe' `
+        -SHA256Hash '3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A' -CommonName '2019 Visual C++ Redistributable'
+
     Pause "`nPlease restart the computer before continuing." -ForegroundColor Yellow
-    $ProgressPreference = 'Continue'
-    Return
+    Exit
 }
 Function Find-BlacklistedDrivers {
     $FoundBlacklistedDevice = $False
