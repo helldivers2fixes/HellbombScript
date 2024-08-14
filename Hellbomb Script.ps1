@@ -256,6 +256,26 @@ Function Test-Programs {
         $array += $obj
         }
 
+    # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
+    $InstalledServices = Get-Service
+    ForEach ($service in $InstalledServices)
+    {
+        if ($service.Name -like 'avast*')
+        {
+            $obj = New-Object PSObject
+            $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'Avast Internet Security'
+            $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+            $array += $obj
+        }
+        if ($service.Name -like 'Nahamic*')
+        {
+            $obj = New-Object PSObject
+            $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'Nahamic'
+            $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+            $array += $obj
+        }
+    }    
+
     $ProblematicPrograms = @()
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Your version may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html Old versions cause various issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
@@ -265,6 +285,7 @@ Function Test-Programs {
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'MSI Afterburner'; RecommendedVersion = '4.6.5'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Mullvad VPN'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Causes connection issues. Recommend uninstall or disable in DEVICE MANAGER.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Nahamic'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Myriad of issues. Recommend removing all devices and services.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Norton 360'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will destroy FPS if Game Optimizer is enabled. Disable Game Optimizer in Norton 360.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Outplayed'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Overwolf'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
