@@ -336,13 +336,11 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
         if (!$TCPRule -or !$UDPRule)
         {
 
-        Write-Host @"
-`n⚠️ Windows Firewall is blocking Helldivers 2.
-On game launch, Steam should request Admin privleges and add the Inbound rule(s) for you.
-You may need to add the rule(s) manually if this does not happen.
-"@ -ForegroundColor Red
-            Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
-            Start-Process wf.msc
+        Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -Foregroundcolor Red
+        Write-Host 'On game launch, Steam should request Admin privleges and add the Inbound rule(s) for you.' -Foregroundcolor Yellow
+        Write-Host 'You may need to add the rule(s) manually if this does not happen.' -Foregroundcolor Yellow
+        Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
+        Start-Process wf.msc
         }
         Write-Host "`nFirewall checks complete!" -ForegroundColor Cyan
         }
