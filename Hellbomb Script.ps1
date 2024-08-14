@@ -255,6 +255,24 @@ Function Test-Programs {
         $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
         $array += $obj
         }
+    # Avast Web Shield checks
+    $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
+    $regName = "ProviderEnabled"
+
+    try
+    {
+    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
+    if ($value.$regName -eq 1)
+        {
+            Write-Host "`n⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
+            Write-Host 'Add an exception for ' -ForegroundColor Cyan -NoNewline
+            Write-Host 'https://microsoft.com ' -NoNewline
+            Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
+        }
+    }
+    catch
+    { # Value does not exist
+    }
 
     # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
     $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc
