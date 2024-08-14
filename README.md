@@ -27,13 +27,13 @@ Copy and paste the script manually per instructions below.
       ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
        Why? For a few users, the script errors when running the **Get-NetFirewallRule** command-let which **reads** Firewall rules. No changes are made to the firewall.
-       If this happens, run PowerShell with Administrator privileges.
-       (Before opening PowerShell, right-click it and click "Run as Administrator").
+       If this happens, run Terminal with Administrator privileges.
+       (Before opening Terminal, right-click it and click "Run as Administrator").
        This _shouldn't_ be the norm for most users, and should be avoided unless you receive the error depicted above.
  8. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
  9. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Screenshots (formatting will differ based on PowerShell version):
+## Screenshots (formatting will differ based on Terminal/PowerShell version):
 
 Running the HD2 Status Checks (H) in PowerShell 7:
 
