@@ -298,15 +298,54 @@ Function Test-Programs {
     Return
 }
 Function Test-Network {
-    Write-Host (("`nChecking for two Inbound rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
+Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
-    If ($null -ne $HD2FirewallRules -and $HD2FirewallRules.Count -gt 1) {
-        Write-Host 'Helldivers 2 has Inbound rules set in the Windows Firewall.' -ForegroundColor Green
+    If ($null -eq $HD2FirewallRules) {
+        Write-Host '⚠️ Windows Firewall is blocking Helldivers 2. No Inbound firewall rules were found that match the original rule names. Please add 2 Inbound rules, one for TCP and one for UDP.' -ForegroundColor Red
+        Start-Process wf.msc
     }
     Else {
-        Write-Host ('⚠️ Windows Firewall is likely blocking Helldivers 2. No Inbound firewall rules were found that match the typical rule names. Please add 2 Inbound rules, one for TCP and one for UDP.') -ForegroundColor Red
-    }
+        $TCPRule = $false
+        $UDPRule = $false
+        ForEach ( $rule in $HD2FirewallRules)
+        {
+            If ( !$TCPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP'))
+            {
+                $TCPRule = $true
+                Write-Host 'Inbound TCP Rule ' -NoNewline
+                Write-Host '[OK]' -ForegroundColor Green
+            }
+            If ( !$UDPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP'))
+            {
+                $UDPRule = $true
+                Write-Host 'Inbound UDP Rule ' -NoNewline
+                Write-Host '[OK]' -ForegroundColor Green
+                }
+        }
+        if (!$TCPRule)
+        {
+            Write-Host 'Inbound TCP Rule ' -NoNewline
+            Write-Host '[FAIL]' -ForegroundColor Red
+            }
+        if (!$UDPRule)
+        {
+            Write-Host 'Inbound UDP Rule ' -NoNewline
+            Write-Host '[FAIL]' -ForegroundColor Red
+            }
+        if (!$TCPRule -or !$UDPRule)
+        {
+
+        Write-Host @"
+`n⚠️ Windows Firewall is blocking Helldivers 2.
+On game launch, Steam should request Admin privleges and add the Inbound rule(s) for you.
+You may need to add the rule(s) manually if this does not happen.
+"@ -ForegroundColor Red
+            Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
+            Start-Process wf.msc
+        }
+        Write-Host "`nFirewall checks complete!" -ForegroundColor Cyan
+        }
 
     Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
     Clear-DnsClientCache
