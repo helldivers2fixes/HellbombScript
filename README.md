@@ -13,16 +13,16 @@
 ## Using the Script in PowerShell Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
- 1. **Open** PowerShell    
+ 1. **Open** Terminal by pressing `Windows Key` + `X` and click `Terminal`    
  2. Click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1)
  3. **Copy** entire script by clicking the copy button in the top right by the script
     
        <img src = "https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" height=50>
        
- 4. **Paste** into PowerShell. Must use ``Ctrl`` + ``V`` (Right-clicking in terminal to paste will cause errors!).
+ 4. **Paste** into Terminal. Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
  5. Acknowledge the warning prompt and click **Paste Anyway**
  6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
-    (If the output looks like below. Close PowerShell and re-open it as Admin. Then re-paste the script.)
+    (If the output looks like below. Close Terminal, press `Windows Key` + `X` and click `Terminal (Admin)`. Then re-paste the script.)
     
       ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
