@@ -10,7 +10,7 @@
 
 3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Using the Script in PowerShell Console (Manual Method)
+## Copy and paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
  1. **Open** Terminal by pressing `Windows Key` + `X` and click `Terminal`    
