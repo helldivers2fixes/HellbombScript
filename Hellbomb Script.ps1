@@ -206,7 +206,7 @@ Function Test-Programs {
     Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
     $array = @()
     # Define the variable to hold the location of Currently Installed Programs
-    $UninstallKey = ”SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall”
+    $UninstallKey = "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     # Create an instance of the Registry Object and open the HKLM base key
     $reg = [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
     # Drill down into the Uninstall key using the OpenSubKey Method
@@ -215,13 +215,13 @@ Function Test-Programs {
     $subkeys = $regkey.GetSubKeyNames()
     # Open each Subkey and use GetValue Method to return the required values for each
     foreach ($key in $subkeys) {
-        if ($UninstallKey + ”\\” + $key -and $reg.OpenSubKey($UninstallKey + ”\\” + $key)) {
-            $thisKey = ($UninstallKey + ”\\” + $key)
+        if ($UninstallKey + "\\" + $key -and $reg.OpenSubKey($UninstallKey + "\\" + $key)) {
+            $thisKey = ($UninstallKey + "\\" + $key)
             $thisSubKey = $reg.OpenSubKey($thisKey)
             # Remove extraneous version strings if not null
             $s = $null
-            if (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue(“DisplayVersion”))))) {
-                $s = $thisSubKey.GetValue(“DisplayVersion”)
+            if (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
+                $s = $thisSubKey.GetValue("DisplayVersion")
                 $s = $s.Trim()
                 $s = $s -replace '^[a-zA-Z]+'
                 $s = $s -replace '[a-zA-Z]$'
@@ -229,16 +229,16 @@ Function Test-Programs {
                 Try { $null = [System.Version]$s }
                 Catch {
                     Write-Host ('Error occurred converting program version number ' +
-                        ($thisSubKey.GetValue(“DisplayVersion”))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                        ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
                     # Set version to 0.0.0 due to version error
                     $s = '0.0.0'
                 }
             }
             $obj = New-Object PSObject
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value $($thisSubKey.GetValue(“DisplayName”))
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value $s
-            $obj | Add-Member -MemberType NoteProperty -Name “InstallLocation” -Value $($thisSubKey.GetValue(“InstallLocation”))
-            $obj | Add-Member -MemberType NoteProperty -Name “Publisher” -Value $($thisSubKey.GetValue(“Publisher”))
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value $($thisSubKey.GetValue("DisplayName"))
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value $s
+            $obj | Add-Member -MemberType NoteProperty -Name "InstallLocation" -Value $($thisSubKey.GetValue("InstallLocation"))
+            $obj | Add-Member -MemberType NoteProperty -Name "Publisher" -Value $($thisSubKey.GetValue("Publisher"))
             $array += $obj
         }
     }
@@ -251,8 +251,8 @@ Function Test-Programs {
 
     if ( (Test-Path $surfsharkPath1) -or (Test-Path $surfsharkPath2)) {
         $obj = New-Object PSObject
-        $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'SurfShark'
-        $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+        $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'SurfShark'
+        $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
         $array += $obj
         }
     # Avast Web Shield checks
@@ -281,15 +281,15 @@ Function Test-Programs {
         if ($service.Name -like 'avast*')
         {
             $obj = New-Object PSObject
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'Avast Internet Security'
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Avast Internet Security'
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
             $array += $obj
         }
         if ($service.Name -like 'Nahimic*')
         {
             $obj = New-Object PSObject
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayName” -Value 'Nahimic'
-            $obj | Add-Member -MemberType NoteProperty -Name “DisplayVersion” -Value '0.0.0'
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Nahimic'
+            $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
             $array += $obj
         }
     }    
