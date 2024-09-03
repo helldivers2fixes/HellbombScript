@@ -165,8 +165,9 @@ Function Find-BlacklistedDrivers {
     # Hack to quickly check for missing chipset drivers
     $MissingDriverCounter = 0
     ForEach ($device in $DeviceDatabase) {
-        If ($device.FriendlyName -like "Base System Device")
+        If ($device.FriendlyName -like "Base System Device") {
         $MissingDriverCounter++
+        }
     }
     If ($MissingDriverCounter -gt 4) {
         Write-Host "`n It appears you are missing your chipset driver." -ForegroundColor Yellow
