@@ -206,17 +206,21 @@ Function Test-Programs {
     Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
     $array = @()
     # Define the variable to hold the location of Currently Installed Programs
-    $UninstallKey = "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $UninstallPaths = @()
+    $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    ForEach ($path in $UninstallPaths)
+    {
     # Create an instance of the Registry Object and open the HKLM base key
     $reg = [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
     # Drill down into the Uninstall key using the OpenSubKey Method
-    $regkey = $reg.OpenSubKey($UninstallKey)
+    $regkey = $reg.OpenSubKey($path)
     # Retrieve an array of string that contain all the subkey names
     $subkeys = $regkey.GetSubKeyNames()
     # Open each Subkey and use GetValue Method to return the required values for each
     foreach ($key in $subkeys) {
-        if ($UninstallKey + "\\" + $key -and $reg.OpenSubKey($UninstallKey + "\\" + $key)) {
-            $thisKey = ($UninstallKey + "\\" + $key)
+        if ($path + "\\" + $key -and $reg.OpenSubKey($path + "\\" + $key)) {
+            $thisKey = ($path + "\\" + $key)
             $thisSubKey = $reg.OpenSubKey($thisKey)
             # Remove extraneous version strings if not null
             $s = $null
@@ -244,17 +248,8 @@ Function Test-Programs {
     }
     # Remove empties
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
-
-    # Hack to check if Surfshark is installed without requiring the script to need Admin privileges 
-    $surfsharkPath1 = "C:\Program Files\Surfshark"
-    $surfsharkPath2 = "C:\Program Files (x86)\Surfshark"
-
-    if ( (Test-Path $surfsharkPath1) -or (Test-Path $surfsharkPath2)) {
-        $obj = New-Object PSObject
-        $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'SurfShark'
-        $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
-        $array += $obj
-        }
+    }
+   
     # Avast Web Shield checks
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
@@ -295,25 +290,25 @@ Function Test-Programs {
     }    
 
     $ProblematicPrograms = @()
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; Notes = 'Your version may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html Old versions cause various issues.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes in the past.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'ESET'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause crashes. Note: May be falsely detected. Please disable or add Exclusions for the .des files in the tools folder.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'MSI Afterburner'; RecommendedVersion = '4.6.5'; Installed = $false; Notes = 'Outdated versions are known to cause issues.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Mullvad VPN'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Causes connection issues. Recommend uninstall or disable in DEVICE MANAGER.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Nahimic'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Myriad of issues. Recommend removing all devices and services.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Norton 360'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will destroy FPS if Game Optimizer is enabled. Disable Game Optimizer in Norton 360.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Outplayed'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Overwolf'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Radmin'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will cause network issues. Recommend uninstall or disable in DEVICE MANAGER.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Razer Cortex'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Known to cause CPU Threading issues & possibly other issues. Recommend disabling/uninstalling.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Ryzen Master'; RecommendedVersion = '2.13.0.2908'; Installed = $false; Notes = 'Known to cause RAM leaks & general issues. Recommend uninstalling.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Samsung Magician'; RecommendedVersion = '8.1'; Installed = $false; Notes = 'Outdated versions are known to completely prevent connectivity.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Wargaming.net Game Center'; Installed = $false; RecommendedVersion = '100.100'; Notes = 'Reported to cause issues.' }
-    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Your version may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html Old versions cause various issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause performance issues. Recommend uninstalling. Disabling while playing MAY resolve issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes in the past.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'ESET'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes. Note: May be falsely detected. Please disable or add Exclusions for the .des files in the tools folder.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'MSI Afterburner'; RecommendedVersion = '4.6.5'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Mullvad VPN'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Causes connection issues. Recommend uninstall or disable in DEVICE MANAGER.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Nahimic'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Myriad of issues. Recommend removing all devices and services.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Norton 360'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will destroy FPS if Game Optimizer is enabled. Disable Game Optimizer in Norton 360.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Outplayed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Overwolf'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause stuttering & VRAM leaks. Disable Outplayed Autoclipping or disable/uninstall completely.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Radmin'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will cause network issues. Recommend uninstall or disable in DEVICE MANAGER.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Razer Cortex'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause CPU Threading issues & possibly other issues. Recommend disabling/uninstalling.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Ryzen Master'; RecommendedVersion = '2.13.0.2908'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause RAM leaks & general issues. Recommend uninstalling.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Samsung Magician'; RecommendedVersion = '8.1'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to completely prevent connectivity.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Wargaming.net Game Center'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues.' }
+    $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
         ForEach ($installedApp in $array) {
@@ -323,13 +318,16 @@ Function Test-Programs {
                 Break
             }
         }
-        If ($bool) { $program.Installed = $true }
+        If ($bool) { 
+        $program.Installed = $true
+        $program.InstalledVersion = [System.Version]$installedApp.DisplayVersion
+        }
     }
     $result = $null
     $result = $ProblematicPrograms | Where-Object { $_.Installed -eq $true }
     If ($null -ne $result) {
         Write-Host "`nFound the following programs that are known to cause issues:`n" -ForegroundColor Red
-        Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName, RecommendedVersion, Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
+        Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName, InstalledVersion, RecommendedVersion, Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
     }
     Else {
         Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
