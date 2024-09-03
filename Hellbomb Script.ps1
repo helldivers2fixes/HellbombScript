@@ -17,18 +17,17 @@ Function Show-Variables {
 # Function adapted from: https://stackoverflow.com/questions/20886243/press-any-key-to-continue#:~:text=Function%20pause%20(%24message)
 Function pause ($message) {
     # Check if running Powershell ISE
-    if (Test-Path variable:global:psISE) {
+    If (Test-Path variable:global:psISE) {
         Add-Type -AssemblyName System.Windows.Forms
         [System.Windows.Forms.MessageBox]::Show("$message")
     }
-    else {
+    Else {
         Write-Host "$message"`n -ForegroundColor Yellow
         $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
 
-Function Install-EXE
-{
+Function Install-EXE {
     param (
         [Parameter(Mandatory = $true, Position = 0)]
         [ValidateNotNullOrEmpty()]
@@ -110,6 +109,7 @@ Function Remove-HD2AppData {
     If (!$Error) { Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green }
     Menu
 }
+
 Function Get-IsProcessRunning {
     [CmdletBinding()]
     Param(
@@ -122,8 +122,8 @@ Function Get-IsProcessRunning {
         Exit
     }
 }
-Function Install-VCRedist
-{
+
+Function Install-VCRedist {
         Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
@@ -182,7 +182,7 @@ Write-Host "`n          Motherboard Info" -ForegroundColor Gray -NoNewline
         $cpuName = $cpuInfo.Name.Trim()
         $containsAny = $false
         foreach ($sub in $AffectedCPUStrings) {
-            if (($cpuName).Contains($sub)) {
+            If (($cpuName).Contains($sub)) {
                 $containsAny = $true
                 break
             }
@@ -219,12 +219,12 @@ Function Test-Programs {
     $subkeys = $regkey.GetSubKeyNames()
     # Open each Subkey and use GetValue Method to return the required values for each
     foreach ($key in $subkeys) {
-        if ($path + "\\" + $key -and $reg.OpenSubKey($path + "\\" + $key)) {
+        If ($path + "\\" + $key -and $reg.OpenSubKey($path + "\\" + $key)) {
             $thisKey = ($path + "\\" + $key)
             $thisSubKey = $reg.OpenSubKey($thisKey)
             # Remove extraneous version strings if not null
             $s = $null
-            if (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
+            If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
                 $s = $thisSubKey.GetValue("DisplayVersion")
                 $s = $s.Trim()
                 $s = $s -replace '^[a-zA-Z]+'
@@ -257,7 +257,7 @@ Function Test-Programs {
     try
     {
     $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
-    if ($value.$regName -eq 1)
+    If ($value.$regName -eq 1)
         {
             Write-Host "`n⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
             Write-Host 'Add an exception for ' -ForegroundColor Cyan -NoNewline
@@ -273,14 +273,14 @@ Function Test-Programs {
     $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc
     ForEach ($service in $InstalledServices)
     {
-        if ($service.Name -like 'avast*')
+        If ($service.Name -like 'avast*')
         {
             $obj = New-Object PSObject
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Avast Internet Security'
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
             $array += $obj
         }
-        if ($service.Name -like 'Nahimic*')
+        If ($service.Name -like 'Nahimic*')
         {
             $obj = New-Object PSObject
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Nahimic'
@@ -360,17 +360,17 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
                 Write-Host '[OK]' -ForegroundColor Green
                 }
         }
-        if (!$TCPRule)
+        If (!$TCPRule)
         {
             Write-Host 'Inbound TCP Rule ' -NoNewline
             Write-Host '[FAIL]' -ForegroundColor Red
             }
-        if (!$UDPRule)
+        If (!$UDPRule)
         {
             Write-Host 'Inbound UDP Rule ' -NoNewline
             Write-Host '[FAIL]' -ForegroundColor Red
             }
-        if (!$TCPRule -or !$UDPRule)
+        If (!$TCPRule -or !$UDPRule)
         {
 
         Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -Foregroundcolor Red
@@ -481,8 +481,8 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     Test-ClientDnsConfig
     Return
 }
-function Test-DnsResolution
-{
+
+Function Test-DnsResolution {
     param (
         [string]$hostname,
         [string[]]$dnsServers
@@ -504,8 +504,7 @@ function Test-DnsResolution
     }
 }
 
-function Test-ClientDnsConfig
-{
+Function Test-ClientDnsConfig {
     # Define the hostname to test
     $hostname = "www.google.com"
 
@@ -519,7 +518,7 @@ function Test-ClientDnsConfig
     $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
 
     # Print and test DNS servers for IPv4
-    if ($dnsServersIPv4)
+    If ($dnsServersIPv4)
     {
         Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
@@ -529,14 +528,14 @@ function Test-ClientDnsConfig
         Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
         Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
     }
-    else
+    Else
     {
         Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
         Write-Host '      Your internet is probably down right now.'
     }
 
     # Print and test DNS servers for IPv6
-    if ($dnsServersIPv6)
+    If ($dnsServersIPv6)
     {
         Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
@@ -546,7 +545,7 @@ function Test-ClientDnsConfig
         Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
         Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
     }
-    else
+    Else
     {
         Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
         Write-Host ' No IPv6 DNS servers found!'
@@ -556,13 +555,13 @@ function Test-ClientDnsConfig
     }
 }
 Function Test-BTAGService {
-    if ((Get-Service -Name BTAGService).Status -eq 'Running')
+    If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
         Write-Host "`n⚠️ Bluetooth Audio Gateway (BTAG) Service is running.",
         "`nThis will cause audio routing issues with Bluetooth Headphones.",
         "`nToggle this service ON or OFF from the menu (Select option B)"  -ForegroundColor Yellow
     }
-    else
+    Else
     {
         Write-Host "`nBluetooth Audio Gateway (BTAG) Service: DISABLED",
         "`nIf using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
@@ -584,7 +583,7 @@ Function Reset-Steam {
     Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
     $PropertyName = "Parent"
     Get-ChildItem -Path $SteamPath -File -Recurse |
-        Where-Object { (ForEach-Object { if ([bool]$_.PSObject.Properties["PSParentPath"]) {
+        Where-Object { (ForEach-Object { If ([bool]$_.PSObject.Properties["PSParentPath"]) {
                         $_.Name -ne "steam.exe" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
                         "*" + $SteamPath + "\steamapps*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
                         "*" + $SteamPath + "\userdata*" -and $_.PSObject.Properties["PSParentPath"].Value -notlike
@@ -624,10 +623,10 @@ Function Test-PrivateIP {
         $IP
     )
     process {
-        if ($IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') {
+        If ($IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') {
             $true
         }
-        else {
+        Else {
             $false
         }
     }
@@ -650,7 +649,7 @@ Function Test-DualNAT {
         Write-Host $privateIPs -Separator "`n"
         Write-Host "`nIf you're not sure what these results mean, the IP results are safe to share with others." -ForegroundColor Cyan
     }
-    else {
+    Else {
         Write-Host "`nNo Dual-NAT connection detected." -ForegroundColor Green
     }
     Pause "`nPress any key to continue..."
@@ -662,9 +661,9 @@ Function Switch-BTAGService {
     "`nTo run PowerShell with admin privileges:",
     "`nRight-click on PowerShell and click Run as Administrator",
     "`nThen run the script again.`n" -ForegroundColor Cyan
-    } else
+    } Else
     {
-        if ((Get-Service -Name BTAGService).Status -eq 'Running')
+        If ((Get-Service -Name BTAGService).Status -eq 'Running')
         {
             Set-Service -Name BTAGService -StartupType Disabled
             Stop-Service -Name BTAGService
@@ -672,10 +671,10 @@ Function Switch-BTAGService {
             Write-Host "`nBluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
             Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Yellow            
-        } else      
+        } Else      
 
         {
-            if ((Get-Service -Name BTAGService).Status -eq 'Stopped')
+            If ((Get-Service -Name BTAGService).Status -eq 'Stopped')
             {
                 Set-Service -Name BTAGService -StartupType Automatic
                 Set-Service -Name BTAGService -Status Running
