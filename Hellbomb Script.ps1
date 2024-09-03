@@ -124,7 +124,7 @@ Function Get-IsProcessRunning {
 }
 
 Function Install-VCRedist {
-        Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
+    Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
 
@@ -193,7 +193,7 @@ Write-Host "`n          Motherboard Info" -ForegroundColor Gray -NoNewline
         $cpuInfo = Get-CimInstance -ClassName Win32_Processor
         $cpuName = $cpuInfo.Name.Trim()
         $containsAny = $false
-        foreach ($sub in $AffectedCPUStrings) {
+        ForEach ($sub in $AffectedCPUStrings) {
             If (($cpuName).Contains($sub)) {
                 $containsAny = $true
                 break
@@ -230,7 +230,7 @@ Function Test-Programs {
     # Retrieve an array of string that contain all the subkey names
     $subkeys = $regkey.GetSubKeyNames()
     # Open each Subkey and use GetValue Method to return the required values for each
-    foreach ($key in $subkeys) {
+    ForEach ($key in $subkeys) {
         If ($path + "\\" + $key -and $reg.OpenSubKey($path + "\\" + $key)) {
             $thisKey = ($path + "\\" + $key)
             $thisSubKey = $reg.OpenSubKey($thisKey)
@@ -266,7 +266,7 @@ Function Test-Programs {
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
 
-    try
+    Try
     {
     $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
     If ($value.$regName -eq 1)
@@ -277,7 +277,7 @@ Function Test-Programs {
             Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
         }
     }
-    catch
+    Catch
     { # Value does not exist
     }
 
@@ -500,15 +500,15 @@ Function Test-DnsResolution {
         [string[]]$dnsServers
     )
 
-    foreach ($server in $dnsServers)
+    ForEach ($server in $dnsServers)
     {
-        try
+        Try
         {
             Resolve-DnsName -Name $hostname -Server $server -ErrorAction Stop | Out-Null
             Write-Host '[PASS]' -ForegroundColor Green -NoNewline
             Write-Host " DNS Server $server successfully resolved $hostname"
         }
-        catch
+        Catch
         {
             Write-Host '[FAIL]' -ForegroundColor Red -NoNewline
             Write-Host " DNS Server $server failed to resolve $hostname"
