@@ -177,39 +177,59 @@ Function Find-BlacklistedDrivers {
     Return
 }
 Function Find-CPUInfo {
-Write-Host "`n          Motherboard Info" -ForegroundColor Gray -NoNewline
-        Write-Host "                          UEFI Info" -ForegroundColor Gray
-        Write-Host '-------------------------------------       ------------------------------------'
-        Write-Host (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Manufacturer | Out-String).Trim() -NoNewLine
-        Write-Host '                      '(Get-CimInstance Win32_BIOS | Format-List -Property SMBIOSBIOSVersion | Out-String).Trim()
-        Write-Host (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Product | Out-String).Trim() -NoNewLine
-        Write-Host '                      '(Get-CimInstance Win32_BIOS | Format-List -Property Manufacturer | Out-String).Trim()
-        Write-Host '-------------------------------------' -NoNewLine
-        Write-Host '      '(Get-CimInstance Win32_BIOS | Format-List -Property Name | Out-String).Trim()
-        Write-Host '                                            ------------------------------------'
+    Write-Host "`n          Motherboard Info" -ForegroundColor Gray -NoNewline
+    Write-Host "                          UEFI Info" -ForegroundColor Gray
+    Write-Host '-------------------------------------       ------------------------------------'
+    Write-Host (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Manufacturer | Out-String).Trim() -NoNewLine
+    Write-Host '                      '(Get-CimInstance Win32_BIOS | Format-List -Property SMBIOSBIOSVersion | Out-String).Trim()
+    Write-Host (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Product | Out-String).Trim() -NoNewLine
+    Write-Host '                      '(Get-CimInstance Win32_BIOS | Format-List -Property Manufacturer | Out-String).Trim()
+    Write-Host '-------------------------------------' -NoNewLine
+    Write-Host '      '(Get-CimInstance Win32_BIOS | Format-List -Property Name | Out-String).Trim()
+    Write-Host '                                            ------------------------------------'
         
-        Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
-        $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        $cpuInfo = Get-CimInstance -ClassName Win32_Processor
-        $cpuName = $cpuInfo.Name.Trim()
-        $containsAny = $false
-        ForEach ($sub in $AffectedCPUStrings) {
-            If (($cpuName).Contains($sub)) {
-                $containsAny = $true
-                break
+    Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
+    $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+    $cpuInfo = Get-CimInstance -ClassName Win32_Processor
+    $cpuName = $cpuInfo.Name.Trim()
+    $containsAny = $false
+    ForEach ($sub in $AffectedCPUStrings) {
+        If (($cpuName).Contains($sub)) {
+            $containsAny = $true
+            Break
             }
         }
         If ($containsAny)
         {
-            Write-Host "`nAffected CPU Model Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$cpuName" -ForeGroundColor White
+            # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
+            $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
+            $processor = (Get-ItemProperty -Path $registrypath )."ProcessorNameString"
+            $biosMicrocode = (Get-ItemProperty -Path $registrypath )."Previous Update Revision"
+            $runningMicrocode = (Get-ItemProperty -Path $registrypath )."Update Revision"
+            # Convert to string and remove leading zeros
+            $biosMicrocodeInHex = (-join ( $biosMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
+            $runningMicrocodeInHex = (-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
+            If ($runningMicrocodeInHex -ge '0x29') {
+                Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
+                Write-Host "is running updated microcode ver. $runningMicrocodeInHex" -ForegroundColor Green
+                Write-Host 'However, if stability issues occured before the microcode was updated, then the CPU may already be permanently damaged.' -ForegroundColor Yellow
+                Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+                Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
+                Return
+            }
+            Else {
+            
+            Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$cpuName" -ForeGroundColor White
             Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
             Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
             Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-            Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is defective.`n`nPress any key to continue..." -ForegroundColor Yellow
+            Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
             Return
+            }
         }
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine; Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
-        Return
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
+        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+    Return
 }
 Function Test-Programs {
     # This portion modified from:
