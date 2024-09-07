@@ -24,7 +24,7 @@ Copy and paste the script manually per instructions below.
  4. **Paste** into Terminal. Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
  5. Acknowledge the warning prompt and click **Paste Anyway**
  6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
-    (If the output looks like below. Close Terminal, press `Windows Key` + `X` and click `Terminal (Admin)`. Then re-paste the script.)
+    ($${\color{orange}NOTE:}$$ If the output looks like below. Close Terminal, press `Windows Key` + `X` and click `Terminal (Admin)`. Then re-paste the script.)
     
       ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
