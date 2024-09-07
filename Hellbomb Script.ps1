@@ -586,6 +586,77 @@ Function Test-ClientDnsConfig {
         Write-Host ' on your network adapter.'
     }
 }
+Function Test-Wifi {
+    $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
+    Write-Host "`nTesting the connection to the default gateway..." -ForegroundColor Cyan
+        If ((Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType -ne '802.11') {
+            Write-Host "`nThis is not a wireless connection. Testing anyway..." -ForegroundColor Yellow
+        }
+    $ipAddress = ($mainAdapter.IPv4DefaultGateway).NextHop
+    $endTime = (Get-Date).AddSeconds(30)
+    $pingResults = @()
+
+    While ((Get-Date) -lt $endTime) {
+        $pingResult = Test-Connection $ipAddress -Count 1 -ErrorAction SilentlyContinue
+        if ($pingResult) {
+            $pingResults += $pingResult
+        }
+    }
+
+    # Summarize results
+    $sent = $pingResults.Count
+    # If Statements for PowerShell version compatibility
+    If ([bool]($pingResult.PSobject.Properties.name -like 'Status')) {
+    $received = $pingResults | Where-Object { $_.Status -eq 'Success' } |
+    Measure-Object | Select-Object -ExpandProperty Count
+    $responseTimes = $pingResults | Select-Object -ExpandProperty Latency
+    }
+    If ([bool]($pingResult.PSobject.Properties.name -like 'StatusCode')) {
+    $received = $pingResults | Where-Object { $_.StatusCode -eq 0 } |
+    Measure-Object | Select-Object -ExpandProperty Count
+    $responseTimes = $pingResults | Select-Object -ExpandProperty ResponseTime
+    }
+    $lost = $sent - $received
+    $minTime = $responseTimes | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+    $maxTime = $responseTimes | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+    $avgTime = $responseTimes | Measure-Object -Average | Select-Object -ExpandProperty Average
+
+    # Calculate standard deviation
+    $mean = $avgTime
+    $squaredDifferences = $responseTimes | ForEach-Object { ($_ - $mean) * ($_ - $mean) }
+    $variance = ($squaredDifferences | Measure-Object -Sum).Sum / $responseTimes.Count
+    $stdDev = [math]::Sqrt($variance)
+    
+    # Format to 3 significant digits
+    $avgTimeFormatted = "{0:N3}" -f $avgTime
+    $stdDevFormatted = "{0:N3}" -f $stdDev
+    
+    $packetLossPercentage = ($lost / $sent) * 100
+    
+    # Output results
+    $results = [PSCustomObject]@{
+        Sent = $sent
+        Received = $received
+        Lost = $lost
+        PacketLossPercentage = "$packetLossPercentage %"
+        MinResponseTime = "$minTime ms"
+        MaxResponseTime = "$maxTime ms"
+        AvgResponseTime = "$avgTimeFormatted ms"
+        StdDevResponseTime = "$stdDevFormatted ms"
+    }
+    
+    $results
+    
+    If ($stdDev -gt 5) {
+        Write-Host "`nYour connection to your default gateway has signifcant jitter (latency variance)." -ForegroundColor Yellow
+    }
+    If ($packetLossPercentage -gt 1) {
+        Write-Host "`nYour connection to your default gateway has more than 1% packet loss." -ForegroundColor Yellow
+    } 
+    If ($stdDev -le 5 -and $packetLossPercentage -le 1) {
+        Write-Host "`nYour connection appears to be operating normally." -ForegroundColor Green
+    }
+}
 Function Test-BTAGService {
     If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
@@ -729,6 +800,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Dual NAT &Test', 'Tests network for Dual NAT.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
@@ -769,10 +841,14 @@ Function Menu {
             Menu
         }
         7 {
+            Test-WiFi
+            Menu
+        }
+        8 {
             Switch-BTAGService
             Menu
         }
-        8 { Return }
+        9 { Return }
     }
 }
 # Set AppID
