@@ -4,7 +4,9 @@
 
 ## Using the EXE:
 
-1.) Grab the latest EXE from [the Releases on the right-hand side](https://github.com/helldivers2fixes/HellbombScript/releases) and run it. If it closes immediately, you'll need to run it with Admin privileges.
+1.) Grab the latest EXE from [the Releases on the right-hand side](https://github.com/helldivers2fixes/HellbombScript/releases) and run it.
+
+$${\color{orange}NOTE:}$$ If it closes immediately, you'll need to run it with Admin privileges.
 
 2.) Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
 
