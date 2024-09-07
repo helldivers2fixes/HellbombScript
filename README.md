@@ -44,7 +44,7 @@ Running the HD2 Status Checks (H) in PowerShell 7:
 
 
 Selecting Help (?) from the menu:
-![image](https://github.com/user-attachments/assets/73d16568-8063-4ee3-a6b6-b17facc87041)
+![image](https://github.com/user-attachments/assets/8e615015-ff1d-4616-b606-88add8800dca)
 
 
 
