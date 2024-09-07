@@ -587,6 +587,8 @@ Function Test-ClientDnsConfig {
     }
 }
 Function Test-Wifi {
+    # This is not very robust code and has race conditions and other issues, but it works well-enough for now
+    # It pings the default gateway for 30 seconds and collects statistics
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
     Write-Host "`nTesting the connection to the default gateway..." -ForegroundColor Cyan
         If ((Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType -ne '802.11') {
