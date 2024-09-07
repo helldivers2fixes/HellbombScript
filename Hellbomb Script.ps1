@@ -145,13 +145,14 @@ Function Find-BlacklistedDrivers {
         'A-Volute'
         'Hamachi'
         'Nahimic'
+        'LogMeIn Hamachi'
         'Sonic'
     )
     Write-Host "`nChecking for devices that are known to cause issues..." -ForegroundColor Cyan
     $DeviceDatabase = Get-PnpDevice
     ForEach ($device in $DeviceDatabase) {
         ForEach ($baddevice in $BadDeviceList) {
-            If ($device.FriendlyName -like "*$baddevice*") {
+            If ($device.FriendlyName -like "$baddevice*") {
                 Write-Host ("⚠️ " + $device.FriendlyName +
                     " device detected! Known compatibility issues!
                 Please disable.") -ForegroundColor Red
