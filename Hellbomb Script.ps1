@@ -178,29 +178,31 @@ Function Find-BlacklistedDrivers {
     Return
 }
 Function Find-CPUInfo {
-    $separator = '-------------------------------------       '
+    $columnSpacing = [Int]5
+    $columnGap = New-Object -TypeName System.String -ArgumentList ' ', ($columnSpacing)
+    $Header1 = "Motherboard Info"
+    $Header2 = "UEFI Info"
     $motherboardManufacturer = (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Manufacturer | Out-String).Trim()
     $SMBIOSVersion = (Get-CimInstance Win32_BIOS | Format-List -Property SMBIOSBIOSVersion | Out-String).Trim()
     $productModel = (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Product | Out-String).Trim()
     $BIOSManufacturer = (Get-CimInstance Win32_BIOS | Format-List -Property Manufacturer | Out-String).Trim()
     $BIOSName = (Get-CimInstance Win32_BIOS | Format-List -Property Name | Out-String).Trim()
-    Write-Host "`n          Motherboard Info" -ForegroundColor Gray -NoNewline
-    Write-Host "                          UEFI Info" -ForegroundColor Gray
-    Write-Host "$separator$($separator)".Trim()
-    Write-Host  $motherboardManufacturer -NoNewLine
-    $intSpaces = $separator.Length - $motherboardManufacturer.Length
-    $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($intSpaces-1)
-    Write-Host "$calculatedIndent"$SMBIOSVersion
+    $longestLineCol1 = [Int](($motherboardManufacturer, $productModel | Measure-Object -Maximum).Maximum).Length
+    $separatorCol1 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol1)
+    $longestLineCol2 = [Int](($SMBIOSVersion, $BIOSManufacturer, $BIOSName | Measure-Object -Maximum).Maximum).Length
+    $separatorCol2 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol2)
+    $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1+$columnSpacing)
+    $HeaderGap = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1 - $Header1.Length + $columnSpacing)
+    Write-Host $Header1 -ForegroundColor Gray -NoNewline
+    Write-Host $HeaderGap$Header2 -ForegroundColor Gray
+    Write-Host $separatorCol1$columnGap$separatorCol2
+    Write-Host $motherboardManufacturer -NoNewLine
+    Write-Host $columnGap$SMBIOSVersion
     Write-Host $productModel -NoNewLine
-    $intSpaces = $separator.Length - $productModel.Length
-    $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($intSpaces-1)
-    Write-Host "$calculatedIndent"$BIOSManufacturer
-    $intSpaces = $separator.Length
-    $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($intSpaces)
+    Write-Host $columnGap$BIOSManufacturer
     Write-Host $calculatedIndent -NoNewLine
     Write-Host $BIOSName
-    Write-Host $separator -NoNewline
-    Write-Host ($separator).Trim()
+    Write-Host $separatorCol1$columnGap$separatorCol2
         
     Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
     $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
