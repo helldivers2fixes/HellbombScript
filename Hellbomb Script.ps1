@@ -187,9 +187,9 @@ Function Find-CPUInfo {
     $productModel = (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Product | Out-String).Trim()
     $BIOSManufacturer = (Get-CimInstance Win32_BIOS | Format-List -Property Manufacturer | Out-String).Trim()
     $BIOSName = (Get-CimInstance Win32_BIOS | Format-List -Property Name | Out-String).Trim()
-    $longestLineCol1 = [Int](($motherboardManufacturer, $productModel | Measure-Object -Maximum).Maximum).Length
+    $longestLineCol1 = ($motherboardManufacturer, $productModel | Measure-Object -Maximum -Property Length).Maximum
     $separatorCol1 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol1)
-    $longestLineCol2 = [Int](($SMBIOSVersion, $BIOSManufacturer, $BIOSName | Measure-Object -Maximum).Maximum).Length
+    $longestLineCol2 = ($SMBIOSVersion, $BIOSManufacturer, $BIOSName | Measure-Object -Maximum -Property Length).Maximum
     $separatorCol2 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol2)
     $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1+$columnSpacing)
     $HeaderGap = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1 - $Header1.Length + $columnSpacing)
