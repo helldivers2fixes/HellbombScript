@@ -49,16 +49,13 @@ Function Install-EXE {
     $ProgressPreference = 'SilentlyContinue'
     Write-Host "`nDownloading $CommonName..." -Foreground Cyan
     Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
-    If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash)
-    {
+    If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash) {
         Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
         $Error.Clear()
-        Try
-        {
+        Try {
             $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
             
-            If ( $installProcess.ExitCode -ne 0)
-            {
+            If ( $installProcess.ExitCode -ne 0) {
                 Write-Host "`nUAC prompt was canceled, or another error occurred installing $CommonName`n" -ForegroundColor Red
                 Remove-Item ($DownloadPath + $FileName)
                 # Re-enable Progress Bar
@@ -67,13 +64,11 @@ Function Install-EXE {
             }
         }
         Catch { Write-Host "Error occurred installing $CommonName" -ForegroundColor Red }
-        If (!$Error)
-        {
+        If (!$Error) {
             Write-Host "$CommonName installed successfully!" -ForegroundColor Green
         }
     }
-    Else
-    {
+    Else {
         Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
     }
     Remove-Item ($DownloadPath + $FileName)
@@ -182,11 +177,11 @@ Function Find-CPUInfo {
     $columnGap = New-Object -TypeName System.String -ArgumentList ' ', ($columnSpacing)
     $Header1 = "Motherboard Info"
     $Header2 = "UEFI Info"
-    $motherboardManufacturer = (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Manufacturer | Out-String).Trim()
-    $SMBIOSVersion = (Get-CimInstance Win32_BIOS | Format-List -Property SMBIOSBIOSVersion | Out-String).Trim()
-    $productModel = (Get-CimInstance -ClassName Win32_baseboard | Format-List -Property Product | Out-String).Trim()
-    $BIOSManufacturer = (Get-CimInstance Win32_BIOS | Format-List -Property Manufacturer | Out-String).Trim()
-    $BIOSName = (Get-CimInstance Win32_BIOS | Format-List -Property Name | Out-String).Trim()
+    $motherboardManufacturer = (Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim()
+    $SMBIOSVersion = (Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim()
+    $productModel = (Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim()
+    $BIOSManufacturer = (Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim()
+    $BIOSName = (Get-CimInstance -ClassName Win32_BIOS).Name.Trim()
     $longestLineCol1 = ($motherboardManufacturer, $productModel | Measure-Object -Maximum -Property Length).Maximum
     $separatorCol1 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol1)
     $longestLineCol2 = ($SMBIOSVersion, $BIOSManufacturer, $BIOSName | Measure-Object -Maximum -Property Length).Maximum
@@ -215,15 +210,13 @@ Function Find-CPUInfo {
             Break
             }
         }
-        If ($containsAny)
-        {
+        If ($containsAny) {
             # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
             $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
             $processor = (Get-ItemProperty -Path $registrypath )."ProcessorNameString"
             $biosMicrocode = (Get-ItemProperty -Path $registrypath )."Previous Update Revision"
             $runningMicrocode = (Get-ItemProperty -Path $registrypath )."Update Revision"
             # Convert to string and remove leading zeros
-            $biosMicrocodeInHex = (-join ( $biosMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
             $runningMicrocodeInHex = (-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
             If ($runningMicrocodeInHex -ge '0x29') {
                 Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
@@ -257,8 +250,7 @@ Function Test-Programs {
     $UninstallPaths = @()
     $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    ForEach ($path in $UninstallPaths)
-    {
+    ForEach ($path in $UninstallPaths) {
     # Create an instance of the Registry Object and open the HKLM base key
     $reg = [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
     # Drill down into the Uninstall key using the OpenSubKey Method
@@ -302,8 +294,7 @@ Function Test-Programs {
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
 
-    Try
-    {
+    Try {
     $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
     If ($value.$regName -eq 1)
         {
@@ -313,23 +304,19 @@ Function Test-Programs {
             Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
         }
     }
-    Catch
-    { # Value does not exist
+    Catch { # Value does not exist
     }
-
     # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
     $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc
     ForEach ($service in $InstalledServices)
     {
-        If ($service.Name -like 'avast*')
-        {
+        If ($service.Name -like 'avast*') {
             $obj = New-Object PSObject
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Avast Internet Security'
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
             $array += $obj
         }
-        If ($service.Name -like 'Nahimic*')
-        {
+        If ($service.Name -like 'Nahimic*') {
             $obj = New-Object PSObject
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayName" -Value 'Nahimic'
             $obj | Add-Member -MemberType NoteProperty -Name "DisplayVersion" -Value '0.0.0'
@@ -393,33 +380,27 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     Else {
         $TCPRule = $false
         $UDPRule = $false
-        ForEach ( $rule in $HD2FirewallRules)
-        {
-            If ( !$TCPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP'))
-            {
+        ForEach ( $rule in $HD2FirewallRules) {
+            If ( !$TCPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
                 $TCPRule = $true
                 Write-Host 'Inbound TCP Rule ' -NoNewline
                 Write-Host '[OK]' -ForegroundColor Green
             }
-            If ( !$UDPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP'))
-            {
+            If ( !$UDPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
                 $UDPRule = $true
                 Write-Host 'Inbound UDP Rule ' -NoNewline
                 Write-Host '[OK]' -ForegroundColor Green
                 }
         }
-        If (!$TCPRule)
-        {
+        If (!$TCPRule) {
             Write-Host 'Inbound TCP Rule ' -NoNewline
             Write-Host '[FAIL]' -ForegroundColor Red
             }
-        If (!$UDPRule)
-        {
+        If (!$UDPRule) {
             Write-Host 'Inbound UDP Rule ' -NoNewline
             Write-Host '[FAIL]' -ForegroundColor Red
             }
-        If (!$TCPRule -or !$UDPRule)
-        {
+        If (!$TCPRule -or !$UDPRule) {
 
         Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -Foregroundcolor Red
         Write-Host 'On game launch, Steam should request Admin privleges and add the Inbound rule(s) for you.' -Foregroundcolor Yellow
@@ -453,24 +434,20 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     'testament.api.wwsga.me'
 
 
-    ForEach ($domain in $RequiredDomains)
-    {
+    ForEach ($domain in $RequiredDomains) {
         Write-Host 'Resolving ' -NoNewline -ForegroundColor Cyan
         Write-Host $domain -NoNewline
     
         # If not running in ISE or old PowerShell, let's make it pretty
-        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0')
-        {
+        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0') {
             $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
             [Console]::SetCursorPosition(46 , $y)
         }
     
-        If (Resolve-DnsName -Name $domain -DnsOnly -ErrorAction SilentlyContinue)
-        {        
+        If (Resolve-DnsName -Name $domain -DnsOnly -ErrorAction SilentlyContinue) {        
             Write-Host ' [OK]' -ForegroundColor Green
         }
-        Else
-        {
+        Else {
             Write-Host ' [FAIL]' -ForegroundColor Red
         }
     }
@@ -535,17 +512,13 @@ Function Test-DnsResolution {
         [string]$hostname,
         [string[]]$dnsServers
     )
-
-    ForEach ($server in $dnsServers)
-    {
-        Try
-        {
+    ForEach ($server in $dnsServers) {
+        Try {
             Resolve-DnsName -Name $hostname -Server $server -ErrorAction Stop | Out-Null
             Write-Host '[PASS]' -ForegroundColor Green -NoNewline
             Write-Host " DNS Server $server successfully resolved $hostname"
         }
-        Catch
-        {
+        Catch {
             Write-Host '[FAIL]' -ForegroundColor Red -NoNewline
             Write-Host " DNS Server $server failed to resolve $hostname"
         }
@@ -555,36 +528,29 @@ Function Test-DnsResolution {
 Function Test-ClientDnsConfig {
     # Define the hostname to test
     $hostname = "www.google.com"
-
     # Get the main network adapter with the default route
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
-
     # Get the DNS servers for IPv4
     $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
-
     # Get the DNS servers for IPv6
     $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
-
     # Print and test DNS servers for IPv4
-    If ($dnsServersIPv4)
-    {
+    If ($dnsServersIPv4) {
         Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host " Detected IPv4 DNS servers:"
-        $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_" }
-    
+        $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
+        }    
         Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
         Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
     }
-    Else
-    {
+    Else {
         Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
         Write-Host '      Your internet is probably down right now.'
     }
 
     # Print and test DNS servers for IPv6
-    If ($dnsServersIPv6)
-    {
+    If ($dnsServersIPv6) {
         Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host ' Detected IPv6 DNS server(s):'
@@ -593,8 +559,7 @@ Function Test-ClientDnsConfig {
         Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
         Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
     }
-    Else
-    {
+    Else {
         Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
         Write-Host ' No IPv6 DNS servers found!'
         Write-Host 'Consider setting an IPv6 DNS server like'
@@ -682,8 +647,7 @@ Function Test-BTAGService {
         "`nThis will cause audio routing issues with Bluetooth Headphones.",
         "`nToggle this service ON or OFF from the menu (Select option B)"  -ForegroundColor Yellow
     }
-    Else
-    {
+    Else {
         Write-Host "`nBluetooth Audio Gateway (BTAG) Service: DISABLED",
         "`nIf using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
     }
@@ -776,27 +740,21 @@ Function Test-DualNAT {
     Pause "`nPress any key to continue..."
 }
 Function Switch-BTAGService {
-    If(-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544'))
-{
+    If (-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
     Write-Host 'This command requires Administrator privileges.',
     "`nTo run PowerShell with admin privileges:",
     "`nRight-click on PowerShell and click Run as Administrator",
     "`nThen run the script again.`n" -ForegroundColor Cyan
-    } Else
-    {
-        If ((Get-Service -Name BTAGService).Status -eq 'Running')
-        {
+    } Else {
+        If ((Get-Service -Name BTAGService).Status -eq 'Running') {
             Set-Service -Name BTAGService -StartupType Disabled
             Stop-Service -Name BTAGService
             Start-Sleep -Seconds 1.5
             Write-Host "`nBluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
             Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Yellow            
-        } Else      
-
-        {
-            If ((Get-Service -Name BTAGService).Status -eq 'Stopped')
-            {
+        } Else {
+            If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
                 Set-Service -Name BTAGService -StartupType Automatic
                 Set-Service -Name BTAGService -Status Running
                 Start-Sleep -Seconds 1.5
@@ -896,7 +854,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         Break
     }
 }
-$HelldiversProcess = [PSCustomObject]@{
+$HelldiversProcess = [PSCustomObject]@ {
     ProcessName = 'helldivers2'
     ErrorMsg    = '
     ⚠️ The Helldivers 2 process is currently running. ⚠️
