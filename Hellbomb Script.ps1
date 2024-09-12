@@ -854,7 +854,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         Break
     }
 }
-$HelldiversProcess = [PSCustomObject]@ {
+$HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
     ErrorMsg    = '
     ⚠️ The Helldivers 2 process is currently running. ⚠️
