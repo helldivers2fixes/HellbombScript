@@ -515,12 +515,21 @@ Function Test-ClientDnsConfig {
     # Get the main network adapter with the default route
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
     # Get the DNS servers for IPv4
-    $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
+    Try {
+            $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
+        } Catch {
+            # Will check if null or empty in next part of script
+        }
     # Get the DNS servers for IPv6
-    $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
+    Try {
+            $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
+        } Catch {
+            # Will check if null or empty in next part of script
+        }
+    
+    Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
     # Print and test DNS servers for IPv4
-    If ($dnsServersIPv4) {
-        Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
+    If (-not ([string]::IsNullOrEmpty($dnsServersIPv4))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host " Detected IPv4 DNS servers:"
         $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
@@ -534,8 +543,8 @@ Function Test-ClientDnsConfig {
     }
 
     # Print and test DNS servers for IPv6
-    If ($dnsServersIPv6) {
-        Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
+    Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
+    If (-not ([string]::IsNullOrEmpty($dnsServersIPv6.ServerAddresses))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host ' Detected IPv6 DNS server(s):'
         $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_" }
