@@ -173,31 +173,15 @@ Function Find-BlacklistedDrivers {
     Return
 }
 Function Find-CPUInfo {
-    $columnSpacing = [Int]5
-    $columnGap = New-Object -TypeName System.String -ArgumentList ' ', ($columnSpacing)
-    $Header1 = "Motherboard Info"
-    $Header2 = "UEFI Info"
-    $motherboardManufacturer = (Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim()
-    $SMBIOSVersion = (Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim()
-    $productModel = (Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim()
-    $BIOSManufacturer = (Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim()
-    $BIOSName = (Get-CimInstance -ClassName Win32_BIOS).Name.Trim()
-    $longestLineCol1 = ($motherboardManufacturer, $productModel | Measure-Object -Maximum -Property Length).Maximum
-    $separatorCol1 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol1)
-    $longestLineCol2 = ($SMBIOSVersion, $BIOSManufacturer, $BIOSName | Measure-Object -Maximum -Property Length).Maximum
-    $separatorCol2 = New-Object -TypeName System.String -ArgumentList '-', ($longestLineCol2)
-    $calculatedIndent = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1+$columnSpacing)
-    $HeaderGap = New-Object -TypeName System.String -ArgumentList ' ', ($longestLineCol1 - $Header1.Length + $columnSpacing)
-    Write-Host $Header1 -ForegroundColor Gray -NoNewline
-    Write-Host $HeaderGap$Header2 -ForegroundColor Gray
-    Write-Host $separatorCol1$columnGap$separatorCol2
-    Write-Host $motherboardManufacturer -NoNewLine
-    Write-Host $columnGap$SMBIOSVersion
-    Write-Host $productModel -NoNewLine
-    Write-Host $columnGap$BIOSManufacturer
-    Write-Host $calculatedIndent -NoNewLine
-    Write-Host $BIOSName
-    Write-Host $separatorCol1$columnGap$separatorCol2
+    $motherboardInfo = @(
+    [pscustomobject]@{ 'Motherboard Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim();
+    'UEFI Info' = 'SMBIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim() }
+    [pscustomobject]@{ 'Motherboard Info' = 'Product: '+(Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim();
+    'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
+    [pscustomobject]@{ 'Motherboard Info' = '';
+    'UEFI Info' = 'BIOS Version:'+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
+    )
+    $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
         
     Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
     $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
