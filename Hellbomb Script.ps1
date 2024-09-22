@@ -345,8 +345,13 @@ Function Test-Programs {
     $result = $null
     $result = $ProblematicPrograms | Where-Object { $_.Installed -eq $true }
     If ($null -ne $result) {
-        Write-Host "`nFound the following programs that are known to cause issues:`n" -ForegroundColor Red
-        Write-Host ($result | Sort-Object ProgramName | Format-Table -Property ProgramName, InstalledVersion, RecommendedVersion, Notes -AutoSize | Out-String).Trim() -ForegroundColor Yellow
+        Write-Host "`nFound the following programs that are known to cause issues:`n" -ForegroundColor Yellow
+        Write-Host ("{0,-32} {1,-20} {2,-35}" -f "Program Name", "Installed Version", "Notes") -ForegroundColor Cyan
+        foreach ($row in $result) {
+            Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
+            Write-Host ("{0,-25}" -f $row.ProgramName) -ForegroundColor Yellow -NoNewline
+            Write-Host (" {0,-20} {1,-132}" -f $row.InstalledVersion, $row.Notes)
+        }
     }
     Else {
         Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
