@@ -529,7 +529,7 @@ Function Test-ClientDnsConfig {
     
     Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
     # Print and test DNS servers for IPv4
-    If (-not ([string]::IsNullOrEmpty($dnsServersIPv4))) {
+    If ((-not ([string]::IsNullOrEmpty($dnsServersIPv4))) -and ($dnsServersIPv4.PSObject.Properties.Name -contains 'ServerAddresses')) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host " Detected IPv4 DNS servers:"
         $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
@@ -544,7 +544,7 @@ Function Test-ClientDnsConfig {
 
     # Print and test DNS servers for IPv6
     Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
-    If (-not ([string]::IsNullOrEmpty($dnsServersIPv6.ServerAddresses))) {
+    If ((-not ([string]::IsNullOrEmpty($dnsServersIPv6.ServerAddresses))) -and ($dnsServersIPv6.PSObject.Properties.Name -contains 'ServerAddresses')) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host ' Detected IPv6 DNS server(s):'
         $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_" }
