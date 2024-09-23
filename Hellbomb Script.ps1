@@ -224,10 +224,11 @@ Function Find-CPUInfo {
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
     Return
 }
-Function Test-Programs {
-    # This portion modified from:
+
+Function Get-InstalledPrograms {
+        # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
-    Write-Host "`nChecking for installed problematic programs..." -ForegroundColor Cyan
+    Write-Host "`nGathering installed programs..." -ForegroundColor Cyan
     Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
     $array = @()
     # Define the variable to hold the location of Currently Installed Programs
@@ -273,7 +274,11 @@ Function Test-Programs {
     # Remove empties
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
     }
-   
+    Return $array
+}
+
+Function Test-Programs {
+    Write-Host "`nChecking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan
     # Avast Web Shield checks
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
@@ -335,7 +340,7 @@ Function Test-Programs {
     $ProblematicPrograms += New-Object PSObject -Property @{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
-        ForEach ($installedApp in $array) {
+        ForEach ($installedApp in $global:InstalledProgramsList) {
             $bool = $false
             If ($installedApp.DisplayName -like "*" + $program.ProgramName + "*" -and ([System.Version]$program.RecommendedVersion -gt [System.Version]$installedApp.DisplayVersion)) {
                 $bool = $true
@@ -864,6 +869,9 @@ $HelldiversProcess = [PSCustomObject]@{
          Please close the game. If the game appears closed, restart the system, and re-run this script.
     '
 }
+$global:InstalledProgramsList = $null
 Clear-Host
 Get-IsProcessRunning $HelldiversProcess
+$global:InstalledProgramsList = Get-InstalledPrograms
+Clear-Host
 Menu
