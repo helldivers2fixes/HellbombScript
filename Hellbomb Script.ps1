@@ -776,6 +776,42 @@ Function Switch-BTAGService {
         }
     }
 }
+Function Test-VisualC++Redists {
+    $VCRedists = @()
+    $VCRedists += [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2012 Redistributable (x64)'; Installed = $false}
+    $VCRedists += [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2013 Redistributable (x64)'; Installed = $false}
+    $VCRedists += [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2015-2022 Redistributable (x64)'; Installed = $false}
+    
+    Write-Host "`nChecking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan
+     # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
+    $filteredApps = $global:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
+    
+    foreach ($installedApp in $filteredApps) {
+        foreach ($vcRedist in $VCRedists) {
+            if ($installedApp.DisplayName -like "$($vcRedist.ProgramName)*") {
+                $vcRedist.Installed = $true
+            }
+        }
+    }
+    $result = $null
+    $result = $VCRedists | Where-Object { $_.Installed -eq $false }
+    If ($null -ne $result) {
+        Write-Host "`nYou are missing critical Visual C++ Redists. The game will not run.`n" -ForegroundColor Yellow
+        Write-Host ("{0,-33}" -f "Missing Visual C++ Redistrubutable(s)") -ForegroundColor Cyan
+        Write-Host ("{0,-33}" -f '-------------------------------------')
+        foreach ($row in $result) {
+            Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
+            Write-Host ("{0,-26}" -f $row.ProgramName) -ForegroundColor Yellow
+        }
+        Write-Host "`nPlease install them using the [" -ForegroundColor Yellow -NoNewline
+        Write-Host 'I' -NoNewLine
+        Write-Host '] option on the menu.' -ForegroundColor Yellow
+    }
+    Else {
+        Write-Host 'All required Visual C++ Redists found!' -ForegroundColor Green
+    }
+    Return
+}
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
@@ -800,6 +836,7 @@ Function Menu {
             Test-Network
             Find-BlacklistedDrivers
             Test-BTAGService
+            Test-VisualC++Redists
             Test-Programs
             Menu
         }
