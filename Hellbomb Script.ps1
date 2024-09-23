@@ -812,6 +812,29 @@ Function Test-VisualC++Redists {
     }
     Return
 }
+# Function to check if a reboot is required
+Function Test-PendingReboot {
+    $rebootRequired = $false
+    $keys = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\PackagesPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
+    ForEach ($key in $keys) {
+        If (Test-Path $key) {
+            $rebootRequired = $true
+            Break
+        }
+    }
+    If ($rebootRequired) {
+    Write-Host "`n`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
+    Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
+    Pause "Press any key to continue anyway..."
+} Else {
+    Write-Output "No reboot is required... continuing..." -Foreground Green
+}
+}
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
@@ -831,6 +854,7 @@ Function Menu {
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
     switch ($choice) {
         0 {
+            Test-PendingReboot
             Show-Variables
             Find-CPUInfo
             Test-Network
