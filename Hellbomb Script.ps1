@@ -812,6 +812,26 @@ Function Test-VisualC++Redists {
     }
     Return
 }
+Function Test-MemoryChannels {
+    Write-Host "`nChecking to see if multi-channel memory is enabled..." -ForegroundColor Cyan
+    $TextHolder = $null
+    $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
+    $NumberofChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
+    $MemoryTextStrings = @()
+    $MemoryTextStrings += New-Object PsObject -Property @{ChannelCount = '2';String = 'Dual'}
+    $MemoryTextStrings += New-Object PsObject -Property @{ChannelCount = '3';String = 'Triple'}
+    $MemoryTextStrings += New-Object PsObject -Property @{ChannelCount = '4';String = 'Quad'}
+    $TextHolder = $MemoryTextStrings | Where-Object {$_.ChannelCount -match $NumberofChannels}
+    If ( $TextHolder ) {
+        Write-Host "`n[PASS] " -NoNewLine -ForegroundColor Green
+        Write-Host ($TextHolder.String) -NoNewline
+        Write-Host '-channel Memory is enabled!'
+        } Else {
+            Write-Host "`n[FAIL] " -NoNewLine -ForegroundColor Red
+            Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
+            Write-Host '       This will cause severe performance issues.' -ForegroundColor Yellow
+    }
+}
 # Function to check if a reboot is required
 Function Test-PendingReboot {
     $rebootRequired = $false
@@ -857,6 +877,7 @@ Function Menu {
             Test-PendingReboot
             Show-Variables
             Find-CPUInfo
+            Test-MemoryChannels
             Test-Network
             Find-BlacklistedDrivers
             Test-BTAGService
