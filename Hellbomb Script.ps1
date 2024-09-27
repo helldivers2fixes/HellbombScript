@@ -813,7 +813,7 @@ Function Test-VisualC++Redists {
     Return
 }
 Function Test-MemoryChannels {
-    Write-Host "`nChecking to see if Multi-Channel memory is enabled..." -ForegroundColor Cyan
+    Write-Host "`nChecking to see if multi-channel memory is enabled..." -ForegroundColor Cyan
     $TextHolder = $null
     $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
     $NumberofChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
@@ -825,7 +825,7 @@ Function Test-MemoryChannels {
     If ( $TextHolder ) {
         Write-Host "`n[PASS] " -NoNewLine -ForegroundColor Green
         Write-Host ($TextHolder.String) -NoNewline
-        Write-Host '-Channel Memory is enabled!'
+        Write-Host '-channel Memory is enabled!'
         } Else {
             Write-Host "`n[FAIL] " -NoNewLine -ForegroundColor Red
             Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
