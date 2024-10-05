@@ -727,8 +727,8 @@ Function Test-PrivateIP {
         }
     }
 }
-Function Test-DualNAT {
-    Write-Host "`nRunning Dual-NAT test... this will take a minute" -ForegroundColor Cyan
+Function Test-DoubleNAT {
+    Write-Host "`nRunning Double-NAT test... this will take a minute" -ForegroundColor Cyan
     $server = 'cloudflare.com'
     $ip = Resolve-DnsName -Type A $server |
         Select-Object -Expand IPAddress
@@ -740,13 +740,13 @@ Function Test-DualNAT {
         }
     }
     If ($privateIPs.Count -gt 1) {
-        Write-Host '⚠️ Possible Dual-NAT connection detected.' -ForegroundColor Yellow
+        Write-Host '⚠️ Possible Double-NAT connection detected.' -ForegroundColor Yellow
         Write-Host 'Private IPs detected are:'
         Write-Host $privateIPs -Separator "`n"
         Write-Host "`nIf you're not sure what these results mean, the IP results are safe to share with others." -ForegroundColor Cyan
     }
     Else {
-        Write-Host "`nNo Dual-NAT connection detected." -ForegroundColor Green
+        Write-Host "`nNo Double-NAT connection detected." -ForegroundColor Green
     }
     Pause "`nPress any key to continue..."
 }
@@ -869,7 +869,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Dual NAT &Test', 'Tests network for Dual NAT.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Double NAT &Test', 'Tests network for Double NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
@@ -910,7 +910,7 @@ Function Menu {
             Menu
         }
         6 {
-            Test-DualNat
+            Test-DoubleNat
             Menu
         }
         7 {
