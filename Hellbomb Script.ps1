@@ -816,7 +816,11 @@ Function Test-MemoryChannels {
     Write-Host "`nChecking to see if multi-channel memory is enabled..." -ForegroundColor Cyan
     $TextHolder = $null
     $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
-    $NumberofChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
+    Try { $NumberofChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count }
+    Catch {
+            # If that errors, then there is only one DIMM installed
+            $NumberofChannels = 1
+    }
     $MemoryTextStrings = @()
     $MemoryTextStrings += New-Object PsObject -Property @{ChannelCount = '2';String = 'Dual'}
     $MemoryTextStrings += New-Object PsObject -Property @{ChannelCount = '3';String = 'Triple'}
@@ -829,7 +833,7 @@ Function Test-MemoryChannels {
         } Else {
             Write-Host "`n[FAIL] " -NoNewLine -ForegroundColor Red
             Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
-            Write-Host '       This will cause severe performance issues.' -ForegroundColor Yellow
+            Write-Host '       This will usually cause severe performance issues.' -ForegroundColor Yellow
     }
 }
 # Function to check if a reboot is required
