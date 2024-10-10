@@ -202,7 +202,7 @@ Function Find-CPUInfo {
             $runningMicrocode = (Get-ItemProperty -Path $registrypath )."Update Revision"
             # Convert to string and remove leading zeros
             $runningMicrocodeInHex = (-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
-            If ($runningMicrocodeInHex -ge '0x29') {
+            If ($runningMicrocodeInHex -ge '0x2B') {
                 Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
                 Write-Host "is running updated microcode ver. $runningMicrocodeInHex" -ForegroundColor Green
                 Write-Host 'However, if stability issues occured before the microcode was updated, then the CPU may already be permanently damaged.' -ForegroundColor Yellow
