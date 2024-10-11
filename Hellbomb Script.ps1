@@ -1,4 +1,5 @@
 # Hellbomb Script
+# Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 Function Show-Variables {
