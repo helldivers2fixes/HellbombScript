@@ -856,9 +856,12 @@ Function Test-PendingReboot {
     Write-Host "`n`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
     Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
     Pause "Press any key to continue anyway..."
-} Else {
+    } Else {
     Write-Output "No reboot is required... continuing..." -Foreground Green
+    }
 }
+Restart-Resume {
+    Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
