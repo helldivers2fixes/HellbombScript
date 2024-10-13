@@ -6,8 +6,6 @@
 
 1.) Grab the latest EXE from [the Releases on the right-hand side](https://github.com/helldivers2fixes/HellbombScript/releases) and run it.
 
-$${\color{orange}NOTE:}$$ If it closes immediately, you'll need to run it with Admin privileges.
-
 2.) Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
 
 3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
@@ -24,16 +22,11 @@ Copy and paste the script manually per instructions below.
  4. **Paste** into Terminal. Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
  5. Acknowledge the warning prompt and click **Paste Anyway**
  6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)
-    ($${\color{orange}NOTE:}$$ If the output looks like below. Close Terminal, press `Windows Key` + `X` and click `Terminal (Admin)`. Then re-paste the script.)
-    
+      
       ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/734e2757-7a65-4bbf-8d6a-732275cecc51)
     
-       Why? For a few users, the script errors when running the **Get-NetFirewallRule** command-let which **reads** Firewall rules. No changes are made to the firewall.
-       If this happens, run Terminal with Administrator privileges.
-       (Before opening Terminal, right-click it and click "Run as Administrator").
-       This _shouldn't_ be the norm for most users, and should be avoided unless you receive the error depicted above.
- 8. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
- 9. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+ 7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
+ 8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
 
