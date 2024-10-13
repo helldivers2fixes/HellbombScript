@@ -180,7 +180,7 @@ Function Find-CPUInfo {
     [pscustomobject]@{ 'Motherboard Info' = 'Product: '+(Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim();
     'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
     [pscustomobject]@{ 'Motherboard Info' = '';
-    'UEFI Info' = 'BIOS Version:'+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
+    'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
     )
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
         
