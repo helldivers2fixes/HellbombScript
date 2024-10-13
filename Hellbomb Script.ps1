@@ -57,7 +57,7 @@ Function Install-EXE {
             
             If ( $installProcess.ExitCode -ne 0) {
                 Write-Host "`nUAC prompt was canceled, or another error occurred installing $CommonName`n" -ForegroundColor Red
-                Remove-Item ($DownloadPath + $FileName)
+                Remove-Item -Path $DownloadPath$FileName
                 # Re-enable Progress Bar
                 $ProgressPreference = 'Continue'
                 Return
@@ -71,7 +71,7 @@ Function Install-EXE {
     Else {
         Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
     }
-    Remove-Item ($DownloadPath + $FileName)
+    Remove-Item -Path $DownloadPath$FileName
     # Re-enable Progress Bar
     $ProgressPreference = 'Continue'
 }
@@ -79,7 +79,7 @@ Function Install-EXE {
 Function Reset-GameGuard {
     # Delete GameGuard files
     $Error.Clear()
-    Try { Remove-Item $AppInstallPath\bin\GameGuard\*.* }
+    Try { Remove-Item -Path $AppInstallPath\bin\GameGuard\*.* }
     Catch {
         Write-Host ("Error occurred deleting GameGuard files in " +
             $AppInstallPath + "\bin\GameGuard") -ForegroundColor Red
@@ -99,7 +99,7 @@ Function Reset-GameGuard {
 }
 Function Remove-HD2AppData {
     $Error.Clear()
-    Try { Remove-Item $env:APPDATA\Arrowhead\Helldivers2\* -Recurse }
+    Try { Remove-Item -Path $env:APPDATA\Arrowhead\Helldivers2\* -Recurse }
     Catch { Write-Host "Error occurred deleting contents of $env:APPDATA\Arrowhead\Helldivers2\" -ForegroundColor Red }
     If (!$Error) { Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green }
     Menu
@@ -675,7 +675,7 @@ Function Reset-Steam {
     Get-IsProcessRunning $SteamProcess
     # Remove CEF Cache
     Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
-    Remove-Item $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
+    Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
     Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
     $PropertyName = "Parent"
     Get-ChildItem -Path $SteamPath -File -Recurse |
