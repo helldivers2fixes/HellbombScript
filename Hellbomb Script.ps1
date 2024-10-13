@@ -858,7 +858,7 @@ Function Test-PendingReboot {
     Write-Output "No reboot is required... continuing..." -Foreground Green
     }
 }
-Restart-Resume {
+Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
 Function Menu {
