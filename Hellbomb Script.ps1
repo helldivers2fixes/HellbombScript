@@ -5,13 +5,12 @@ Set-StrictMode -Version Latest
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
         Clear-Host
-        Write-Host ("AppID: " + $AppID + " is located in directory:") -ForegroundColor Green
+        Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
         Write-Host $AppInstallPath -ForegroundColor White
-        Write-Host ("Current build of AppID " + $AppID + " is: " +
-            $BuildID) -ForegroundColor Cyan
+        Write-Host "Current build of AppID $AppID is:$BuildID" -ForegroundColor Cyan
     }
     Else {
-        Write-Host "Error. AppID was not found." -ForegroundColor Red
+        Write-Host 'Error. AppID was not found.' -ForegroundColor Red
     }
     Return
 }
@@ -946,7 +945,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         $global:AppIDFound = $true
         # Since we found the App location, let's get some data about it
         $GameData = Get-Content -Path $AppInstallPath\steamapps\appmanifest_$AppID.acf
-        $BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
+        $BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim()
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
         $AppInstallPath = ($AppInstallPath + "\steamapps\common\" + $GameFolderName[1])
