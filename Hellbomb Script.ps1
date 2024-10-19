@@ -763,7 +763,8 @@ Function Switch-BTAGService {
             Start-Sleep -Seconds 1.5
             Write-Host "`nBluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
-            Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Yellow            
+            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
+            Write-Host 'Please disconnect and re-connect your Bluetooth device.'`n -ForegroundColor Cyan
         } Else {
             If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
                 Set-Service -Name BTAGService -StartupType Automatic
