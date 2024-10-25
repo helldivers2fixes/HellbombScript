@@ -1,4 +1,4 @@
-# 💣Hellbomb💣 Script for fixing Helldivers 2 Issues
+# 💣Hellbomb💣 Script for Troubleshooting Helldivers 2 Issues
 
 ![image](https://github.com/helldivers2fixes/HellbombScript/assets/166264070/901687d6-1991-4fe4-8cfc-8d662f11b33e)
 
