@@ -858,7 +858,22 @@ Function Test-PendingReboot {
     Write-Output "No reboot is required... continuing..." -Foreground Green
     }
 }
-Function Clear-HD2SteamCloud {
+Function Reset-HD2SteamCloud {
+    Clear-Host
+    Clear-host
+    Write-Host "`nThis function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
+    Write-Host 'You will lose any custom keybindings. ' -NoNewline
+    Write-Host 'No game progress will be lost.' -ForegroundColor Yellow
+    Write-Host "This can resolve a myriad of input issues, and in some instances,`ncan resolve the game not running at all."
+    Write-Host "If you have multiple Steam user profiles,`nthis function will clear the LAST USED HD2 Steam Cloud profile."-Foreground Yellow
+    Write-Host "If you need to switch Steam profiles before running this script,`nplease close the script or press " -NoNewline
+    Write-Host 'Ctrl + C' -NoNewline -ForegroundColor Cyan
+    Write-Host " to stop the script...`nOpen Steam using the correct Steam profile and re-run this script."
+    Write-Host "`nThese are the steps that will be completed:"
+    Write-Host "1.) Script will close Steam if it is running`n2.) Script will temporarily disable Steam Cloud saves for HD2`n3.) Script will delete your HD2 Steam Cloud data`n4.) Script will pause`n5.) Script will request for you to run Helldivers 2`n    and load into the ship to generate new Steam Cloud files."
+    Write-Host "6.) You wil close the game, and continue the script."
+    Write-Host "7.) Script will re-enable Steam Cloud saves for HD2. `n    The new files to be synced to Steam Cloud next time Steam is launched."
+    Pause 'Press any key to continue.'
     # Shutdown Steam and disable SteamCloud
     # Get the Steam process
     $steamProcess = Get-Process -Name "Steam" -ErrorAction SilentlyContinue
@@ -894,18 +909,13 @@ Function Clear-HD2SteamCloud {
     # Define the path to the sharedconfig.vdf file
     $sharedConfigPath = Join-Path $mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
     
-    # Read the content of the sharedconfig.vdf file
     $configContent = Get-Content -Path $sharedConfigPath
     
-    # Initialize variables
     $cloudEnabled = $null
-    
     $inAppSection = $false
-
-    # Create a new array to store the modified content
     $modifiedContent = @()
     
-    # Parse the sharedconfig.vdf file and modify the cloudenabled value
+    # Parse the sharedconfig.vdf file and modify the cloudenabled value to '0'
     foreach ($line in $configContent) {
         if ($line -match $AppID) {
             $inAppSection = $true
@@ -916,7 +926,7 @@ Function Clear-HD2SteamCloud {
         $modifiedContent += $line
     }
     
-    # Write the modified content back to the sharedconfig.vdf file
+    # Write the modified content back to the sharedconfig.vdf file and then clear the modifiedContent array
     $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
     $modifiedContent = @()
     
@@ -1009,7 +1019,7 @@ Function Menu {
             Menu
         }
         9 {
-            Clear-HD2SteamCloud
+            Reset-HD2SteamCloud
             Menu
         }
         10 { Return }
