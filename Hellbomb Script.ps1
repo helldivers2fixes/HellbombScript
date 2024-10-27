@@ -456,8 +456,8 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
-    # This overly-complicated mess with curl is used to ensure that a HTTP and an HTTPS request are used. I'm not sure Invoke-WebRequest
-    # will actually do an HTTP request and an HTTPS request.
+    # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
+    # will return false postives when it's actually broken.
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
