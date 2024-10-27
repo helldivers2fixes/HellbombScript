@@ -1029,7 +1029,7 @@ $AppID = "553850"
 $global:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
-$SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+$global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # Read each line of the Steam library.vdf file
 # Save a library path, then scan that library for $AppID
