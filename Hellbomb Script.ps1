@@ -910,13 +910,12 @@ Function Reset-HD2SteamCloud {
     
     $configContent = Get-Content -Path $sharedConfigPath
     
-    $cloudEnabled = $null
     $inAppSection = $false
     $modifiedContent = @()
     
     # Parse the sharedconfig.vdf file and modify the cloudenabled value to '0'
     foreach ($line in $configContent) {
-        if ($line -match $AppID) {
+        if ($line -match $global:AppID) {
             $inAppSection = $true
         } elseif ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"0"'
@@ -939,7 +938,7 @@ Function Reset-HD2SteamCloud {
     Write-Host 'Re-enabling Cloud Save for HD2...' -Foreground Cyan
     $configContent = Get-Content -Path $sharedConfigPath
     foreach ($line in $configContent) {
-        if ($line -match $AppID) {
+        if ($line -match $global:AppID) {
             $inAppSection = $true
         } elseif ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"1"'
