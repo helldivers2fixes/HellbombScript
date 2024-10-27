@@ -906,7 +906,7 @@ Function Reset-HD2SteamCloud {
     $HD2SteamCloudSaveFolder = Join-Path $mostRecentSteamUserProfilePath.FullName -ChildPath $AppID
 
     # Define the path to the sharedconfig.vdf file
-    $sharedConfigPath = Join-Path $mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
+    $sharedConfigPath = Join-Path $mostRecentSteamUserProfilePath.FullName -ChildPath '\7\remote\sharedconfig.vdf'
     
     $configContent = Get-Content -Path $sharedConfigPath
     
