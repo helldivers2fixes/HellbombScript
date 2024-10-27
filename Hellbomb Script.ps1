@@ -967,7 +967,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Clears HD2 Steam Cloud. Can fix input issues, game not starting no matter which computer is used, etc. No progress will be lost.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Resets HD2 Steam Cloud. For input issues, game not starting regardless of computer used, etc. No progress will be lost.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $Default = 0
