@@ -1025,7 +1025,7 @@ Function Menu {
     }
 }
 # Set AppID
-$AppID = "553850"
+$global:AppID = "553850"
 $global:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
