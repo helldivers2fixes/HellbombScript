@@ -860,9 +860,8 @@ Function Test-PendingReboot {
 }
 Function Reset-HD2SteamCloud {
     Clear-Host
-    Clear-host
     Write-Host "`nThis function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
-    Write-Host 'You will lose any custom keybindings. ' -NoNewline
+    Write-Host 'You will lose any custom key bindings. ' -NoNewline
     Write-Host 'No game progress will be lost.' -ForegroundColor Yellow
     Write-Host "This can resolve a myriad of input issues, and in some instances,`ncan resolve the game not running at all."
     Write-Host "If you have multiple Steam user profiles,`nthis function will clear the LAST USED HD2 Steam Cloud profile."-Foreground Yellow
@@ -871,7 +870,7 @@ Function Reset-HD2SteamCloud {
     Write-Host " to stop the script...`nOpen Steam using the correct Steam profile and re-run this script."
     Write-Host "`nThese are the steps that will be completed:"
     Write-Host "1.) Script will close Steam if it is running`n2.) Script will temporarily disable Steam Cloud saves for HD2`n3.) Script will delete your HD2 Steam Cloud data`n4.) Script will pause`n5.) Script will request for you to run Helldivers 2`n    and load into the ship to generate new Steam Cloud files."
-    Write-Host "6.) You wil close the game, and continue the script."
+    Write-Host "6.) You will close the game, and continue the script."
     Write-Host "7.) Script will re-enable Steam Cloud saves for HD2. `n    The new files to be synced to Steam Cloud next time Steam is launched."
     Pause 'Press any key to continue.'
     # Shutdown Steam and disable SteamCloud
@@ -965,7 +964,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Double NAT &Test', 'Tests network for Double NAT.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Clears HD2 Steam Cloud. Can fix input issues, game not starting no matter which computer is used, etc. No progress will be lost.')
