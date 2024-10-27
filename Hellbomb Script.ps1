@@ -858,6 +858,90 @@ Function Test-PendingReboot {
     Write-Output "No reboot is required... continuing..." -Foreground Green
     }
 }
+Function Clear-HD2SteamCloud {
+    # Shutdown Steam and disable SteamCloud
+    # Get the Steam process
+    $steamProcess = Get-Process -Name "Steam" -ErrorAction SilentlyContinue
+    
+    # Check if the Steam process is running
+    If ($steamProcess) {
+        # Stop the Steam process
+        Stop-Process -Name "Steam" -Force
+        Write-Output "Steam has been stopped... continuing"
+    } Else {
+        Write-Output "Steam is not running... continuing"
+    }
+
+    # Get all immediate subfolders
+    $subfolders = Get-ChildItem -Path (Join-Path $SteamPath -ChildPath 'userdata') -Directory
+    
+    # Initialize variables to track the most recently modified subfolder
+    $mostRecentTime = [datetime]::MinValue
+    
+    # Iterate through each subfolder to find the most recently modified files
+    ForEach ($subfolder in $subfolders) {
+        $files = Get-ChildItem -Path $subfolder.FullName -Recurse -File
+        ForEach ($file in $files) {
+            If ($file.LastWriteTime -gt $mostRecentTime) {
+                $mostRecentTime = $file.LastWriteTime
+                $global:mostRecentSteamUserProfilePath = $subfolder
+            }
+        }
+    }
+    
+    $HD2SteamCloudSaveFolder = Join-Path $mostRecentSteamUserProfilePath.FullName -ChildPath $AppID
+
+    # Define the path to the sharedconfig.vdf file
+    $sharedConfigPath = Join-Path $mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
+    
+    # Read the content of the sharedconfig.vdf file
+    $configContent = Get-Content -Path $sharedConfigPath
+    
+    # Initialize variables
+    $cloudEnabled = $null
+    
+    $inAppSection = $false
+
+    # Create a new array to store the modified content
+    $modifiedContent = @()
+    
+    # Parse the sharedconfig.vdf file and modify the cloudenabled value
+    foreach ($line in $configContent) {
+        if ($line -match $AppID) {
+            $inAppSection = $true
+        } elseif ($inAppSection -and $line -match '"cloudenabled"') {
+            $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"0"'
+            $inAppSection = $false
+        }
+        $modifiedContent += $line
+    }
+    
+    # Write the modified content back to the sharedconfig.vdf file
+    $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
+    $modifiedContent = @()
+    
+    Write-Host 'Cloud save for HD2 has been disabled.' -Foreground Cyan
+    Remove-Item -Path $HD2SteamCloudSaveFolder\* -Recurse
+    Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -Foreground Cyan
+    
+    Write-Host "STOP! Please open Helldivers 2 and wait unti it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
+    pause 'Press any key to continue...'
+
+    Write-Host 'Re-enabling Cloud Save for HD2...' -Foreground Cyan
+    $configContent = Get-Content -Path $sharedConfigPath
+    foreach ($line in $configContent) {
+        if ($line -match $AppID) {
+            $inAppSection = $true
+        } elseif ($inAppSection -and $line -match '"cloudenabled"') {
+            $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"1"'
+            $inAppSection = $false
+        }
+        $modifiedContent += $line
+    }
+    $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
+    $modifiedContent = $null
+    Write-Host 'HD2 Steam Cloud clearing procedures completed!' -Foreground Cyan
+}
 Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
@@ -874,6 +958,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Double NAT &Test', 'Tests network for Double NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Clears HD2 Steam Cloud. Can fix input issues, game not starting no matter which computer is used, etc. No progress will be lost.')
         [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $Default = 0
@@ -923,7 +1008,11 @@ Function Menu {
             Switch-BTAGService
             Menu
         }
-        9 { Return }
+        9 {
+            Clear-HD2SteamCloud
+            Menu
+        }
+        10 { Return }
     }
 }
 # Set AppID
@@ -953,6 +1042,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         Break
     }
 }
+
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
     ErrorMsg    = '
