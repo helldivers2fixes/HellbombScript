@@ -751,12 +751,6 @@ Function Test-DoubleNAT {
     Pause "`nPress any key to continue..."
 }
 Function Switch-BTAGService {
-    If (-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
-    Write-Host 'This command requires Administrator privileges.',
-    "`nTo run PowerShell with admin privileges:",
-    "`nRight-click on PowerShell and click Run as Administrator",
-    "`nThen run the script again.`n" -ForegroundColor Cyan
-    } Else {
         If ((Get-Service -Name BTAGService).Status -eq 'Running') {
             Set-Service -Name BTAGService -StartupType Disabled
             Stop-Service -Name BTAGService
@@ -774,8 +768,7 @@ Function Switch-BTAGService {
                 "is now " -ForegroundColor Cyan
                 Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Green
             }
-        }
-    }
+       }
 }
 Function Test-VisualC++Redists {
     $VCRedists = @(
@@ -1023,6 +1016,15 @@ Function Menu {
         10 { Return }
     }
 }
+If (-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
+Clear-Host
+Write-Host 'This script requires Administrator privileges.',
+"`nTo run PowerShell with Admin privileges:",
+"`nRight-click on PowerShell and click 'Run as Administrator'",
+"`nThen run the script again.`n" -ForegroundColor Yellow
+}
+Pause 'Press any key to ignore and continue...'
+Pause 'Warning: Functions will not work properly & will not report errors. Press any key to continue...'
 # Set AppID
 $global:AppID = "553850"
 $global:AppIDFound = $false
@@ -1059,7 +1061,6 @@ $HelldiversProcess = [PSCustomObject]@{
     '
 }
 $global:InstalledProgramsList = $null
-Clear-Host
 Get-IsProcessRunning $HelldiversProcess
 $global:InstalledProgramsList = Get-InstalledPrograms
 Clear-Host
