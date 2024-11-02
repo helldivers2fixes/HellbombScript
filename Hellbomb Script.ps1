@@ -197,9 +197,10 @@ Function Find-CPUInfo {
         If ($containsAny) {
             # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
             $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
-            $processor = (Get-ItemProperty -Path $registrypath )."ProcessorNameString"
-            $biosMicrocode = (Get-ItemProperty -Path $registrypath )."Previous Update Revision"
-            $runningMicrocode = (Get-ItemProperty -Path $registrypath )."Update Revision"
+            $CPUProperties = Get-ItemProperty -Path $registrypath
+            $processor = $CPUProperties."ProcessorNameString"
+            $biosMicrocode = $CPUProperties."Previous Update Revision"
+            $runningMicrocode = $CPUProperties."Update Revision"
             # Convert to string and remove leading zeros
             $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0'))
             If ($runningMicrocodeInHex -ge 0x12B) {
