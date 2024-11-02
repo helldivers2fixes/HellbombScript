@@ -201,11 +201,11 @@ Function Find-CPUInfo {
             $biosMicrocode = (Get-ItemProperty -Path $registrypath )."Previous Update Revision"
             $runningMicrocode = (Get-ItemProperty -Path $registrypath )."Update Revision"
             # Convert to string and remove leading zeros
-            $runningMicrocodeInHex = (-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0')
-            If ($runningMicrocodeInHex -ge 0x2B) {
+            $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0'))
+            If ($runningMicrocodeInHex -ge 0x12B) {
                 Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
-                Write-Host "is running updated microcode ver. $runningMicrocodeInHex" -ForegroundColor Green
-                Write-Host 'However, if stability issues occured before the microcode was updated, then the CPU may already be permanently damaged.' -ForegroundColor Yellow
+                Write-Host ('is running updated microcode ver. 0x{0:X}' -f $runningMicrocodeInHex) -ForegroundColor Green
+                Write-Host 'However, if stability issues occurred before the microcode was updated, then the CPU may already be permanently damaged.' -ForegroundColor Yellow
                 Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
                 Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
                 Return
