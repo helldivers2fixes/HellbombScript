@@ -816,15 +816,15 @@ Function Test-MemoryChannels {
     Write-Host "`nChecking to see if multi-channel memory is enabled..." -ForegroundColor Cyan
     $TextHolder = $null
     $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
-    Try { $DeviceLocatorChannels = ($SystemMemoryInfoObj.DeviceLocator | Sort-Object -Unique).Count }
+    $DeviceLocatorChannels = 1
+    $BankLabelChannels = 1
+    Try { 
+            $DeviceLocatorChannels = ($SystemMemoryInfoObj.DeviceLocator | Sort-Object -Unique).Count
+            $BankLabelChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
+        }
+            
     Catch {
             # If that errors, then there is only one DIMM installed
-            $DeviceLocatorChannels = 1
-    }
-    Try { $BankLabelChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count }
-    Catch {
-            # If that errors, then there is only one DIMM installed
-            $BankLabelChannels = 1
     }
     $NumberofChannels = [Math]::Max($DeviceLocatorChannels, $BankLabelChannels)
     $MemoryTextStrings = @()
