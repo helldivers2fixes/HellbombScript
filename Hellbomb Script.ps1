@@ -970,6 +970,7 @@ Function Menu {
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
+            Show-TestResults
             Menu
         }
         1 {
@@ -1011,6 +1012,14 @@ Function Menu {
         10 { Return }
     }
 }
+Function Show-TestResults {
+    $global:Tests.GetEnumerator() | ForEach-Object {
+
+        If ($_.Value.TestPassed -ne $true) {
+            Invoke-Expression $_.Value.TestFailMsg
+        }
+    }
+}
 $global:Tests = @{
     "IntelMicrocodeCheck" = @{
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
@@ -1030,6 +1039,13 @@ $global:Tests = @{
         'NotApplicableMsg' = @'
         Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+'@
+    }
+    "testdummy" = @{
+        'testvar' = 'testtestest'
+        'TestPassed' = $false
+        'TestFailMsg' = @'
+        Write-Host 'Test dummy crashed!' -ForegroundColor Red
 '@
     }
 }
