@@ -866,7 +866,7 @@ Function Test-PendingReboot {
     Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
     Pause "Press any key to continue anyway..."
     } Else {
-    Write-Output "No reboot is required... continuing..." -Foreground Green
+    Write-Host "No reboot is required... continuing..." -Foreground Green
     }
 }
 Function Reset-HD2SteamCloud {
@@ -892,9 +892,9 @@ Function Reset-HD2SteamCloud {
     If ($steamProcess) {
         # Stop the Steam process
         Stop-Process -Name "Steam" -Force
-        Write-Output "Steam has been stopped... continuing"
+        Write-Host "Steam has been stopped... continuing"
     } Else {
-        Write-Output "Steam is not running... continuing"
+        Write-Host "Steam is not running... continuing"
     }
 
     # Get all immediate subfolders
@@ -981,12 +981,12 @@ If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
         Remove-ItemProperty -Path $regPath -Name $exePath
     }
 
-    Write-Output "`nFullscreen optimizations enabled for $exePath This is probably not desired." -ForegroundColor Yellow
+    Write-Host "`nFullscreen optimizations enabled for $exePath This is probably not desired." -ForegroundColor Yellow
     } Else {
     # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
     $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
     Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
-    Write-Output "`nFullscreen optimizations disabled for $exePath This is probably the desired setting." -ForegroundColor Green
+    Write-Host "`nFullscreen optimizations disabled for $exePath This is probably the desired setting." -ForegroundColor Green
     }
 }
 Function Restart-Resume {
