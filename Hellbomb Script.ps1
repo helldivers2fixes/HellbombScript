@@ -1074,13 +1074,6 @@ $global:Tests = @{
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
     }
-    "testdummy" = @{
-        'testvar' = 'testtestest'
-        'TestPassed' = $false
-        'TestFailMsg' = @'
-        Write-Host 'Test dummy crashed!' -ForegroundColor Red
-'@
-    }
 }
 # Set AppID
 $global:AppID = "553850"
