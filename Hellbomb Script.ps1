@@ -961,6 +961,34 @@ Function Reset-HD2SteamCloud {
     $modifiedContent = $null
     Write-Host 'HD2 Steam Cloud clearing procedures completed!' -Foreground Cyan
 }
+Function Switch-FullScreenOptimizations {
+# Define the path to the executable
+$exePath = "$global:AppInstallPath\bin\helldivers2.exe"
+# Define the registry path
+$regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+
+If (-not (Test-Path $regPath)) {
+    New-Item -Path $regPath -Force | Out-Null
+}
+
+$currentValue = ((Get-ItemProperty -Path $regPath -Name $exePath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $exePath -ErrorAction SilentlyContinue).Trim())
+
+If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
+    $newValue = ($currentValue -replace "DISABLEDXMAXIMIZEDWINDOWEDMODE", "").Trim()
+    If ($newValue) {
+        Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
+    } Else {
+        Remove-ItemProperty -Path $regPath -Name $exePath
+    }
+
+    Write-Output "Fullscreen optimizations enabled for $exePath"
+    } Else {
+    # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
+    $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
+    Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
+    Write-Output "Fullscreen optimizations disabled for $exePath"
+    }
+}
 Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
@@ -974,6 +1002,7 @@ Function Menu {
         [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
+        [System.Management.Automation.Host.ChoiceDescription]::new('Full-Screen &Optimizations Toggle', 'Despite the name, having this off is usually recommended.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.')
         [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
         [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
@@ -1016,22 +1045,26 @@ Function Menu {
             Menu
         }
         6 {
-            Test-DoubleNat
+            Switch-FullScreenOptimizations
             Menu
         }
         7 {
-            Test-WiFi
+            Test-DoubleNat
             Menu
         }
         8 {
-            Switch-BTAGService
+            Test-WiFi
             Menu
         }
         9 {
+            Switch-BTAGService
+            Menu
+        }
+        10 {
             Reset-HD2SteamCloud
             Menu
         }
-        10 { Return }
+        11 { Return }
     }
 }
 # Set AppID
@@ -1046,18 +1079,18 @@ $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # If AppID is found, return current library path
 ForEach ($line in $($LibraryData -split "`r`n")) {
     If ($line -like '*path*') {
-        $AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-        Write-Host $AppInstallPath
-        $AppInstallPath = $AppInstallPath.Replace('\\', '\')
+        $global:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
+        Write-Host $global:AppInstallPath
+        $global:AppInstallPath = $global:AppInstallPath.Replace('\\', '\')
     }
     If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
         $global:AppIDFound = $true
         # Since we found the App location, let's get some data about it
-        $GameData = Get-Content -Path $AppInstallPath\steamapps\appmanifest_$AppID.acf
+        $GameData = Get-Content -Path $global:AppInstallPath\steamapps\appmanifest_$AppID.acf
         $BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim()
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
-        $AppInstallPath = ($AppInstallPath + "\steamapps\common\" + $GameFolderName[1])
+        $global:AppInstallPath = ($global:AppInstallPath + "\steamapps\common\" + $GameFolderName[1])
         Break
     }
 }
