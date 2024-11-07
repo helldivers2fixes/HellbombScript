@@ -981,12 +981,12 @@ If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
         Remove-ItemProperty -Path $regPath -Name $exePath
     }
 
-    Write-Output "Fullscreen optimizations enabled for $exePath"
+    Write-Output "`nFullscreen optimizations enabled for $exePath This is probably not desired." -ForegroundColor Yellow
     } Else {
     # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
     $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
     Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
-    Write-Output "Fullscreen optimizations disabled for $exePath"
+    Write-Output "`nFullscreen optimizations disabled for $exePath This is probably the desired setting." -ForegroundColor Green
     }
 }
 Function Restart-Resume {
