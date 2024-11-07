@@ -173,6 +173,25 @@ Function Find-BlacklistedDrivers {
     Return
 }
 Function Find-CPUInfo {
+    $myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
+    ForEach ($cpuModel in $global:Tests.IntelMicrocodeCheck.AffectedModels) {
+        If (($myCPU).Contains($cpuModel)) {
+            # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
+            $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
+            $CPUProperties = Get-ItemProperty -Path $registrypath
+            $runningMicrocode = $CPUProperties."Update Revision"
+            # Convert to string and remove leading zeros
+            $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X12") } )).TrimStart('0'))
+                If ($runningMicrocodeInHex -lt $global:Tests.IntelMicrocodeCheck.LatestMicrocode) {
+                    $global:Tests.IntelMicrocodeCheck.TestPassed = $false
+                    Return
+                }
+        }
+    }
+    $global:Tests.IntelMicrocodeCheck.TestPassed = $true
+    Return
+}
+Function Show-MotherboardInfo {
     $motherboardInfo = @(
     [pscustomobject]@{ 'Motherboard Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim();
     'UEFI Info' = 'SMBIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim() }
@@ -182,50 +201,7 @@ Function Find-CPUInfo {
     'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
     )
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
-        
-    Write-Host "`nChecking CPU model to determine if it is affected by the Intel CPU stability & permanent degradation issues..." -ForegroundColor Cyan
-    $AffectedCPUStrings = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-    $cpuInfo = Get-CimInstance -ClassName Win32_Processor
-    $cpuName = $cpuInfo.Name.Trim()
-    $containsAny = $false
-    ForEach ($sub in $AffectedCPUStrings) {
-        If (($cpuName).Contains($sub)) {
-            $containsAny = $true
-            Break
-            }
-        }
-        If ($containsAny) {
-            # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
-            $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
-            $CPUProperties = Get-ItemProperty -Path $registrypath
-            $processor = $CPUProperties."ProcessorNameString"
-            $biosMicrocode = $CPUProperties."Previous Update Revision"
-            $runningMicrocode = $CPUProperties."Update Revision"
-            # Convert to string and remove leading zeros
-            $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach { $_.ToString("X12") } )).TrimStart('0'))
-            If ($runningMicrocodeInHex -ge 0x12B) {
-                Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
-                Write-Host ('is running updated microcode ver. 0x{0:X}' -f $runningMicrocodeInHex) -ForegroundColor Green
-                Write-Host 'However, if stability issues occurred before the microcode was updated, then the CPU may already be permanently damaged.' -ForegroundColor Yellow
-                Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-                Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
-                Return
-            }
-            Else {
-            
-            Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$cpuName" -ForeGroundColor White
-            Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
-            Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
-            Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-            Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
-            Return
-            }
-        }
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$cpuName " -NoNewLine
-        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
-    Return
 }
-
 Function Get-InstalledPrograms {
         # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
@@ -1013,6 +989,7 @@ Function Menu {
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
     switch ($choice) {
         0 {
+            Show-MotherboardInfo
             Test-PendingReboot
             Show-Variables
             Find-CPUInfo
@@ -1022,6 +999,7 @@ Function Menu {
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
+            Show-TestResults
             Menu
         }
         1 {
@@ -1065,6 +1043,43 @@ Function Menu {
             Menu
         }
         11 { Return }
+    }
+}
+Function Show-TestResults {
+    $global:Tests.GetEnumerator() | ForEach-Object {
+
+        If ($_.Value.TestPassed -ne $true) {
+            Invoke-Expression $_.Value.TestFailMsg
+        }
+    }
+}
+$global:Tests = @{
+    "IntelMicrocodeCheck" = @{
+        'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+        'LatestMicrocode' = 0x12B
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$myCPU" -ForeGroundColor White
+        Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
+        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
+        Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
+'@
+        'TestPassMsg' = @'
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+'@
+        'NotApplicableMsg' = @'
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+'@
+    }
+    "testdummy" = @{
+        'testvar' = 'testtestest'
+        'TestPassed' = $false
+        'TestFailMsg' = @'
+        Write-Host 'Test dummy crashed!' -ForegroundColor Red
+'@
     }
 }
 # Set AppID
