@@ -820,7 +820,7 @@ Function Test-MemoryChannels {
         } Else {
             Write-Host "`n[FAIL] " -NoNewLine -ForegroundColor Red
             Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
-            Write-Host '       This will usually cause severe performance issues.' -ForegroundColor Yellow
+            Write-Host '       This detection is not perfect, but if true, this will usually cause severe performance issues.' -ForegroundColor Yellow
     }
 }
 # Function to check if a reboot is required
