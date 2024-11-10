@@ -826,25 +826,16 @@ Function Test-MemoryChannels {
 }
 # Function to check if a reboot is required
 Function Test-PendingReboot {
-    $rebootRequired = $false
-    $keys = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\PackagesPending",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
-    ForEach ($key in $keys) {
+    ForEach ($key in $global:Tests.PendingReboot.keys) {
         If (Test-Path $key) {
-            $rebootRequired = $true
+            $global:Tests.PendingReboot.RebootRequired = $true
             Break
         }
     }
-    If ($rebootRequired) {
-    Write-Host "`n`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
-    Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
-    Pause "Press any key to continue anyway..."
+    If ($global:Tests.PendingReboot.RebootRequired) {
+        $global:Tests.PendingReboot.TestPassed = $false
     } Else {
-    Write-Host "No reboot is required... continuing..." -Foreground Green
+        $global:Tests.PendingReboot.TestPassed = $true
     }
 }
 Function Reset-HD2SteamCloud {
@@ -1057,9 +1048,9 @@ Function Show-TestResults {
 }
 $global:Tests = @{
     "IntelMicrocodeCheck" = @{
+        'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         'LatestMicrocode' = 0x12B
-        'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$myCPU" -ForeGroundColor White
         Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
@@ -1075,6 +1066,21 @@ $global:Tests = @{
         Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
+    }
+    "PendingReboot" = @{
+        'TestPassed' = $null
+        'rebootRequired' = $false
+        'keys' = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\PackagesPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
+        'TestFailMsg' = @'
+        Write-Host "`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
+        Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
+'@
+
     }
 }
 # Set AppID
