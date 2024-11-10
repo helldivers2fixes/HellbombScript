@@ -1,3 +1,4 @@
+using namespace System.Management.Automation.Host
 # Hellbomb Script
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
@@ -972,23 +973,23 @@ Function Restart-Resume {
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
     $Prompt = "Enter your choice:"
-    $Choices = @(
-        [System.Management.Automation.Host.ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks & flushes the DNS Cache.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and dll errors.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Full-Screen &Optimizations Toggle', 'Despite the name, having this off is usually recommended.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.')
-        [System.Management.Automation.Host.ChoiceDescription]::new('E&xit', 'Exits the script.')
+    $Choices = [ChoiceDescription[]](
+        [ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks & flushes the DNS Cache.'),
+        [ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
+        [ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and dll errors.'),
+        [ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
+        [ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.'),
+        [ChoiceDescription]::new('Full-Screen &Optimizations Toggle', 'Despite the name, having this off is usually recommended.'),
+        [ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.'),
+        [ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.'),
+        [ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
+        [ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
+        [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
-    $Default = 0
-    $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $Default)
-    switch ($choice) {
+    $DefaultChoice = 0
+    $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $DefaultChoice)
+    switch ($Choice) {
         0 {
             Show-MotherboardInfo
             Test-PendingReboot
