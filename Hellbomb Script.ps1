@@ -342,7 +342,7 @@ Function Test-Programs {
         Write-Host ("{0,-33} {1,-20} {2,-35}" -f '--------------------------------',
         '-----------------',
         '------------------------------------------------------------------------------------------------')
-        foreach ($row in $result) {
+        ForEach ($row in $result) {
             Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
             Write-Host ("{0,-26}" -f $row.ProgramName) -ForegroundColor Yellow -NoNewline
             Write-Host (" {0,-20} {1,-132}" -f $row.InstalledVersion, $row.Notes)
@@ -574,7 +574,7 @@ Function Test-Wifi {
 
     While ((Get-Date) -lt $endTime) {
         $pingResult = Test-Connection $ipAddress -Count 1 -ErrorAction SilentlyContinue
-        if ($pingResult) {
+        If ($pingResult) {
             $pingResults += $pingResult
         }
     }
@@ -903,10 +903,10 @@ Function Reset-HD2SteamCloud {
     $modifiedContent = @()
     
     # Parse the sharedconfig.vdf file and modify the cloudenabled value to '0'
-    foreach ($line in $configContent) {
-        if ($line -match $global:AppID) {
+    ForEach ($line in $configContent) {
+        If ($line -match $global:AppID) {
             $inAppSection = $true
-        } elseif ($inAppSection -and $line -match '"cloudenabled"') {
+        } ElseIf ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"0"'
             $inAppSection = $false
         }
@@ -926,10 +926,10 @@ Function Reset-HD2SteamCloud {
 
     Write-Host 'Re-enabling Cloud Save for HD2...' -Foreground Cyan
     $configContent = Get-Content -Path $sharedConfigPath
-    foreach ($line in $configContent) {
-        if ($line -match $global:AppID) {
+    ForEach ($line in $configContent) {
+        Ff ($line -match $global:AppID) {
             $inAppSection = $true
-        } elseif ($inAppSection -and $line -match '"cloudenabled"') {
+        } ElseIf ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"1"'
             $inAppSection = $false
         }
