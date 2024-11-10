@@ -262,7 +262,7 @@ Function Test-Programs {
     $regName = "ProviderEnabled"
 
     Try {
-    $value = Get-ItemProperty -Path $regPath -Name $regName -ErrorAction Stop
+    $value = Get-ItemProperty -Path $regPath -Name $regName
     If ($value.$regName -eq 1)
         {
             Write-Host "`n⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
