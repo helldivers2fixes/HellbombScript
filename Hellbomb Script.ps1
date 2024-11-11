@@ -917,7 +917,7 @@ Function Reset-HD2SteamCloud {
     Remove-Item -Path $HD2SteamCloudSaveFolder\* -Recurse
     Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -Foreground Cyan
     
-    Write-Host "STOP! Please open Helldivers 2 and wait unti it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
+    Write-Host "STOP! Please open Helldivers 2 and skip intro/wait until it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
     pause 'Press any key to continue...'
 
     Write-Host 'Re-enabling Cloud Save for HD2...' -Foreground Cyan
