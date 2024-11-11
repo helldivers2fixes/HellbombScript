@@ -159,19 +159,24 @@ Function Find-BlacklistedDrivers {
     If ($FoundBlacklistedDevice -eq $False) {
         Write-Host "No problematic devices found." -ForegroundColor Green
     }
-    # Hack to quickly check for missing chipset drivers
-    $MissingDriverCounter = 0
-    ForEach ($device in $DeviceDatabase) {
-        If ($device.FriendlyName -like "Base System Device") {
-        $MissingDriverCounter++
+    # Hack to quickly check for missing drivers that are probably critical
+     $DeviceDatabase = Get-PnpDevice
+     $MissingDriverCounter = 0
+     $filteredDevices = $DeviceDatabase | Where-Object {
+        # Look for isseus with AMD and Intel drivers only
+        $_.InstanceId -match "VEN_1022|VEN_8086"
         }
-    }
-    If ($MissingDriverCounter -gt 4) {
-        Write-Host "`n It appears you are missing your chipset driver." -ForegroundColor Yellow
-        Write-Host "`n This is a critical driver for performance & function." -ForegroundColor Yellow
-        Write-Host "`n Please install it from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
-    }
-    Return
+        ForEach ($device in $filteredDevices) {
+            If ($device.FriendlyName -match "Base System Device|Unknown" -or $device.Status -eq 'Unknown') {
+            $MissingDriverCounter++
+            }
+        }
+        
+        If ($MissingDriverCounter -gt 1) {
+            Write-Host "`n It appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+            Write-Host "`n Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
+        }
+        Return
 }
 Function Find-CPUInfo {
     $myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
