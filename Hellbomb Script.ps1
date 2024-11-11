@@ -120,6 +120,7 @@ Function Get-IsProcessRunning {
 }
 
 Function Install-VCRedist {
+    Pause "`n This function will likely cause your computer to restart. Save any work before continueing..." -ForegroundColor Yellow
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
