@@ -273,9 +273,10 @@ Function Test-Programs {
     If ($value.$regName -eq 1)
         {
             Write-Host "`n⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
-            Write-Host 'Add an exception for ' -ForegroundColor Cyan -NoNewline
+            Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
             Write-Host 'https://microsoft.com ' -NoNewline
             Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
+            Write-Host 'More information can be found here: https://discord.com/channels/1102970375731691612/1218153537914273802/1273154218022408252'
         }
     }
     Catch { # Value does not exist
