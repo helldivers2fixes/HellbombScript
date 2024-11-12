@@ -662,6 +662,7 @@ Function Reset-Steam {
         '
     }
     Get-IsProcessRunning $SteamProcess
+    Pause "You will need to sign into Steam after this process completes.`nPress any key to continue..." ForegroundColor Yellow
     # Remove CEF Cache
     Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
