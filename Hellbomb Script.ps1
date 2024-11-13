@@ -209,7 +209,7 @@ Function Find-BlacklistedDrivers {
      $DeviceDatabase = Get-PnpDevice
      $MissingDriverCounter = 0
      $filteredDevices = $DeviceDatabase | Where-Object {
-        # Look for isseus with AMD and Intel drivers only
+        # Look for issues with AMD and Intel drivers only
         $_.InstanceId -match "VEN_1022|VEN_8086"
         }
         ForEach ($device in $filteredDevices) {
@@ -362,7 +362,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes in the past.' }
     [PSCustomObject]@{ProgramName = 'ESET Endpoint'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET File'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
-    [PSCustomObject]@{ProgramName = 'ESET Managment'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
+    [PSCustomObject]@{ProgramName = 'ESET Management'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET PROTECT'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Rogue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
@@ -449,7 +449,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
         If (!$TCPRule -or !$UDPRule) {
 
         Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -Foregroundcolor Red
-        Write-Host 'On game launch, Steam should request Admin privleges and add the Inbound rule(s) for you.' -Foregroundcolor Yellow
+        Write-Host 'On game launch, Steam should request Admin privileges and add the Inbound rule(s) for you.' -Foregroundcolor Yellow
         Write-Host 'You may need to add the rule(s) manually if this does not happen.' -Foregroundcolor Yellow
         Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
         Start-Process wf.msc
@@ -501,7 +501,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
-    # will return false postives when it's actually broken.
+    # will return false positives when it's actually broken.
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -686,7 +686,7 @@ Function Test-Wifi {
     $results
     
     If ($stdDev -gt 5) {
-        Write-Host "`nYour connection to your default gateway has signifcant jitter (latency variance)." -ForegroundColor Yellow
+        Write-Host "`nYour connection to your default gateway has significant jitter (latency variance)." -ForegroundColor Yellow
     }
     If ($packetLossPercentage -gt 1) {
         Write-Host "`nYour connection to your default gateway has more than 1% packet loss." -ForegroundColor Yellow
@@ -841,7 +841,7 @@ Function Test-VisualC++Redists {
     $missingRedists = $VCRedists | Where-Object { $_.Installed -eq $false }
     If ($missingRedists) {
         Write-Host "`nYou are missing critical Visual C++ Redists. The game will not run.`n" -ForegroundColor Yellow
-        Write-Host ("{0,-33}" -f "Missing Visual C++ Redistrubutable(s)") -ForegroundColor Cyan
+        Write-Host ("{0,-33}" -f "Missing Visual C++ Redistributable(s)") -ForegroundColor Cyan
         Write-Host ("{0,-33}" -f '-------------------------------------')
         ForEach ($redist in $missingRedists) {
             Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
@@ -1030,7 +1030,7 @@ Function Menu {
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks & flushes the DNS Cache.'),
         [ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and dll errors.'),
+        [ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and DLL errors.'),
         [ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
         [ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
         [ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.'),
