@@ -9,18 +9,19 @@ $global:Tests = @{
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         'LatestMicrocode' = 0x12B
         'TestFailMsg' = @'
-        Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$myCPU" -ForeGroundColor White
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForeGroundColor White
         Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
-        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
+        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable`n        and permanently damaged." -ForegroundColor Red
         Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
+        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`nPress any key to continue..." -ForegroundColor Yellow
 '@
         'TestPassMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
         'NotApplicableMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
     }
@@ -34,15 +35,17 @@ $global:Tests = @{
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
         "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
         'TestFailMsg' = @'
-        Write-Host "`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
-        Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host " Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
+        Write-Host "`nPlease exit the script and reboot your machine..." -ForegroundColor Cyan
 '@
 
     }
         "BadPrinter" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        Write-Host "`nOneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
         Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
 '@
 
@@ -235,9 +238,9 @@ Function Test-BadPrinters {
         }
 }
 Function Find-CPUInfo {
-    $myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
+    $global:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
     ForEach ($cpuModel in $global:Tests.IntelMicrocodeCheck.AffectedModels) {
-        If (($myCPU).Contains($cpuModel)) {
+        If (($global:myCPU).Contains($cpuModel)) {
             # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
             $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
             $CPUProperties = Get-ItemProperty -Path $registrypath
