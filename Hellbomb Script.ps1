@@ -3,6 +3,51 @@ using namespace System.Management.Automation.Host
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+$global:Tests = @{
+    "IntelMicrocodeCheck" = @{
+        'TestPassed' = $null
+        'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+        'LatestMicrocode' = 0x12B
+        'TestFailMsg' = @'
+        Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$myCPU" -ForeGroundColor White
+        Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
+        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
+        Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
+'@
+        'TestPassMsg' = @'
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+'@
+        'NotApplicableMsg' = @'
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
+        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+'@
+    }
+    "PendingReboot" = @{
+        'TestPassed' = $null
+        'rebootRequired' = $false
+        'keys' = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\PackagesPending",
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
+        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
+        'TestFailMsg' = @'
+        Write-Host "`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
+        Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
+'@
+
+    }
+        "BadPrinter" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`nOneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
+        Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
+'@
+
+    }
+}
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
         Clear-Host
@@ -178,6 +223,16 @@ Function Find-BlacklistedDrivers {
             Write-Host "`n Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
         }
         Return
+}
+Function Test-BadPrinters {
+   Get-Printer | ForEach-Object {
+        If ($_.Name -eq 'OneNote for Windows 10') {
+            $global:Tests.BadPrinter.TestPassed =  $false
+        } 
+    }
+    If (-not $global:Tests.BadPrinter.TestPassed) {
+            $global:Tests.BadPrinter.TestPassed = $true
+        }
 }
 Function Find-CPUInfo {
     $myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
@@ -997,6 +1052,7 @@ Function Menu {
             Test-MemoryChannels
             Test-Network
             Find-BlacklistedDrivers
+            Test-BadPrinters
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
@@ -1052,43 +1108,6 @@ Function Show-TestResults {
         If ($_.Value.TestPassed -ne $true) {
             Invoke-Expression $_.Value.TestFailMsg
         }
-    }
-}
-$global:Tests = @{
-    "IntelMicrocodeCheck" = @{
-        'TestPassed' = $null
-        'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = 0x12B
-        'TestFailMsg' = @'
-        Write-Host "`nAffected CPU Model with unpatched microcode Detected!! " -ForegroundColor Red -NoNewLine; Write-Host "$myCPU" -ForeGroundColor White
-        Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
-        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable & permanently damaged." -ForegroundColor Red
-        Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`n`nPress any key to continue..." -ForegroundColor Yellow
-'@
-        'TestPassMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
-        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
-'@
-        'NotApplicableMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$myCPU " -NoNewLine
-        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
-'@
-    }
-    "PendingReboot" = @{
-        'TestPassed' = $null
-        'rebootRequired' = $false
-        'keys' = @(
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootInProgress",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\PackagesPending",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
-        "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
-        'TestFailMsg' = @'
-        Write-Host "`n[WARNING] Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
-        Write-Host " Please exit the script and reboot your machine...`n`n" -ForegroundColor Cyan
-'@
-
     }
 }
 # Set AppID
