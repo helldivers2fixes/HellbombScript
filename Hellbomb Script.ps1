@@ -512,6 +512,8 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     $psi.RedirectStandardError = $true
     $psi.FileName = 'curl.exe'
     $psi.Arguments = @('-X HEAD -I http://www.microsoft.com/pkiops/crl/Microsoft%20Azure%20RSA%20TLS%20Issuing%20CA%2003.crl')
+    # Set encoding to UTF8 so that Unicode compilation doesn't break curl arguments
+	$psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
