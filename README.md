@@ -12,7 +12,7 @@
 ## Copy and paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
- 1. **Open** Terminal or PowerShell by pressing `Windows Key` + `X` and click `Terminal` or `PowerShell`
+ 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `PowerShell (Admin)`
  2. Click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1)
  3. **Copy** entire script by clicking the copy button in the top right by the script
     
