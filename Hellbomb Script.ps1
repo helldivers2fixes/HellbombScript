@@ -691,13 +691,13 @@ Function Test-Wifi {
     $results
     
     If ($stdDev -gt 5) {
-        Write-Host "`nYour connection to your default gateway has significant jitter (latency variance)." -ForegroundColor Yellow
+        Write-Host "Your connection to your default gateway has significant jitter (latency variance).`n`n" -ForegroundColor Yellow
     }
     If ($packetLossPercentage -gt 1) {
-        Write-Host "`nYour connection to your default gateway has more than 1% packet loss." -ForegroundColor Yellow
+        Write-Host "Your connection to your default gateway has more than 1% packet loss.`n`n" -ForegroundColor Yellow
     } 
     If ($stdDev -le 5 -and $packetLossPercentage -le 1) {
-        Write-Host "`nYour connection appears to be operating normally." -ForegroundColor Green
+        Write-Host "Your connection appears to be operating normally.`n`n" -ForegroundColor Green
     }
 }
 Function Test-BTAGService {
