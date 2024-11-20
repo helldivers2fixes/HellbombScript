@@ -13,7 +13,7 @@
 Copy and paste the script manually per instructions below.
 
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
- 2. Click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1)
+ 2. Middle/Ctrl + click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1) so that these instructions stay open
  3. **Copy** entire script by clicking the copy button in the top right by the script
     
        <img src = "https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" height=50>
