@@ -778,23 +778,11 @@ Function Test-PrivateIP {
     }
 }
 Function Test-DoubleNAT {
-    Write-Host "`nRunning Double-NAT test... may take a moment" -ForegroundColor Cyan
+    Write-Host "`nRunning Double-NAT test... this will take a minute" -ForegroundColor Cyan
     $server = 'cloudflare.com'
-    $ip = Resolve-DnsName -Type A $server | Select-Object -Expand IPAddress
-    $progress = 0
-    $progressIncrement = 3
-    $progressMessage = 'TraceRoute'
-    $job = Start-Job -ScriptBlock {
-        Param($ip)
-        Test-NetConnection -Hops 10 -TraceRoute $ip -WarningAction SilentlyContinue
-    } -ArgumentList $ip[0]
-    While ($job.State -eq 'Running') {
-        If ($progress -lt 100 - $progressIncrement) {$progress += $progressIncrement}
-        Write-Progress -Activity $progressMessage -Status "Progress: $progress%" -PercentComplete $progress
-        Start-Sleep -Seconds 1
-    }
-$tracedroute = Receive-Job $job
-Write-Progress -Activity $progressMessage -Status "Completed" -Completed
+    $ip = Resolve-DnsName -Type A $server |
+        Select-Object -Expand IPAddress
+    $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0] -WarningAction:SilentlyContinue
     $privateIPs = @()
     ForEach ($hop in $tracedroute.TraceRoute) {
         If (Test-PrivateIP $hop) {
