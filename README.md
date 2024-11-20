@@ -1,6 +1,6 @@
 # 💣Hellbomb💣 Script for Troubleshooting Helldivers 2 Issues
 
-![image](https://github.com/user-attachments/assets/8f2b83d3-95f5-4836-854e-c7063a543272)
+![image](https://github.com/user-attachments/assets/b52861b8-37ec-454c-afa8-9dc99917f2b7)
 ## Using the EXE:
 
 1.) Grab the latest EXE from [the Releases on the right-hand side](https://github.com/helldivers2fixes/HellbombScript/releases) and run it.
