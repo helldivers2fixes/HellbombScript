@@ -1050,9 +1050,9 @@ Function Menu {
     $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $DefaultChoice)
     switch ($Choice) {
         0 {
+            Show-Variables
             Show-MotherboardInfo
             Test-PendingReboot
-            Show-Variables
             Find-CPUInfo
             Test-MemoryChannels
             Test-Network
