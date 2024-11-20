@@ -1026,6 +1026,19 @@ If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
     Write-Host "`nFullscreen optimizations disabled for $exePath This is probably the desired setting." -ForegroundColor Green
     }
 }
+Function Reset-HostabiltyKey {
+    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
+    $OriginalHash = Get-FileHash $configPath
+    $content = Get-Content $configPath
+    $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
+    Set-Content $configPath -Value $content
+    If ($OriginalHash -ne (Get-FileHash $configPath)) {
+        Write-Host 'Hostability key removed successfully!' -ForegroundColor -Green
+    }
+    Else {
+        Write-Host '[FAIL] Hostabiltiy key could not be removed.' -ForegroundColor -Red
+    }
+}
 Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
@@ -1044,6 +1057,7 @@ Function Menu {
         [ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.'),
         [ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
+        [ChoiceDescription]::new('Clear &Z Hostability Key', 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
@@ -1104,7 +1118,10 @@ Function Menu {
             Reset-HD2SteamCloud
             Menu
         }
-        11 { Return }
+        11 {
+            Reset-HostabiltyKey
+        }
+        12 { Return }
     }
 }
 Function Show-TestResults {
