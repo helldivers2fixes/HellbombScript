@@ -1033,10 +1033,10 @@ Function Reset-HostabiltyKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ($OriginalHash -ne (Get-FileHash $configPath)) {
-        Write-Host 'Hostability key removed successfully!' -ForegroundColor -Green
+        Write-Host 'Hostability key removed successfully!' -ForegroundColor Green
     }
     Else {
-        Write-Host '[FAIL] Hostabiltiy key could not be removed.' -ForegroundColor -Red
+        Write-Host '[FAIL] Hostabiltiy key could not be removed.' -ForegroundColor Red
     }
 }
 Function Restart-Resume {
