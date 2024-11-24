@@ -554,6 +554,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
         Write-Host ' [FAIL]' -ForegroundColor Red
         Write-Host 'Do you have a Pi-Hole or other DNS-blocking security software? Please whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
+    Write-Progress -Completed -Activity "make progress bar dissapear"
     Test-ClientDnsConfig
     Return
 }
@@ -783,6 +784,7 @@ Function Test-DoubleNAT {
     $ip = Resolve-DnsName -Type A $server |
         Select-Object -Expand IPAddress
     $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0] -WarningAction:SilentlyContinue
+    Write-Progress -Completed -Activity "make progress bar dissapear"
     $privateIPs = @()
     ForEach ($hop in $tracedroute.TraceRoute) {
         If (Test-PrivateIP $hop) {
