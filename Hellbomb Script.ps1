@@ -998,34 +998,39 @@ Function Reset-HD2SteamCloud {
     $modifiedContent = $null
     Write-Host 'HD2 Steam Cloud clearing procedures completed!' -Foreground Cyan
 }
-Function Switch-FullScreenOptimizations {
-# Define the path to the executable
-$exePath = "$global:AppInstallPath\bin\helldivers2.exe"
-# Define the registry path
-$regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
-
-If (-not (Test-Path $regPath)) {
-    New-Item -Path $regPath -Force | Out-Null
-}
-
-$currentValue = ((Get-ItemProperty -Path $regPath -Name $exePath -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $exePath -ErrorAction SilentlyContinue).Trim())
-
-If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
-    $newValue = ($currentValue -replace "DISABLEDXMAXIMIZEDWINDOWEDMODE", "").Trim()
-    If ($newValue) {
-        Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
+Function Switch-FullScreenOptimizations
+{
+    # Define the path to the executable
+    $exePath = "$global:AppInstallPath\bin\helldivers2.exe"
+    # Define the registry path
+    $regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+    # Check if the registry key exists, create it if it doesn't
+    If (-not (Test-Path $regPath)) {    New-Item -Path $regPath -Force | Out-Null}
+    # Check if the property exists within the registry key
+    $currentProperty = Get-ItemProperty -Path $regPath -Name $exePath -ErrorAction SilentlyContinue
+    If ($null -eq $currentProperty)
+    {
+        # Create the property if it doesn't exist
+        New-ItemProperty -Path $regPath -Name $exePath -Value 'DISABLEDXMAXIMIZEDWINDOWEDMODE' -PropertyType String | Out-Null
     } Else {
-        Remove-ItemProperty -Path $regPath -Name $exePath
+            # Check the current value of the property
+            $currentValue = ($currentProperty | Select-Object -ExpandProperty $exePath -ErrorAction SilentlyContinue).Trim()
+            If ($currentValue -like "*DISABLEDXMAXIMIZEDWINDOWEDMODE*") {
+                $newValue = ($currentValue -replace "DISABLEDXMAXIMIZEDWINDOWEDMODE", "").Trim()
+                If ($newValue) {
+                    Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
+                } Else {
+                    Remove-ItemProperty -Path $regPath -Name $exePath
+                }
+                Return Write-Host "`nFullscreen optimizations enabled for $exePath. This is probably not desired." -ForegroundColor Yellow
+            } Else {
+                # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
+                $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
+                Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
+            }
+        }
+        Return Write-Host "`nFullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
     }
-
-    Write-Host "`nFullscreen optimizations enabled for $exePath This is probably not desired." -ForegroundColor Yellow
-    } Else {
-    # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
-    $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
-    Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
-    Write-Host "`nFullscreen optimizations disabled for $exePath This is probably the desired setting." -ForegroundColor Green
-    }
-}
 Function Reset-HostabiltyKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
     $OriginalHash = Get-FileHash $configPath
