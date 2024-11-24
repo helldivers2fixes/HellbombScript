@@ -1040,31 +1040,32 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ($OriginalHash -ne (Get-FileHash $configPath)) {
-        Write-Host "`nHostability key removed successfully!" -ForegroundColor Green
+        Write-Host "Hostability key removed successfully!`n" -ForegroundColor Green
     }
     Else {
-        Write-Host '[FAIL] Hostabiltiy key could not be removed.' -ForegroundColor Red
+        Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
+        Write-host 'Hostabiltiy key could not be removed.`n' -ForegroundColor Yellow
     }    
 }
 Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
 }
 Function Menu {
-    $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2"
+    $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.0.0.1"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new('&HD2 Status Checks', 'Provides various status checks & flushes the DNS Cache.'),
-        [ChoiceDescription]::new('&Clear HD2 Settings (AppData)', 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new('&Install VC++ Redists', 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and DLL errors.'),
-        [ChoiceDescription]::new('Re-install &GameGuard', 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
-        [ChoiceDescription]::new('Re&set Steam', 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
-        [ChoiceDescription]::new('Set HD2 G&PU', 'Brings up the Windows GPU settings.'),
-        [ChoiceDescription]::new('Full-Screen &Optimizations Toggle', 'Despite the name, having this off is usually recommended.'),
-        [ChoiceDescription]::new('Double-NAT &Test', 'Tests network for Double NAT.'),
-        [ChoiceDescription]::new('&Wi-Fi LAN Test', 'Tests the connection to the default gateway.'),
-        [ChoiceDescription]::new('Toggle &Bluetooth Telephony Service', 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
-        [ChoiceDescription]::new('Clear HD2 Stea&m Cloud', 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
-        [ChoiceDescription]::new('Clear &Z Hostability Key', 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
+        [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks & flushes the DNS Cache.'),
+        [ChoiceDescription]::new("&Clear HD2 Settings (AppData)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
+        [ChoiceDescription]::new("&Install VC++ Redists", 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and DLL errors.'),
+        [ChoiceDescription]::new("Re-install &GameGuard", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
+        [ChoiceDescription]::new("Re&set Steam`n", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new("Set HD2 G&PU    ", 'Brings up the Windows GPU settings.'),
+        [ChoiceDescription]::new("Full-Screen &Optimizations Toggle`n", 'Despite the name, having this off is usually recommended.'),
+        [ChoiceDescription]::new("Double-NAT &Test", 'Tests network for Double NAT.'),
+        [ChoiceDescription]::new("&Wi-Fi LAN Test`n", 'Tests the connection to the default gateway.'),
+        [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service`n", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
+        [ChoiceDescription]::new("Clear HD2 Stea&m Cloud", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
+        [ChoiceDescription]::new("Clear &Z Hostability Key`n", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
