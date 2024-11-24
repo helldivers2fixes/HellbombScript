@@ -1002,7 +1002,8 @@ Function Switch-FullScreenOptimizations
 {
     # Define the path to the executable
     $exePath = "$global:AppInstallPath\bin\helldivers2.exe"
-    # Define the registry path$regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
+    # Define the registry path
+    $regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
     # Check if the registry key exists, create it if it doesn't
     If (-not (Test-Path $regPath)) {    New-Item -Path $regPath -Force | Out-Null}
     # Check if the property exists within the registry key
