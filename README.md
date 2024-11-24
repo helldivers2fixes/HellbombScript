@@ -1,6 +1,6 @@
 # 💣Hellbomb💣 Script for Troubleshooting Helldivers 2 Issues
 
-![image](https://github.com/user-attachments/assets/b52861b8-37ec-454c-afa8-9dc99917f2b7)
+![image](https://github.com/user-attachments/assets/5597b574-a25d-43d9-9c5b-63f96d5ee2b2)
 ## Using the EXE:
 
 1.) Grab the latest EXE from [the Releases on the right-hand side](https://github.com/helldivers2fixes/HellbombScript/releases) and run it.
@@ -30,4 +30,4 @@ Running the HD2 Status Checks (H) in PowerShell 7:
 ![Hellbomb Script Running](https://github.com/user-attachments/assets/1a3ae864-2810-483d-9c74-eeac95bc4b3b)
 
 Selecting Help (?) from the menu:
-![image](https://github.com/user-attachments/assets/bc0ec433-b287-486b-acd5-b89242256e6f)
+![image](https://github.com/user-attachments/assets/0a7decb3-0273-41cf-9009-4bc32a9aa073)
