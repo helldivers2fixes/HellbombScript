@@ -343,14 +343,14 @@ Function Test-Programs {
     $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc
     ForEach ($service in $InstalledServices)
     {
-        If ($service.Name -like 'avast*') {
+        If ($service.Name -like 'avast*' -and $service.StartType -ne 'Disabled') {
             $obj = [PSCustomObject]@{
                 DisplayName    = 'Avast Internet Security'
                 DisplayVersion = '0.0.0'
             }
             $array += $obj
         }
-        If ($service.Name -like 'Nahimic*') {
+        If ($service.Name -like 'Nahimic*' -and $service.StartType -ne 'Disabled') {
             $obj = [PSCustomObject]@{
                 DisplayName    = 'Nahimic'
                 DisplayVersion = '0.0.0'
