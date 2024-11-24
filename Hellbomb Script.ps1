@@ -451,9 +451,9 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
             }
         If (!$TCPRule -or !$UDPRule) {
 
-        Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -Foregroundcolor Red
-        Write-Host 'On game launch, Steam should request Admin privileges and add the Inbound rule(s) for you.' -Foregroundcolor Yellow
-        Write-Host 'You may need to add the rule(s) manually if this does not happen.' -Foregroundcolor Yellow
+        Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -ForegroundColor Red
+        Write-Host 'On game launch, Steam should request Admin privileges and add the Inbound rule(s) for you.' -ForegroundColor Yellow
+        Write-Host 'You may need to add the rule(s) manually if this does not happen.' -ForegroundColor Yellow
         Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
         Start-Process wf.msc
         }
@@ -864,7 +864,7 @@ Function Test-VisualC++Redists {
     Return
 }
 Function Test-MemoryChannels {
-    Write-Host "`nChecking to see if multi-channel memory is enabled..." -ForegroundColor Cyan
+    Write-Host 'Checking to see if multi-channel memory is enabled...' -ForegroundColor Cyan
     $TextHolder = $null
     $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
     $DeviceLocatorChannels = 1
@@ -885,11 +885,11 @@ Function Test-MemoryChannels {
     )
     $TextHolder = $MemoryTextStrings | Where-Object {$_.ChannelCount -match $NumberofChannels}
     If ( $TextHolder ) {
-        Write-Host "`n[PASS] " -NoNewLine -ForegroundColor Green
+        Write-Host '[PASS] ' -NoNewLine -ForegroundColor Green
         Write-Host ($TextHolder.String) -NoNewline
         Write-Host '-channel Memory is enabled!'
         } Else {
-            Write-Host "`n[FAIL] " -NoNewLine -ForegroundColor Red
+            Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
             Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
             Write-Host '       This detection is not perfect, but if true, this will usually cause severe performance issues.' -ForegroundColor Yellow
     }
