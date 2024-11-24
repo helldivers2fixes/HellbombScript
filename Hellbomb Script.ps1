@@ -595,7 +595,7 @@ Function Test-ClientDnsConfig {
             # Will check if null or empty in next part of script
         }
     
-    Write-Host "`nCHECKING IPV4 DNS..." -ForegroundColor Cyan
+    Write-Host "`nCHECKING IPv4 DNS..." -ForegroundColor Cyan
     # Print and test DNS servers for IPv4
     If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
@@ -611,14 +611,23 @@ Function Test-ClientDnsConfig {
     }
 
     # Print and test DNS servers for IPv6
-    Write-Host "`nCHECKING IPV6 DNS..." -ForegroundColor Cyan
+    Write-Host "`nCHECKING IPv6 DNS..." -ForegroundColor Cyan
     If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host ' Detected IPv6 DNS server(s):'
-        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_" }
-    
+        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
+        }
         Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
-        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
+        Try { 
+            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
+        } Catch {
+            Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
+            Write-Host ' No IPv6 DNS servers found!'
+            Write-Host 'Consider setting an IPv6 DNS server like'
+            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
+            Write-Host ' on your network adapter.'
+        }
+        
     }
     Else {
         Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
