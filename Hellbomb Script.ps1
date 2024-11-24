@@ -1031,18 +1031,18 @@ Function Switch-FullScreenOptimizations
         }
         Return Write-Host "`nFullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
     }
-Function Reset-HostabiltyKey {
+Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
     $OriginalHash = Get-FileHash $configPath
     $content = Get-Content $configPath
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ($OriginalHash -ne (Get-FileHash $configPath)) {
-        Write-Host 'Hostability key removed successfully!' -ForegroundColor Green
+        Write-Host "`nHostability key removed successfully!" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] Hostabiltiy key could not be removed.' -ForegroundColor Red
-    }
+    }    
 }
 Function Restart-Resume {
     Return (Test-Path $PSScriptRoot\HellbombRestartResume)
@@ -1124,7 +1124,8 @@ Function Menu {
             Menu
         }
         11 {
-            Reset-HostabiltyKey
+            Reset-HostabilityKey
+            Menu
         }
         12 { Return }
     }
