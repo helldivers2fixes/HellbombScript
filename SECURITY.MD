@@ -1,8 +1,8 @@
 ## Security Info:
 
-EXE [VirusTotal](https://www.virustotal.com/gui/file/5625f60d7de92e4ed19f147ff2ba0b0de2e9f84c18621363c9dce5227cb1bbfd) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/5625f60d7de92e4ed19f147ff2ba0b0de2e9f84c18621363c9dce5227cb1bbfd) link. Seems AV software hates the EXE, and Hybrid Analysis hates it even more than the PowerShell script 😆
+EXE [VirusTotal](https://www.virustotal.com/gui/file/5625f60d7de92e4ed19f147ff2ba0b0de2e9f84c18621363c9dce5227cb1bbfd) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/5625f60d7de92e4ed19f147ff2ba0b0de2e9f84c18621363c9dce5227cb1bbfd) link.
 
-Still don't trust it? You can run ``"Hellbomb Script.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"`` in PowerShell to extract the script from the EXE to verify it's not malicious.
+Not sure you trust the EXE? You can run ``"Hellbomb Script.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"`` in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
 **Script Version VirusTotal Results:** https://www.virustotal.com/gui/file/dacaedc8d7c560553447cd5d306fa4c20f68f1e133076aa6badd5de36d1c559f
 
