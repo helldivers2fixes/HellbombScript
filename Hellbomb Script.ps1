@@ -1069,7 +1069,12 @@ Function Switch-FullScreenOptimizations
     }
 Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
-    $OriginalHash = Get-FileHash $configPath
+    Try { $OriginalHash = Get-FileHash $configPath }
+    Catch {
+        Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
+        Write-Host 'User_settings.config is missing.' -ForegroundColor Yellow
+        Return
+    }
     $content = Get-Content $configPath
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
