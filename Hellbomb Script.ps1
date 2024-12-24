@@ -10,7 +10,7 @@ $global:Tests = @{
         'LatestMicrocode' = 0x12B
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForeGroundColor White
+        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForegroundColor White
         Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable`n        and permanently damaged." -ForegroundColor Red
         Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
@@ -39,17 +39,24 @@ $global:Tests = @{
         Write-Host " Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
         Write-Host "`nPlease exit the script and reboot your machine..." -ForegroundColor Cyan
 '@
-
     }
-        "BadPrinter" = @{
+    "BadPrinter" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
         Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
 '@
-
     }
+    "Starlink" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[WARNING] " -NoNewline -ForegroundColor Yellow
+        Write-Host 'Starlink detected! You need to use Wi-Fi, or disable IPv6.' -ForegroundColor Cyan
+        Write-Host 'Restart your PC after making those changes.' -ForegroundColor Cyan
+'@
+    }
+
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -168,7 +175,7 @@ Function Get-IsProcessRunning {
 }
 
 Function Install-VCRedist {
-    Pause "`n This function will likely cause your computer to restart. Save any work before continueing..." -ForegroundColor Yellow
+    Pause "`n This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Yellow
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ("$env:USERPROFILE\Downloads\") -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
@@ -228,15 +235,26 @@ Function Find-BlacklistedDrivers {
         Return
 }
 Function Test-BadPrinters {
-   Get-Printer | ForEach-Object {
-        If ($_.Name -eq 'OneNote for Windows 10') {
-            $global:Tests.BadPrinter.TestPassed =  $false
-        } 
-    }
-    If (-not $global:Tests.BadPrinter.TestPassed) {
+    # Get the Print Spooler service status
+    $spoolerService = Get-Service -Name "Spooler"
+
+    If ($spoolerService.StartType -ne "Disabled") {
+        If ($spoolerService.Status -ne "Running") {
+            # Restart the Print Spooler service if it's not running and not disabled
+            Start-Service -Name "Spooler"
+        }
+
+        Get-Printer | ForEach-Object {
+            If ($_.Name -eq 'OneNote for Windows 10') {
+                $global:Tests.BadPrinter.TestPassed = $false
+            }
+        }
+        If ( $null -eq $global:Tests.BadPrinter.TestPassed ) {
             $global:Tests.BadPrinter.TestPassed = $true
         }
+    } Else { $global:Tests.BadPrinter.TestPassed = $true }
 }
+
 Function Find-CPUInfo {
     $global:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
     ForEach ($cpuModel in $global:Tests.IntelMicrocodeCheck.AffectedModels) {
@@ -246,11 +264,13 @@ Function Find-CPUInfo {
             $CPUProperties = Get-ItemProperty -Path $registrypath
             $runningMicrocode = $CPUProperties."Update Revision"
             # Convert to string and remove leading zeros
-            $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X12") } )).TrimStart('0'))
+            Try { $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X12") } )).TrimStart('0'))
                 If ($runningMicrocodeInHex -lt $global:Tests.IntelMicrocodeCheck.LatestMicrocode) {
                     $global:Tests.IntelMicrocodeCheck.TestPassed = $false
                     Return
                 }
+            }
+            Catch { $global:Tests.IntelMicrocodeCheck.TestPassed = $false }
         }
     }
     $global:Tests.IntelMicrocodeCheck.TestPassed = $true
@@ -268,7 +288,7 @@ Function Show-MotherboardInfo {
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
 }
 Function Get-InstalledPrograms {
-        # This portion modified from:
+    # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
     Write-Host "`nGathering installed programs..." -ForegroundColor Cyan
     Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
@@ -369,7 +389,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'ESET PROTECT'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Rogue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
-    [PSCustomObject]@{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Breaks connectivity. Recommend uninstalling or disable IN DEVICE MANAGER' }
+    [PSCustomObject]@{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Breaks connectivity. Recommend uninstalling or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
     [PSCustomObject]@{ProgramName = 'MSI Afterburner'; RecommendedVersion = '4.6.5'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions cause crashing & performance issues.' }
     [PSCustomObject]@{ProgramName = 'Mullvad VPN'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Causes connection issues. Recommend uninstall or disable in DEVICE MANAGER.' }
@@ -382,9 +402,10 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'Razer Cortex'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Causes severe performance issues. Must disable/uninstall.' }
     [PSCustomObject]@{ProgramName = 'Ryzen Master'; RecommendedVersion = '2.13.0.2908'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause RAM leaks & general issues. Recommend uninstalling.' }
     [PSCustomObject]@{ProgramName = 'Samsung Magician'; RecommendedVersion = '8.1'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions break connectivity completely.' }
-    [PSCustomObject]@{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER' }
+    [PSCustomObject]@{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'Wargaming.net Game Center'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues.' }
-    [PSCustomObject]@{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' })
+    [PSCustomObject]@{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
+    [PSCustomObject]@{ProgramName = 'ZeroTier One'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes connectivity issues. Recommend uninstalling or disable IN DEVICE MANAGER.'})
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
         ForEach ($installedApp in $global:InstalledProgramsList) {
@@ -592,7 +613,10 @@ Function Test-ClientDnsConfig {
     Try {
             $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
         } Catch {
-            # Will check if null or empty in next part of script
+            Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
+            Write-Host 'IPv6 issues detected. Please disable IPv6 on your network adapter.' -ForegroundColor Yellow
+            Write-Host 'Opening the Network Adapters screen now...' -ForegroundColor Cyan
+            Start-Process 'ncpa.cpl'
         }
     
     Write-Host "`nCHECKING IPv4 DNS..." -ForegroundColor Cyan
@@ -613,29 +637,29 @@ Function Test-ClientDnsConfig {
     # Print and test DNS servers for IPv6
     Write-Host "`nCHECKING IPv6 DNS..." -ForegroundColor Cyan
     If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
-        Write-Host "[PASS]" -ForegroundColor Green -NoNewline
-        Write-Host ' Detected IPv6 DNS server(s):'
-        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
-        }
-        Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
-        Try { 
-            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
-        } Catch {
-            Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
-            Write-Host ' No IPv6 DNS servers found!'
-            Write-Host 'Consider setting an IPv6 DNS server like'
-            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
-            Write-Host ' on your network adapter.'
-        }
-        
+    Write-Host "[PASS]" -ForegroundColor Green -NoNewline
+    Write-Host ' Detected IPv6 DNS server(s):'
+    $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
     }
-    Else {
-        Write-Host "[FAIL]" -ForegroundColor Yellow -NoNewline
-        Write-Host ' No IPv6 DNS servers found!'
+    Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
+    Try { 
+        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
+    } Catch {
+        Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
+        Write-Host 'No IPv6 DNS servers found!'
         Write-Host 'Consider setting an IPv6 DNS server like'
         Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
         Write-Host ' on your network adapter.'
     }
+    
+    }
+    Else {
+        Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
+        Write-Host 'No IPv6 DNS servers found!'
+        Write-Host 'Consider setting an IPv6 DNS server like'
+        Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
+        Write-Host ' on your network adapter.'
+    }       
 }
 Function Test-Wifi {
     # This is not very robust code and has race conditions and other issues, but it works well-enough for now
@@ -713,9 +737,10 @@ Function Test-Wifi {
 Function Test-BTAGService {
     If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
-        Write-Host "`n⚠️ Bluetooth Audio Gateway (BTAG) Service is running.",
-        "`nThis will cause audio routing issues with Bluetooth Headphones.",
-        "`nToggle this service ON or OFF from the menu (Select option B)"  -ForegroundColor Yellow
+        Write-Host "`n⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
+        Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
+        Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
+        Write-Host "`nToggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
     }
     Else {
         Write-Host "`nBluetooth Audio Gateway (BTAG) Service: DISABLED",
@@ -1056,6 +1081,35 @@ Function Reset-HostabilityKey {
         Write-host 'Hostabiltiy key could not be removed.`n' -ForegroundColor Yellow
     }    
 }
+
+Function Get-PublicIPAddress {
+    $ip = (Invoke-WebRequest -URI "http://ifconfig.me/ip").Content.Trim()
+    Return $ip
+}
+
+Function Get-ISPInfo {
+    Param (
+        [string]$ipAddress
+    )
+    $URL = "http://ipinfo.io/$ipAddress/json"
+    $response = Invoke-RestMethod -Uri $url
+    Return $response
+}
+
+Function Get-ISPName {
+# Get the public IP address
+$PublicIP = Get-PublicIPAddress
+
+# Get the ISP information
+$ISPInfo = Get-ISPInfo -ipAddress $PublicIP
+
+# Check if the ISP is Starlink
+If ( $ispInfo.org -like "*Starlink*" ) {
+    $global:Tests.Starlink.TestPassed =  $false
+    }
+    Else { $global:Tests.Starlink.TestPassed =  $true }
+}
+
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
@@ -1071,7 +1125,7 @@ Function Menu {
         [ChoiceDescription]::new("Set HD2 G&PU    ", 'Brings up the Windows GPU settings.'),
         [ChoiceDescription]::new("Full-Screen &Optimizations Toggle`n", 'Despite the name, having this off is usually recommended.'),
         [ChoiceDescription]::new("Double-NAT &Test", 'Tests network for Double NAT.'),
-        [ChoiceDescription]::new("&Wi-Fi LAN Test`n", 'Tests the connection to the default gateway.'),
+        [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test`n", 'Tests the connection to the default gateway.'),
         [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service`n", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new("Clear HD2 Stea&m Cloud", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
         [ChoiceDescription]::new("Clear &Z Hostability Key`n", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
@@ -1084,6 +1138,8 @@ Function Menu {
             Show-Variables
             Show-MotherboardInfo
             Test-PendingReboot
+            Reset-HostabilityKey
+            Get-ISPName
             Find-CPUInfo
             Test-MemoryChannels
             Test-Network
@@ -1093,50 +1149,62 @@ Function Menu {
             Test-VisualC++Redists
             Test-Programs
             Show-TestResults
+            Write-Host "`n"
             Menu
         }
         1 {
             Remove-HD2AppData
+            Write-Host "`n"
             Menu
         }
         2 {
             Install-VCRedist
+            Write-Host "`n"
             Menu
         }
         3 {
             Reset-GameGuard
+            Write-Host "`n"
             Menu
         }
         4 {
             Reset-Steam
+            Write-Host "`n"
             Menu
         }
         5 {
             Open-AdvancedGraphics
+            Write-Host "`n"
             Menu
         }
         6 {
             Switch-FullScreenOptimizations
+            Write-Host "`n"
             Menu
         }
         7 {
             Test-DoubleNat
+            Write-Host "`n"
             Menu
         }
         8 {
             Test-WiFi
+            Write-Host "`n"
             Menu
         }
         9 {
             Switch-BTAGService
+            Write-Host "`n"
             Menu
         }
         10 {
             Reset-HD2SteamCloud
+            Write-Host "`n"
             Menu
         }
         11 {
             Reset-HostabilityKey
+            Write-Host "`n"
             Menu
         }
         12 { Return }
@@ -1155,7 +1223,21 @@ $global:AppID = "553850"
 $global:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
-$global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+Try { 
+    $global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+}
+Catch { 
+    Write-Host '[FAIL]' -NoNewline -ForegroundColor Red
+    Write-Host 'Steam was not detected. Exiting Steam to fix this issue.'
+    # Get the Steam process
+    $steamProcess = Get-Process -Name "steam" -ErrorAction SilentlyContinue
+    If ($steamProcess) {
+    # Stop the Steam process
+    Stop-Process -Name "steam" -Force
+    }
+    $global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+}
+
 $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # Read each line of the Steam library.vdf file
 # Save a library path, then scan that library for $AppID
