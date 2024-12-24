@@ -1016,7 +1016,7 @@ Function Switch-FullScreenOptimizations
     # Define the registry path
     $regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
     # Check if the registry key exists, create it if it doesn't
-    If (-not (Test-Path $regPath)) {    New-Item -Path $regPath -Force | Out-Null}
+    If (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
     # Check if the property exists within the registry key
     $currentProperty = Get-ItemProperty -Path $regPath -Name $exePath -ErrorAction SilentlyContinue
     If ($null -eq $currentProperty)
@@ -1048,7 +1048,7 @@ Function Reset-HostabilityKey {
     $content = Get-Content $configPath
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
-    If ($OriginalHash -ne (Get-FileHash $configPath)) {
+    If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
         Write-Host "Hostability key removed successfully!`n" -ForegroundColor Green
     }
     Else {
@@ -1057,7 +1057,7 @@ Function Reset-HostabilityKey {
     }    
 }
 Function Restart-Resume {
-    Return (Test-Path $PSScriptRoot\HellbombRestartResume)
+    Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
 Function Menu {
     $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.0.0.1"
