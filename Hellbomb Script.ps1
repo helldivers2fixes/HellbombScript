@@ -615,64 +615,70 @@ Function Test-ClientDnsConfig {
     # Define the hostname to test
     $hostname = "www.google.com"
     # Get the main network adapter with the default route
-    $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
+    $mainAdapter = Get-NetRoute -DestinationPrefix '0.0.0.0/0' |
+    Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } |
+    Select-Object -First 1 | Get-NetAdapter
+    $IPv6Status = Get-NetAdapterBinding -Name $mainAdapter.Name -ComponentID ms_tcpip6
+
     # Get the DNS servers for IPv4
     Try {
             $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
         } Catch {
             # Will check if null or empty in next part of script
         }
-    # Get the DNS servers for IPv6
-    Try {
-            $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
-        } Catch {
-            Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
-            Write-Host 'IPv6 issues detected. Please disable IPv6 on your network adapter.' -ForegroundColor Yellow
-            Write-Host 'Opening the Network Adapters screen now...' -ForegroundColor Cyan
-            Start-Process 'ncpa.cpl'
+        Write-Host "`nCHECKING IPv4 DNS..." -ForegroundColor Cyan
+        # Print and test DNS servers for IPv4
+        If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
+            Write-Host "[PASS]" -ForegroundColor Green -NoNewline
+            Write-Host " Detected IPv4 DNS servers:"
+            $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
+            }    
+            Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
+            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
         }
-    
-    Write-Host "`nCHECKING IPv4 DNS..." -ForegroundColor Cyan
-    # Print and test DNS servers for IPv4
-    If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
-        Write-Host "[PASS]" -ForegroundColor Green -NoNewline
-        Write-Host " Detected IPv4 DNS servers:"
-        $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
-        }    
-        Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
-        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
-    }
-    Else {
-        Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
-        Write-Host '      Your internet is probably down right now.'
-    }
+        Else {
+            Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
+            Write-Host '      Your internet is probably down right now.'
+        }
 
-    # Print and test DNS servers for IPv6
-    Write-Host "`nCHECKING IPv6 DNS..." -ForegroundColor Cyan
-    If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
-    Write-Host "[PASS]" -ForegroundColor Green -NoNewline
-    Write-Host ' Detected IPv6 DNS server(s):'
-    $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
+    # Get the DNS servers for IPv6
+    If ($IPv6Status.Enabled) {
+        Try {
+                $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
+            } Catch {
+                Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
+                Write-Host 'IPv6 issues detected. Please disable IPv6 on your network adapter.' -ForegroundColor Yellow
+                Write-Host 'Opening the Network Adapters screen now...' -ForegroundColor Cyan
+                Start-Process 'ncpa.cpl'
+            }
+        # Print and test DNS servers for IPv6
+        Write-Host "`nCHECKING IPv6 DNS..." -ForegroundColor Cyan
+        If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
+        Write-Host "[PASS]" -ForegroundColor Green -NoNewline
+        Write-Host ' Detected IPv6 DNS server(s):'
+        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
+        }
+        Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
+        Try { 
+            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
+        } Catch {
+            Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
+            Write-Host 'No IPv6 DNS servers found!'
+            Write-Host 'Consider setting an IPv6 DNS server like'
+            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
+            Write-Host ' on your network adapter.'
+        }
+        
+        }
+        Else {
+            Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
+            Write-Host 'No IPv6 DNS servers found!'
+            Write-Host 'Consider setting an IPv6 DNS server like'
+            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
+            Write-Host ' on your network adapter.'
+        }
     }
-    Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
-    Try { 
-        Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
-    } Catch {
-        Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
-        Write-Host 'No IPv6 DNS servers found!'
-        Write-Host 'Consider setting an IPv6 DNS server like'
-        Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
-        Write-Host ' on your network adapter.'
-    }
-    
-    }
-    Else {
-        Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewline
-        Write-Host 'No IPv6 DNS servers found!'
-        Write-Host 'Consider setting an IPv6 DNS server like'
-        Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewline
-        Write-Host ' on your network adapter.'
-    }       
+    Else { Write-Host "`nSkipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }       
 }
 Function Test-Wifi {
     # This is not very robust code and has race conditions and other issues, but it works well-enough for now
