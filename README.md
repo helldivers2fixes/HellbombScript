@@ -1,6 +1,6 @@
 # 💣Hellbomb💣 Script for Troubleshooting Helldivers 2 Issues
 
-![image](![image](https://github.com/user-attachments/assets/2c284ad1-8a64-4146-a07c-4df798d2d086)
+(![image](https://github.com/user-attachments/assets/2c284ad1-8a64-4146-a07c-4df798d2d086)
 )
 ## Using the EXE:
 
