@@ -1138,7 +1138,7 @@ Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
 Function Menu {
-    $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.1.0"
+    $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.1.1.0 🎅❄️🎄✝️"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks & flushes the DNS Cache.'),
