@@ -287,6 +287,19 @@ Function Show-MotherboardInfo {
     )
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
 }
+Function Show-GPUInfo {
+    $GPUS = Get-WmiObject -Class Win32_VideoController
+
+    # Print GPU information
+    ForEach ($gpu in $gpus) {
+        Write-Host "-----------------------------------"
+        Write-Host "GPU Model: $($gpu.Name)"
+        Write-Host "Drvr Ver.: $($gpu.DriverVersion)"
+        Write-Host "Status: $($gpu.Status)"
+        Write-Host "-----------------------------------"
+    }
+}
+
 Function Get-InstalledPrograms {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
@@ -1142,6 +1155,7 @@ Function Menu {
         0 {
             Show-Variables
             Show-MotherboardInfo
+            Show-GPUInfo
             Test-PendingReboot
             Reset-HostabilityKey
             Get-ISPName
