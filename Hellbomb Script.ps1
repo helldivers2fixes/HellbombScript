@@ -310,42 +310,50 @@ Function Get-InstalledPrograms {
     $UninstallPaths = @()
     $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
     $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    ForEach ($path in $UninstallPaths) {
-    # Create an instance of the Registry Object and open the HKLM base key
-    $reg = [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
-    # Drill down into the Uninstall key using the OpenSubKey Method
-    $regkey = $reg.OpenSubKey($path)
-    # Retrieve an array of string that contain all the subkey names
-    $subkeys = $regkey.GetSubKeyNames()
-    # Open each Subkey and use GetValue Method to return the required values for each
-    ForEach ($key in $subkeys) {
-        If ($path + "\\" + $key -and $reg.OpenSubKey($path + "\\" + $key)) {
-            $thisKey = ($path + "\\" + $key)
-            $thisSubKey = $reg.OpenSubKey($thisKey)
-            # Remove extraneous version strings if not null
-            $s = $null
-            If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
-                $s = $thisSubKey.GetValue("DisplayVersion")
-                $s = $s.Trim()
-                $s = $s -replace '^[a-zA-Z]+'
-                $s = $s -replace '[a-zA-Z]$'
-                $Error.Clear()
-                Try { $null = [System.Version]$s }
-                Catch {
-                    Write-Host ('Error occurred converting program version number ' +
-                        ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
-                    # Set version to 0.0.0 due to version error
-                    $s = '0.0.0'
+    # Define the variable to hold the location of Currently Installed Programs
+    $UninstallPaths = @()
+    $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    # Create HKLM & HKCU base keys
+    $reg = @()
+    $reg += [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
+    $reg += [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryView]::Registry64)
+    ForEach ($basekey in $reg) {
+            ForEach ($path in $UninstallPaths) { 
+            # Drill down into the Uninstall key using the OpenSubKey Method
+            $regkey = $basekey.OpenSubKey($path)
+            # Retrieve an array of string that contain all the subkey names
+            $subkeys = $regkey.GetSubKeyNames()
+                # Open each Subkey and use GetValue Method to return the required values for each
+                ForEach ($key in $subkeys) {
+                    If ($path + "\\" + $key -and $basekey.OpenSubKey($path + "\\" + $key)) {
+                        $thisKey = ($path + "\\" + $key)
+                        $thisSubKey = $basekey.OpenSubKey($thisKey)
+                        # Remove extraneous version strings if not null
+                        $s = $null
+                        If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
+                            $s = $thisSubKey.GetValue("DisplayVersion")
+                            $s = $s.Trim()
+                            $s = $s -replace '^[a-zA-Z]+'
+                            $s = $s -replace '[a-zA-Z]$'
+                            $Error.Clear()
+                            Try { $null = [System.Version]$s }
+                            Catch {
+                                Write-Host ('Error occurred converting program version number ' +
+                                    ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                                # Set version to 0.0.0 due to version error
+                                $s = '0.0.0'
+                            }
+                        }
+                    $obj = [PSCustomObject]@{
+                        DisplayName     = $thisSubKey.GetValue("DisplayName")
+                        DisplayVersion  = $s
+                        InstallLocation = $thisSubKey.GetValue("InstallLocation")
+                        Publisher       = $thisSubKey.GetValue("Publisher")
+                    }
+                    $array += $obj
                 }
             }
-            $obj = [PSCustomObject]@{
-                DisplayName     = $thisSubKey.GetValue("DisplayName")
-                DisplayVersion  = $s
-                InstallLocation = $thisSubKey.GetValue("InstallLocation")
-                Publisher       = $thisSubKey.GetValue("Publisher")
-            }
-            $array += $obj
-        }
     }
     # Remove empties
     $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
