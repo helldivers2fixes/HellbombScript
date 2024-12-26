@@ -1147,7 +1147,9 @@ Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
 Function Menu {
-    $Title = "💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.1.1.0 🎅❄️🎄✝️"
+    $Title = "-------------------------------------------------------------------------------------------------------
+    💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.3.1.0 🎅❄️🎄✝️
+-------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks & flushes the DNS Cache.'),
@@ -1252,6 +1254,7 @@ Function Show-TestResults {
         }
     }
 }
+Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $global:AppID = "553850"
 $global:AppIDFound = $false
@@ -1271,7 +1274,7 @@ Catch {
     }
     $global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
-
+Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
 $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # Read each line of the Steam library.vdf file
 # Save a library path, then scan that library for $AppID
@@ -1302,8 +1305,8 @@ $HelldiversProcess = [PSCustomObject]@{
     '
 }
 $global:InstalledProgramsList = $null
-Clear-Host
+Write-Host 'Checking to see if Helldivers 2 is currently running...' -ForegroundColor Cyan
 Get-IsProcessRunning $HelldiversProcess
 $global:InstalledProgramsList = Get-InstalledPrograms
-Clear-Host
+Write-Host "Building menu... `n`n"
 Menu
