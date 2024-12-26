@@ -1134,7 +1134,14 @@ Function Get-ISPName {
 $PublicIP = Get-PublicIPAddress
 
 # Get the ISP information
-$ISPInfo = Get-ISPInfo -ipAddress $PublicIP
+Try { $ISPInfo = Get-ISPInfo -ipAddress $PublicIP }
+Catch {
+    $ispInfo = [PSCustomObject]@{
+        org = $null
+    }
+    $ispInfo.org = 'Denied'
+    Write-Host "`nCould not determine if on Starlink internet.`n" -Foreground Cyan
+}
 
 # Check if the ISP is Starlink
 If ( $ispInfo.org -like "*Starlink*" ) {
