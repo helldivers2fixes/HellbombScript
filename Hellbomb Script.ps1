@@ -427,7 +427,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'Wargaming.net Game Center'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues.' }
     [PSCustomObject]@{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
-    [PSCustomObject]@{ProgramName = 'Wemod'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Has a kernel-level driver that enables cheats. Uninstall if having issues.' }
+    [PSCustomObject]@{ProgramName = 'Wemod'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Has a kernel-level driver that enables cheats. Disable/Exit/Uninstall if having issues.' }
     [PSCustomObject]@{ProgramName = 'ZeroTier One'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes connectivity issues. Recommend uninstalling or disable IN DEVICE MANAGER.'})
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
