@@ -249,8 +249,7 @@ Function Test-BadPrinters {
                 $global:Tests.BadPrinter.TestPassed = $false
             }
         }
-        If ( $null -eq $global:Tests.BadPrinter.TestPassed ) {
-            $global:Tests.BadPrinter.TestPassed = $true
+        $global:Tests.BadPrinter.TestPassed = $global:Tests.BadPrinter.TestPassed -ne $false
         }
     } Else { $global:Tests.BadPrinter.TestPassed = $true }
 }
@@ -303,64 +302,47 @@ Function Show-GPUInfo {
 Function Get-InstalledPrograms {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
-    Write-Host "`nGathering installed programs..." -ForegroundColor Cyan
-    Write-Host "`nYou may encounter errors converting program version numbers. This is normal." -ForegroundColor Cyan
-    $array = @()
-    # Define the variable to hold the location of Currently Installed Programs
-    $UninstallPaths = @()
-    $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    # Define the variable to hold the location of Currently Installed Programs
-    $UninstallPaths = @()
-    $UninstallPaths += "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    $UninstallPaths += "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
-    # Create HKLM & HKCU base keys
-    $reg = @()
-    $reg += [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64)
-    $reg += [microsoft.win32.registrykey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryView]::Registry64)
-    ForEach ($basekey in $reg) {
-            ForEach ($path in $UninstallPaths) { 
-            # Drill down into the Uninstall key using the OpenSubKey Method
-            $regkey = $basekey.OpenSubKey($path)
-            # Retrieve an array of string that contain all the subkey names
-            If ($regkey -ne $null) {
-                $subkeys = $regkey.GetSubKeyNames()
-                    # Open each Subkey and use GetValue Method to return the required values for each
-                    ForEach ($key in $subkeys) {
-                        If ($path + "\\" + $key -and $basekey.OpenSubKey($path + "\\" + $key)) {
-                            $thisKey = ($path + "\\" + $key)
-                            $thisSubKey = $basekey.OpenSubKey($thisKey)
-                            # Remove extraneous version strings if not null
-                            $s = $null
-                            If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
-                                $s = $thisSubKey.GetValue("DisplayVersion")
-                                $s = $s.Trim()
-                                $s = $s -replace '^[a-zA-Z]+'
-                                $s = $s -replace '[a-zA-Z]$'
-                                $Error.Clear()
-                                Try { $null = [System.Version]$s }
-                                Catch {
-                                    Write-Host ('Error occurred converting program version number ' +
-                                        ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
-                                    # Set version to 0.0.0 due to version error
-                                    $s = '0.0.0'
-                                }
+       Write-Host "`nGathering installed programs..." -ForegroundColor Cyan
+
+    $UninstallPaths = @(
+        "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+        "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
+    
+    $installedPrograms = @()
+    
+    $regKeys = @(
+        [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64),
+        [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryView]::Registry64)
+    )
+
+    ForEach ($baseKey in $regKeys) {
+        ForEach ($path in $UninstallPaths) {
+            $regKey = $baseKey.OpenSubKey($path)
+            If ($regKey) {
+                ForEach ($subKeyName in $regKey.GetSubKeyNames()) {
+                    $subKey = $regKey.OpenSubKey($subKeyName)
+                    If ($subKey) {
+                        $displayName = $subKey.GetValue("DisplayName")
+                        $displayVersion = $subKey.GetValue("DisplayVersion") -replace '^[a-zA-Z]+|[a-zA-Z]$', '' -replace '\s+', ''
+                        $installLocation = $subKey.GetValue("InstallLocation")
+                        $publisher = $subKey.GetValue("Publisher")
+
+                        If ($displayName) {
+                            $installedPrograms += [PSCustomObject]@{
+                                DisplayName     = $displayName
+                                DisplayVersion  = If ($displayVersion) { Try { [System.Version]$displayVersion } Catch { '0.0.0' } } Else { '0.0.0' }
+                                InstallLocation = $installLocation
+                                Publisher       = $publisher
                             }
-                        $obj = [PSCustomObject]@{
-                            DisplayName     = $thisSubKey.GetValue("DisplayName")
-                            DisplayVersion  = $s
-                            InstallLocation = $thisSubKey.GetValue("InstallLocation")
-                            Publisher       = $thisSubKey.GetValue("Publisher")
                         }
-                        $array += $obj
                     }
                 }
             }
+        }
     }
-    # Remove empties
-    $array = $array | Where-Object { $null -ne $_.DisplayName } | Sort-Object -Property DisplayName
-    }
-    Return $array
+
+    Return $installedPrograms | Where-Object { $_.DisplayName } | Sort-Object DisplayName
 }
 
 Function Test-Programs {
@@ -868,7 +850,7 @@ Function Test-DoubleNAT {
     Pause "`nPress any key to continue..."
 }
 Function Switch-BTAGService {
-    If (-NOT ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
+    If (-not ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
     Write-Host 'This command requires Administrator privileges.',
     "`nTo run PowerShell with admin privileges:",
     "`nRight-click on PowerShell and click Run as Administrator",
