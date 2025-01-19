@@ -288,7 +288,7 @@ Function Show-MotherboardInfo {
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
 }
 Function Show-GPUInfo {
-    $GPUS = Get-WmiObject -Class Win32_VideoController
+    $GPUS = Get-CimInstance -ClassName Win32_VideoController
 
     # Print GPU information
     ForEach ($gpu in $gpus) {
