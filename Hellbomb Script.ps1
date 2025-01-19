@@ -192,47 +192,34 @@ Function Install-VCRedist {
     Exit
 }
 Function Find-BlacklistedDrivers {
-    $FoundBlacklistedDevice = $False
-    $BadDeviceList = @(
-        'A-Volute'
-        'Hamachi'
-        'Nahimic'
-        'LogMeIn Hamachi'
-        'Sonic'
-    )
+    $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
+    $FoundBlacklistedDevice = $false
     Write-Host "`nChecking for devices that are known to cause issues..." -ForegroundColor Cyan
     $DeviceDatabase = Get-PnpDevice
+    # Check for blacklisted devices
     ForEach ($device in $DeviceDatabase) {
-        ForEach ($baddevice in $BadDeviceList) {
-            If ($device.FriendlyName -like "$baddevice*") {
-                Write-Host ("⚠️ " + $device.FriendlyName +
-                    " device detected! Known compatibility issues!
-                Please disable.") -ForegroundColor Red
+        ForEach ($badDevice in $BadDeviceList) {
+            If ($device.FriendlyName -like "$badDevice*") {
+                Write-Host ("⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable.") -ForegroundColor Red
                 $FoundBlacklistedDevice = $true
+                Break # Exit the inner loop if a bad device is found
             }
         }
     }
-    If ($FoundBlacklistedDevice -eq $False) {
+    If (-not $FoundBlacklistedDevice) {
         Write-Host "No problematic devices found." -ForegroundColor Green
     }
-    # Hack to quickly check for missing drivers that are probably critical
-     $DeviceDatabase = Get-PnpDevice
-     $MissingDriverCounter = 0
-     $filteredDevices = $DeviceDatabase | Where-Object {
-        # Look for issues with AMD and Intel drivers only
-        $_.InstanceId -match "VEN_1022|VEN_8086"
-        }
-        ForEach ($device in $filteredDevices) {
-            If ($device.FriendlyName -match "Base System Device|Unknown" -or $device.Status -eq 'Unknown') {
-            $MissingDriverCounter++
-            }
-        }
-        
-        If ($MissingDriverCounter -gt 1) {
-            Write-Host "`n It appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
-            Write-Host "`n Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
-        }
-        Return
+    # Check for missing critical drivers (AMD and Intel only)
+    $MissingDriverCounter = ($DeviceDatabase | Where-Object {
+        $_.InstanceId -match "VEN_1022|VEN_8086" -and 
+        ($_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown')
+    }).Count
+
+    If ($MissingDriverCounter -gt 1) {
+        Write-Host "`nIt appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+        Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
+    }
+    Return
 }
 Function Test-BadPrinters {
     # Get the Print Spooler service status
