@@ -323,35 +323,37 @@ Function Get-InstalledPrograms {
             # Drill down into the Uninstall key using the OpenSubKey Method
             $regkey = $basekey.OpenSubKey($path)
             # Retrieve an array of string that contain all the subkey names
-            $subkeys = $regkey.GetSubKeyNames()
-                # Open each Subkey and use GetValue Method to return the required values for each
-                ForEach ($key in $subkeys) {
-                    If ($path + "\\" + $key -and $basekey.OpenSubKey($path + "\\" + $key)) {
-                        $thisKey = ($path + "\\" + $key)
-                        $thisSubKey = $basekey.OpenSubKey($thisKey)
-                        # Remove extraneous version strings if not null
-                        $s = $null
-                        If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
-                            $s = $thisSubKey.GetValue("DisplayVersion")
-                            $s = $s.Trim()
-                            $s = $s -replace '^[a-zA-Z]+'
-                            $s = $s -replace '[a-zA-Z]$'
-                            $Error.Clear()
-                            Try { $null = [System.Version]$s }
-                            Catch {
-                                Write-Host ('Error occurred converting program version number ' +
-                                    ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
-                                # Set version to 0.0.0 due to version error
-                                $s = '0.0.0'
+            If ($regkey -ne $null) {
+                $subkeys = $regkey.GetSubKeyNames()
+                    # Open each Subkey and use GetValue Method to return the required values for each
+                    ForEach ($key in $subkeys) {
+                        If ($path + "\\" + $key -and $basekey.OpenSubKey($path + "\\" + $key)) {
+                            $thisKey = ($path + "\\" + $key)
+                            $thisSubKey = $basekey.OpenSubKey($thisKey)
+                            # Remove extraneous version strings if not null
+                            $s = $null
+                            If (-not ([string]::IsNullOrEmpty($($thisSubKey.GetValue("DisplayVersion"))))) {
+                                $s = $thisSubKey.GetValue("DisplayVersion")
+                                $s = $s.Trim()
+                                $s = $s -replace '^[a-zA-Z]+'
+                                $s = $s -replace '[a-zA-Z]$'
+                                $Error.Clear()
+                                Try { $null = [System.Version]$s }
+                                Catch {
+                                    Write-Host ('Error occurred converting program version number ' +
+                                        ($thisSubKey.GetValue("DisplayVersion"))) 'for' ($thisSubKey.GetValue('DisplayName')) -ForegroundColor White
+                                    # Set version to 0.0.0 due to version error
+                                    $s = '0.0.0'
+                                }
                             }
+                        $obj = [PSCustomObject]@{
+                            DisplayName     = $thisSubKey.GetValue("DisplayName")
+                            DisplayVersion  = $s
+                            InstallLocation = $thisSubKey.GetValue("InstallLocation")
+                            Publisher       = $thisSubKey.GetValue("Publisher")
                         }
-                    $obj = [PSCustomObject]@{
-                        DisplayName     = $thisSubKey.GetValue("DisplayName")
-                        DisplayVersion  = $s
-                        InstallLocation = $thisSubKey.GetValue("InstallLocation")
-                        Publisher       = $thisSubKey.GetValue("Publisher")
+                        $array += $obj
                     }
-                    $array += $obj
                 }
             }
     }
