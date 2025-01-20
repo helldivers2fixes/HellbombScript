@@ -213,7 +213,7 @@ Function Find-BlacklistedDrivers {
     $MissingDriverCounter = ($DeviceDatabase | Where-Object {
         $_.InstanceId -match "VEN_1022|VEN_8086" -and 
         ($_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown')
-    }).Count
+    } | Measure-Object).Count
 
     If ($MissingDriverCounter -gt 1) {
         Write-Host "`nIt appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
@@ -231,14 +231,14 @@ Function Test-BadPrinters {
             Start-Service -Name "Spooler"
         }
 
-        Get-Printer | ForEach-Object {
-            If ($_.Name -eq 'OneNote for Windows 10') {
-                $global:Tests.BadPrinter.TestPassed = $false
+            Get-Printer | ForEach-Object {
+                If ($_.Name -eq 'OneNote for Windows 10') {
+                    $global:Tests.BadPrinter.TestPassed = $false
+                }
             }
-        }
-        $global:Tests.BadPrinter.TestPassed = $global:Tests.BadPrinter.TestPassed -ne $false
-        }
-    } Else { $global:Tests.BadPrinter.TestPassed = $true }
+            $global:Tests.BadPrinter.TestPassed = $global:Tests.BadPrinter.TestPassed -ne $false
+    }
+    Else { $global:Tests.BadPrinter.TestPassed = $true }
 }
 
 Function Find-CPUInfo {
