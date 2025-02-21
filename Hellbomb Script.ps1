@@ -362,6 +362,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'Ryzen Master'; RecommendedVersion = '2.13.0.2908'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause RAM leaks & general issues. Recommend uninstalling.' }
     [PSCustomObject]@{ProgramName = 'Samsung Magician'; RecommendedVersion = '8.1'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions break connectivity completely.' }
     [PSCustomObject]@{ProgramName = 'Surfshark'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Will prevent connectivity. Recommend uninstall or disable IN DEVICE MANAGER.' }
+    [PSCustomObject]@{ProgramName = 'Wallpaper Engine'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Can crash AMD GPUs in some instances. If setup improperly, can limit FPS of games.' }
     [PSCustomObject]@{ProgramName = 'Wargaming.net Game Center'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues.' }
     [PSCustomObject]@{ProgramName = 'Webroot'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Causes low FPS. Uninstall or launch HD2 & THEN shutdown Webroot.' }
     [PSCustomObject]@{ProgramName = 'Wemod'; Installed = $false; RecommendedVersion = '100.100'; InstalledVersion = '0.0.0'; Notes = 'Has a kernel-level driver that enables cheats. Disable/Exit/Uninstall if having issues.' }
