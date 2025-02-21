@@ -199,8 +199,8 @@ Function Find-BlacklistedDrivers {
     # Check for blacklisted devices
     ForEach ($device in $DeviceDatabase) {
         ForEach ($badDevice in $BadDeviceList) {
-            If ($device.FriendlyName -like "$badDevice*") {
-                Write-Host ("⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable.") -ForegroundColor Red
+            If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
+                Write-Host ("⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
                 $FoundBlacklistedDevice = $true
                 Break # Exit the inner loop if a bad device is found
             }
@@ -218,6 +218,8 @@ Function Find-BlacklistedDrivers {
     If ($MissingDriverCounter -gt 1) {
         Write-Host "`nIt appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
+        Write-Host "ℹ️ This message can be caused by re-using a Windows installation after upgrading motherboards without re-installing." -ForegroundColor Yellow
+        Write-Host "If this applies to you, recommend useing the Reset Windows feature or re-install Windows." -ForegroundColor Yellow
     }
     Return
 }
