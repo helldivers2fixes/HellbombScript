@@ -48,15 +48,6 @@ $global:Tests = @{
         Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
 '@
     }
-    "Starlink" = @{
-        'TestPassed' = $null
-        'TestFailMsg' = @'
-        Write-Host "`n[WARNING] " -NoNewline -ForegroundColor Yellow
-        Write-Host 'Starlink detected! You need to use Wi-Fi, or disable IPv6.' -ForegroundColor Cyan
-        Write-Host 'Restart your PC after making those changes.' -ForegroundColor Cyan
-'@
-    }
-
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -1092,44 +1083,10 @@ Function Reset-HostabilityKey {
     }    
 }
 
-Function Get-PublicIPAddress {
-    $ip = (Invoke-WebRequest -URI "http://ifconfig.me/ip").Content.Trim()
-    Return $ip
-}
-
-Function Get-ISPInfo {
-    Param (
-        [string]$ipAddress
-    )
-    $URL = "http://ipinfo.io/$ipAddress/json"
-    $response = Invoke-RestMethod -Uri $url
-    Return $response
-}
-
-Function Get-ISPName {
-# Get the public IP address
-$PublicIP = Get-PublicIPAddress
-
-# Get the ISP information
-Try { $ISPInfo = Get-ISPInfo -ipAddress $PublicIP }
-Catch {
-    $ispInfo = [PSCustomObject]@{
-        org = $null
-    }
-    $ispInfo.org = 'Denied'
-    Write-Host "`nCould not determine if on Starlink internet.`n" -Foreground Cyan
-}
-
-# Check if the ISP is Starlink
-If ( $ispInfo.org -like "*Starlink*" ) {
-    $global:Tests.Starlink.TestPassed =  $false
-    }
-    Else { $global:Tests.Starlink.TestPassed =  $true }
-}
-
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
+
 Function Menu {
     $Title = "-------------------------------------------------------------------------------------------------------
     💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.3.1.1 🎅❄️🎄✝️
@@ -1159,7 +1116,6 @@ Function Menu {
             Show-GPUInfo
             Test-PendingReboot
             Reset-HostabilityKey
-            Get-ISPName
             Find-CPUInfo
             Test-MemoryChannels
             Test-Network
