@@ -1111,7 +1111,7 @@ Function Restart-Resume {
 
 Function Menu {
     $Title = "-------------------------------------------------------------------------------------------------------
-    💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.3.3.1
+    💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.3.5.1
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
