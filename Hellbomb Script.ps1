@@ -659,21 +659,23 @@ Function Test-ClientDnsConfig {
     Else { Write-Host "`nSkipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }       
 }
 Function Test-Wifi {
-    # This is not very robust code and has race conditions and other issues, but it works well-enough for now
-    # It pings the default gateway for 30 seconds and collects statistics
+    # Ping the default gateway for 30 seconds and collect statistics
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
+    If ($mainAdapter -eq $null -or $mainAdapter.IPv4DefaultGateway -eq $null) {
+        Write-Host "No default gateway available." -ForegroundColor Yellow
+        Break
+        }
     Write-Host "`nTesting the connection to the default gateway..." -ForegroundColor Cyan
         If ((Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType -ne '802.11') {
             Write-Host "`nThis is not a wireless connection. Testing anyway..." -ForegroundColor Yellow
         }
     $ipAddress = ($mainAdapter.IPv4DefaultGateway).NextHop
-    $endTime = (Get-Date).AddSeconds(30)
-    $pingResults = @()
-
-    While ((Get-Date) -lt $endTime) {
-        $pingResult = Test-Connection $ipAddress -Count 1 -ErrorAction SilentlyContinue
+    $endTime = ([datetime]::UtcNow).AddSeconds(30)
+    $pingResults = New-Object System.Collections.Generic.List[Object]
+    While ([datetime]::UtcNow -lt $endTime) {
+        $pingResult = Test-Connection $ipAddress -Count 1
         If ($pingResult) {
-            $pingResults += $pingResult
+            $pingResults.Add($pingResult)
         }
     }
 
