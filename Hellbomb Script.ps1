@@ -679,7 +679,7 @@ Function Test-ClientDnsConfig {
 Function Test-Wifi {
     # Ping the default gateway for 30 seconds and collect statistics
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
-    If ($mainAdapter -eq $null -or $mainAdapter.IPv4DefaultGateway -eq $null) {
+    If ($null -eq $mainAdapter -or $null -eq $mainAdapter.IPv4DefaultGateway) {
         Write-Host "No default gateway available." -ForegroundColor Yellow
         Break
         }
