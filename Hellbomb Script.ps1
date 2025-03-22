@@ -48,6 +48,14 @@ $global:Tests = @{
         Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
 '@
     }
+   "LongSysUptime" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "Your computer has not been restarted in over 1 day" -Foreground Yellow -NoNewLine
+        Write-Host "`nPlease restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
+'@
+    }
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -429,6 +437,16 @@ Function Test-Programs {
         Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
     }
     Return
+}
+Function Get-SystemUptime {
+    $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
+    $uptime = (Get-Date) - $lastBoot
+    If ( ($uptime.Days) -lt 1 ) {
+        global:Test.LongSysUptime.TestPassed = $true
+    }
+    Else {
+        global:Test.LongSysUptime.TestPassed = $false
+        }
 }
 Function Test-Network {
 Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
@@ -1128,6 +1146,7 @@ Function Menu {
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
+            Get-SystemUptime
             Show-TestResults
             Write-Host "`n"
             Menu
