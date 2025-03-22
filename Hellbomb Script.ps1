@@ -442,10 +442,10 @@ Function Get-SystemUptime {
     $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
     $uptime = (Get-Date) - $lastBoot
     If ( ($uptime.Days) -lt 1 ) {
-        global:Tests.LongSysUptime.TestPassed = $true
+        $global:Tests.LongSysUptime.TestPassed = $true
     }
     Else {
-        global:Tests.LongSysUptime.TestPassed = $false
+        $global:Tests.LongSysUptime.TestPassed = $false
         }
 }
 Function Test-Network {
