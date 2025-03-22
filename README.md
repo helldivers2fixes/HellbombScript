@@ -15,7 +15,7 @@
 | Game Won't Start  | Option ``C`` then Option ``I`` then Option ``G``                            |
 | Memory Leaks      | Option ``S`` Note: If you have VRAM leaks instead, use [DDU](https://www.guru3d.com/download/display-driver-uninstaller-download/)                                                   |
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the pagefile)       |
-| Reset Game Completely (No progress loss) | Option ``C`` and Option ``M``        |
+| Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 
 ## Copy and paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
