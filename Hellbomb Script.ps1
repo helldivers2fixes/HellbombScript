@@ -1030,6 +1030,7 @@ Function Reset-HD2SteamCloud {
     $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
     $modifiedContent = $null
     Write-Host 'HD2 Steam Cloud clearing procedures completed!' -Foreground Cyan
+    Menu
 }
 Function Switch-FullScreenOptimizations
 {
