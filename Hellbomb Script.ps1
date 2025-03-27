@@ -45,7 +45,7 @@ $global:Tests = @{
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
-        Write-Host "`nPlease remove this printer from your computer." -ForegroundColor Cyan
+        Write-Host "`n       Please remove this printer from your computer." -ForegroundColor Cyan
 '@
     }
    "LongSysUptime" = @{
@@ -54,6 +54,13 @@ $global:Tests = @{
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "Your computer has not been restarted in over 1 day" -Foreground Yellow -NoNewLine
         Write-Host "`nPlease restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
+'@
+    }
+       "AVX2" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "Your CPU does not support the AVX2 instruction set." -Foreground Yellow
 '@
     }
 }
@@ -286,7 +293,91 @@ Function Show-GPUInfo {
         Write-Host "-----------------------------------"
     }
 }
-
+Function Test-AVX2 {
+        
+    # Get the current directory
+    $currentDirectory = (Get-Location).Path
+    
+    # Define URLs and paths
+    $coreinfoUrl = "https://download.sysinternals.com/files/Coreinfo.zip"
+    $coreinfoZip = "$currentDirectory\Coreinfo.zip"
+    $coreinfoExe = "$currentDirectory\Coreinfo64.exe"
+    $coreinfoFile = "Coreinfo64.exe"
+    
+    # Download and extract Coreinfo64.exe if it does not exist
+    If (-Not (Test-Path $coreinfoExe)) {
+        Write-Host "Coreinfo64.exe not found. Preparing to download and extract..." -ForegroundColor Yellow
+        If (-Not (Test-Path $coreinfoZip)) {
+            Try {
+                Write-Host "Downloading Coreinfo.zip..." -ForegroundColor Cyan
+                Invoke-WebRequest -Uri $coreinfoUrl -OutFile $coreinfoZip -ErrorAction Stop
+                Write-Host "Coreinfo.zip downloaded successfully."
+            } Catch {
+                Write-Error "Failed to download Coreinfo.zip: $_" -ForegroundColor Red
+                Throw
+            }
+        } Else {
+            Write-Host "Coreinfo.zip already exists. Skipping download." -ForegroundColor Cyan
+        }
+        Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
+    } Else {
+        Write-Host "Coreinfo64.exe already exists. Skipping download and extraction." -ForegroundColor Cyan
+    }
+    
+    # Run Coreinfo64.exe and check for AVX2 support
+    $CoreInfoOutput = & $coreinfoExe -f
+    $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
+    $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
+    Write-Host $AVX2String
+    If ($AVX2String) {
+        $global:Tests.AVX2.TestPassed = $true
+    } Else {
+        $global:Tests.AVX2.TestPassed = $false
+    }
+    # Clean up files
+    Remove-File -filePath $coreinfoExe
+    Remove-File -filePath $coreinfoZip
+}
+Function Get-Coreinfo64EXE {
+    param ($zipPath, $extractTo, $targetFile)
+    Write-Host "Extracting Coreinfo64.exe from Coreinfo.zip..." -ForegroundColor Cyan
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    Try {
+        # Open the zip file
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+        # Find the target file in the zip archive
+        $entry = $zip.Entries | Where-Object { $_.FullName -eq $targetFile }
+        If ($entry) {
+            # Extract the file manually using streams
+            $targetPath = Join-Path -Path $extractTo -ChildPath $targetFile
+            $fileStream = [System.IO.File]::Create($targetPath)
+            $entryStream = $entry.Open()
+            $entryStream.CopyTo($fileStream)
+            $fileStream.Close()
+            $entryStream.Close()
+            Write-Host "Coreinfo64.exe extracted successfully." -ForegroundColor Green
+        } Else {
+            Write-Error "Coreinfo64.exe not found in the zip file." -ForegroundColor Yellow
+        }
+    } Catch {
+        Write-Error "Failed to extract Coreinfo64.exe: $_" -ForegroundColor Red
+        Throw
+    } Finally {
+        # Properly dispose of the ZIP archive
+        $zip.Dispose()
+        Write-Host "Cleaned up resources after extraction." -ForegroundColor Green
+    }
+}
+Function Remove-File {
+    Param ($filePath)
+    If (Test-Path $filePath) {
+        Try {
+            Remove-Item -Path $filePath -Force
+        } Catch {
+            Write-Warning "Failed to delete $filePath $_" -ForegroundColor Red
+        }
+    }
+}
 Function Get-InstalledPrograms {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
@@ -385,7 +476,7 @@ Function Test-Programs {
     Catch { # Value does not exist
     }
     # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
-    $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc
+    $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc -ErrorAction SilentlyContinue
     ForEach ($service in $InstalledServices)
     {
         If ($service.Name -like 'avast*' -and $service.StartType -ne 'Disabled') {
@@ -1147,6 +1238,7 @@ Function Menu {
             Test-VisualC++Redists
             Test-Programs
             Get-SystemUptime
+            Test-AVX2
             Show-TestResults
             Write-Host "`n"
             Menu
