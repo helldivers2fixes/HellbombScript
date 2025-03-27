@@ -325,7 +325,20 @@ Function Test-AVX2 {
     }
     
     # Run Coreinfo64.exe and check for AVX2 support
-    $CoreInfoOutput = & $coreinfoExe -f
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.CreateNoWindow = $true
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.FileName = 'Coreinfo64.exe'
+    $psi.Arguments = @('-f')
+    # Set encoding to UTF8 so that Unicode compilation doesn't break curl arguments
+    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $psi
+    [void]$process.Start()
+    $CoreInfoOutput = $process.StandardOutput.ReadToEnd()
+    $process.WaitForExit()
     $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
     $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
     If ($AVX2String) {
