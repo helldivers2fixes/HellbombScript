@@ -328,7 +328,6 @@ Function Test-AVX2 {
     $CoreInfoOutput = & $coreinfoExe -f
     $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
     $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
-    Write-Host $AVX2String
     If ($AVX2String) {
         $global:Tests.AVX2.TestPassed = $true
     } Else {
