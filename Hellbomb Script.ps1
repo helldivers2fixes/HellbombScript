@@ -876,7 +876,10 @@ Function Reset-Steam {
     # Remove CEF Cache
     Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
-    Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
+    Write-Host 'Clearing contents of ' -NoNewline -ForegroundColor Cyan
+    Write-Host $SteamPath -NoNewLine
+    Write-Host ". `nKeeping " -NoNewLine -ForegroundColor Cyan
+    Write-Host '\steamapps, \userdata, \logs and \dumps'
     $PropertyName = "Parent"
     Get-ChildItem -Path $SteamPath -File -Recurse |
         Where-Object { (ForEach-Object { If ([bool]$_.PSObject.Properties["PSParentPath"]) {
