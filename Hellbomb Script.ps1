@@ -340,7 +340,7 @@ Function Test-AVX2 {
     $CoreInfoOutput = $process.StandardOutput.ReadToEnd()
     $process.WaitForExit()
     Write-Host "`n`n $CoreInfoOutput`n`n"
-    $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
+    $pattern = "AVX2\s+\*"
     $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
     If ($AVX2String) {
         $global:Tests.AVX2.TestPassed = $true
