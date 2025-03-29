@@ -331,7 +331,7 @@ Function Test-AVX2 {
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.FileName = 'Coreinfo64.exe'
-    $psi.Arguments = @('-f')
+    $psi.Arguments = @('-f -accepteula')
     # Set encoding to UTF8 so that Unicode compilation doesn't break curl arguments
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
