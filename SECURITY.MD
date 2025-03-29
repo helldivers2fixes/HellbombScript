@@ -21,4 +21,6 @@ You can compare the File Hash to the Virus Total link to ensure that the Virus T
 No security software should detect the script as malicious.
 
 ## Why does it need Admin Privleges?
-Why? For some users, the script will error if it does not have Admin privleges when running the **Get-NetFirewallRule** command-let which **reads** Firewall rules. No changes are made to the firewall.
+- Reads firewall rules
+- Installs programs
+- Downloads and runs Coreinfo64.exe from Microsoft as Administrator
