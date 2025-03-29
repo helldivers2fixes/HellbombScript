@@ -306,22 +306,15 @@ Function Test-AVX2 {
     
     # Download and extract Coreinfo64.exe if it does not exist
     If (-Not (Test-Path $coreinfoExe)) {
-        Write-Host "Coreinfo64.exe not found. Preparing to download and extract..." -ForegroundColor Yellow
         If (-Not (Test-Path $coreinfoZip)) {
             Try {
-                Write-Host "Downloading Coreinfo.zip..." -ForegroundColor Cyan
                 Invoke-WebRequest -Uri $coreinfoUrl -OutFile $coreinfoZip -ErrorAction Stop
-                Write-Host "Coreinfo.zip downloaded successfully."
             } Catch {
                 Write-Error "Failed to download Coreinfo.zip: $_" -ForegroundColor Red
                 Throw
             }
-        } Else {
-            Write-Host "Coreinfo.zip already exists. Skipping download." -ForegroundColor Cyan
         }
         Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
-    } Else {
-        Write-Host "Coreinfo64.exe already exists. Skipping download and extraction." -ForegroundColor Cyan
     }
     
     # Run Coreinfo64.exe and check for AVX2 support
@@ -352,7 +345,6 @@ Function Test-AVX2 {
 }
 Function Get-Coreinfo64EXE {
     param ($zipPath, $extractTo, $targetFile)
-    Write-Host "Extracting Coreinfo64.exe from Coreinfo.zip..." -ForegroundColor Cyan
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     Try {
         # Open the zip file
@@ -367,7 +359,6 @@ Function Get-Coreinfo64EXE {
             $entryStream.CopyTo($fileStream)
             $fileStream.Close()
             $entryStream.Close()
-            Write-Host "Coreinfo64.exe extracted successfully." -ForegroundColor Green
         } Else {
             Write-Error "Coreinfo64.exe not found in the zip file." -ForegroundColor Yellow
         }
@@ -377,7 +368,6 @@ Function Get-Coreinfo64EXE {
     } Finally {
         # Properly dispose of the ZIP archive
         $zip.Dispose()
-        Write-Host "Cleaned up resources after extraction." -ForegroundColor Green
     }
 }
 Function Remove-File {
