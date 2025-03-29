@@ -316,6 +316,10 @@ Function Test-AVX2 {
         }
         Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
     }
+
+    If ((Get-FileHash '.\Coreinfo64.exe') -ne '9C233B79795EF34595BC149F9C5EBCF0616C43AF1FA6E3C7FB94848A49F7C05E') {
+        Return Write-Host 'Coreinfo64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -Foreground Red
+    }
     
     # Run Coreinfo64.exe and check for AVX2 support
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -325,7 +329,7 @@ Function Test-AVX2 {
     $psi.RedirectStandardError = $true
     $psi.FileName = 'Coreinfo64.exe'
     $psi.Arguments = @('-f -accepteula')
-    # Set encoding to UTF8 so that Unicode compilation doesn't break curl arguments
+    # Set encoding to UTF8 so that Unicode compilation doesn't break Coreinfo64.exe console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
