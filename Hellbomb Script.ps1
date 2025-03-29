@@ -63,6 +63,20 @@ $global:Tests = @{
         Write-Host "Your CPU does not support the AVX2 instruction set." -Foreground Yellow
 '@
     }
+    "DualChannelMemory" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "Memory running in single-channel mode. This will hurt performance." -Foreground Yellow
+'@
+    }
+    "MatchingMemory" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "You have mixed memory. This can cause performance and stability issues." -Foreground Yellow
+'@
+    }
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -294,60 +308,134 @@ Function Show-GPUInfo {
     }
 }
 Function Test-AVX2 {
-        
-    # Get the current directory
+# Check for AVX2
+# Define the pattern to match the line
+    $pattern = "^\tInstructions\ssets\t.*AVX2"
+    # Search for the line that matches the pattern
+    $match = $global:HardwareInfoText | Select-String -Pattern $pattern
+    If ($match) {
+        $global:Tests.AVX2.TestPassed = $true
+    } Else {
+        $global:Tests.AVX2.TestPassed = $false
+    }
+}
+Function Get-MemorySpeed {
+# RAM Speed
+$pattern = '^Memory Frequency.*$'
+# Find and display lines matching the pattern
+    $match = $HardwareInfoText | Select-String -Pattern $pattern
+    If ($match) {
+        $pattern = '\d\d\d\d.\d'
+        $match -match $pattern
+        $RAMFrequency = [int]$Matches[0]
+        $RAMFrequency = [string]::Concat(($RAMFrequency * 2), ' MHz')
+    }
+}
+
+Function Get-MemoryPartNumber{
+    # Load DIMM Data
+    $dimmData = @()
+    # Temporary storage for the current DIMM data
+    $currentDimm = @{}
+    $skipDimm = $false
+
+    # Iterate through each line
+    foreach ($line in $global:HardwareInfoText) {
+        If ($line -match "^DIMM #\s+(\d+)") {
+            # Save the current DIMM data if it exists
+            If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+                $dimmData += [PSCustomObject]@{
+                    DIMM = $currentDimm["DIMM"]
+                    Size = $currentDimm["Size"]
+                    "Part Number" = $currentDimm["Part Number"]
+                }
+            }
+            # Reset for the new DIMM
+            $currentDimm = @{}
+            $skipDimm = $false
+
+            # Add the DIMM number
+            $currentDimm["DIMM"] = $Matches[1]
+        } ElseIf ($line -match "^\s*SPD Registers") {
+            # Skip processing this DIMM if "SPD Registers" is the first line after "DIMM #"
+            $skipDimm = $true
+        } ElseIf (-not $skipDimm) {
+            If ($line -match "^\s+Size\s+(.+)") {
+                $currentDimm["Size"] = $Matches[1]
+            } ElseIf ($line -match "^\s+Part number\s+(.+)") {
+                $currentDimm["Part Number"] = $Matches[1]
+            }
+        }
+    }
+    # Save the last DIMM data if it wasn't skipped
+    If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+        $dimmData += [PSCustomObject]@{
+            DIMM = $currentDimm["DIMM"]
+            Size = $currentDimm["Size"]
+            "Part Number" = $currentDimm["Part Number"]
+        }
+    }
+    # Extract all part numbers from $dimmData
+    $partNumbers = $dimmData | ForEach-Object { $_."Part Number" }
+    # Check if all part numbers are the same
+    If ( ($partNumbers | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
+       $global:Tests.MatchingMemory.TestPassed = $true
+       Write-Output "You have matching memory:"
+       Write-Output $partNumbers
+    } Else {
+        $global:Tests.MatchingMemory.TestPassed = $false
+        Write-Output "Your PC has mixed memory:"
+        Write-Output $partNumbers
+    }
+}
+Function Get-HardwareInfo { 
     $currentDirectory = (Get-Location).Path
     
     # Define URLs and paths
-    $coreinfoUrl = "https://download.sysinternals.com/files/Coreinfo.zip"
-    $coreinfoZip = "$currentDirectory\Coreinfo.zip"
-    $coreinfoExe = "$currentDirectory\Coreinfo64.exe"
-    $coreinfoFile = "Coreinfo64.exe"
+    $CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.15-en.zip"
+    $CPUZZip = "$currentDirectory\cpu-z_2.15-en.zip"
+    $CPUZExe = "$currentDirectory\cpuz_x64.exe"
+    $CPUZFile = "cpuz_x64.exe"
     
-    # Download and extract Coreinfo64.exe if it does not exist
-    If (-Not (Test-Path $coreinfoExe)) {
-        If (-Not (Test-Path $coreinfoZip)) {
+    # Download and extract CPU-Z if it does not exist
+    If (-Not (Test-Path $CPUZExe)) {
+        If (-Not (Test-Path $CPUZZip)) {
             Try {
-                Invoke-WebRequest -Uri $coreinfoUrl -OutFile $coreinfoZip -ErrorAction Stop
+                Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
             } Catch {
-                Write-Error "Failed to download Coreinfo.zip: $_" -ForegroundColor Red
+                Write-Error "Failed to download cpuz_2.15-en.zip: $_" -ForegroundColor Red
                 Throw
             }
         }
-        Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
+        Get-CPUZ -zipPath $CPUZZip -extractTo $currentDirectory -targetFile $CPUZFile
     }
-    $coreinfoSHA256 = (Get-FileHash '.\Coreinfo64.exe').Hash
-    If ( $coreinfoSHA256 -ne '9C233B79795EF34595BC149F9C5EBCF0616C43AF1FA6E3C7FB94848A49F7C05E' -and $coreinfoSHA256 -ne 'BE611B10CC751F3F02DE8D8E6F7B01C091A464AA66C878165DDF729D3602DB4A' ) {
-        Return Write-Host 'Coreinfo64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -Foreground Red
+    $CPUZSHA256 = (Get-FileHash $currentDirectory\cpuz_x64.exe).Hash
+    If ( $CPUZSHA256 -ne 'FCAC6AA0D82943D6BB40D07FDA5C1A1573D7EA9259B9403F3607304ED345DBB9' ) {
+        Return Write-Host 'cpuz_x64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -Foreground Red
     }
     
-    # Run Coreinfo64.exe and check for AVX2 support
+    # Run CPU-Z and dump report to file
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.FileName = 'Coreinfo64.exe'
-    $psi.Arguments = @('-f -accepteula')
-    # Set encoding to UTF8 so that Unicode compilation doesn't break Coreinfo64.exe console output
+    $psi.FileName = 'C:\Users\xcham\Downloads\cpuz_x64.exe'
+    $psi.Arguments = @('-accepteula -txt=CPUZHellbombReport')
+    # Set encoding to UTF8 so that Unicode compilation doesn't break CPU-Z console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
-    $CoreInfoOutput = $process.StandardOutput.ReadToEnd()
+    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan
     $process.WaitForExit()
-    $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
-    $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
-    If ($AVX2String) {
-        $global:Tests.AVX2.TestPassed = $true
-    } Else {
-        $global:Tests.AVX2.TestPassed = $false
-    }
+    $global:HardwareInfoText = Get-Content 'CPUZHellbombReport.txt'
     # Clean up files
-    Remove-File -filePath $coreinfoExe
-    Remove-File -filePath $coreinfoZip
+    Remove-File -filePath $CPUZExe
+    Remove-File -filePath $CPUZZip
 }
-Function Get-Coreinfo64EXE {
+
+Function Get-CPUZ {
     param ($zipPath, $extractTo, $targetFile)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     Try {
@@ -364,10 +452,10 @@ Function Get-Coreinfo64EXE {
             $fileStream.Close()
             $entryStream.Close()
         } Else {
-            Write-Error "Coreinfo64.exe not found in the zip file." -ForegroundColor Yellow
+            Write-Error "cpuz_x64.exe not found in the zip file." -ForegroundColor Yellow
         }
     } Catch {
-        Write-Error "Failed to extract Coreinfo64.exe: $_" -ForegroundColor Red
+        Write-Error "Failed to extract cpuz_x64.exe: $_"
         Throw
     } Finally {
         # Properly dispose of the ZIP archive
@@ -1013,36 +1101,16 @@ Function Test-VisualC++Redists {
     Return
 }
 Function Test-MemoryChannels {
-    Write-Host 'Checking to see if multi-channel memory is enabled...' -ForegroundColor Cyan
-    $TextHolder = $null
-    $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
-    $DeviceLocatorChannels = 1
-    $BankLabelChannels = 1
-    Try { 
-            $DeviceLocatorChannels = ($SystemMemoryInfoObj.DeviceLocator | Sort-Object -Unique).Count
-            $BankLabelChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
-        }
-            
-    Catch {
-            # If that errors, then there is only one DIMM installed
-    }
-    $NumberofChannels = [Math]::Max($DeviceLocatorChannels, $BankLabelChannels)
-    $MemoryTextStrings = @(
-    [PSCustomObject]@{ChannelCount = '2'; String = 'Dual'},
-    [PSCustomObject]@{ChannelCount = '3'; String = 'Triple'},
-    [PSCustomObject]@{ChannelCount = '4'; String = 'Quad'}
-    )
-    $TextHolder = $MemoryTextStrings | Where-Object {$_.ChannelCount -match $NumberofChannels}
-    If ( $TextHolder ) {
-        Write-Host '[PASS] ' -NoNewLine -ForegroundColor Green
-        Write-Host ($TextHolder.String) -NoNewline
-        Write-Host '-channel Memory is enabled!'
-        } Else {
-            Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-            Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
-            Write-Host '       This detection is not perfect, but if true, this will usually cause severe performance issues.' -ForegroundColor Yellow
+    # Dual-Channel RAM test
+    # Define the pattern to search for
+    $pattern = "^Channels\t+[2-8]\s+x\s+\d\d-bit$"
+    If ($global:HardwareInfoText -match $pattern) {
+        $global:Tests.DualChannelMemory.TestPassed = $true
+    } Else {
+        $global:Tests.DualChannelMemory.TestPassed = $false
     }
 }
+
 # Function to check if a reboot is required
 Function Test-PendingReboot {
     ForEach ($key in $global:Tests.PendingReboot.keys) {
@@ -1237,7 +1305,10 @@ Function Menu {
             Test-PendingReboot
             Reset-HostabilityKey
             Find-CPUInfo
+            Get-HardwareInfo
             Test-MemoryChannels
+            Get-MemoryPartNumber
+            Get-MemorySpeed
             Test-Network
             Find-BlacklistedDrivers
             Test-BadPrinters
