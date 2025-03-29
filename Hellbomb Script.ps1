@@ -489,6 +489,7 @@ Function Test-Programs {
     }
     # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
     $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc -ErrorAction SilentlyContinue
+    $array = @()
     ForEach ($service in $InstalledServices)
     {
         If ($service.Name -like 'avast*' -and $service.StartType -ne 'Disabled') {
