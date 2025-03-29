@@ -316,8 +316,8 @@ Function Test-AVX2 {
         }
         Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
     }
-
-    If ((Get-FileHash '.\Coreinfo64.exe') -ne '9C233B79795EF34595BC149F9C5EBCF0616C43AF1FA6E3C7FB94848A49F7C05E') {
+    $coreinfoSHA256 = (Get-FileHash '.\Coreinfo64.exe').Hash
+    If ( $coreinfoSHA256 -ne '9C233B79795EF34595BC149F9C5EBCF0616C43AF1FA6E3C7FB94848A49F7C05E' -and $coreinfoSHA256 -ne 'BE611B10CC751F3F02DE8D8E6F7B01C091A464AA66C878165DDF729D3602DB4A' ) {
         Return Write-Host 'Coreinfo64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -Foreground Red
     }
     
