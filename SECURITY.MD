@@ -22,5 +22,5 @@ No security software should detect the script as malicious.
 
 ## Why does it need Admin Privleges?
 - Reads firewall rules
-- Installs programs
-- Downloads and runs Coreinfo64.exe from Microsoft as Administrator
+- Installs Microsoft Visual C++ redistributables
+- Downloads and runs [Coreinfo64.exe](https://learn.microsoft.com/en-us/sysinternals/downloads/coreinfo) from Microsoft as Administrator
