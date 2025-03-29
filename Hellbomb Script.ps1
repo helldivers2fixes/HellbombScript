@@ -482,7 +482,7 @@ Function Test-Programs {
     Catch { # Value does not exist
     }
     # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
-    $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc -ErrorAction SilentlyContinue
+    $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc, WSAIFabricSvc -ErrorAction SilentlyContinue
     $array = @()
     ForEach ($service in $InstalledServices)
     {
