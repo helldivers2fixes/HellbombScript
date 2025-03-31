@@ -470,8 +470,7 @@ Function Get-HardwareInfo {
             Try {
                 Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
             } Catch {
-                Write-Error "Failed to download cpuz_2.15-en.zip: $_" -ForegroundColor Red
-                Throw
+                Return Write-Error "Failed to download cpuz_2.15-en.zip: $_" -ForegroundColor Red
             }
         }
         Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
