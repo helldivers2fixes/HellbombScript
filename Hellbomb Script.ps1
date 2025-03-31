@@ -36,7 +36,7 @@ $global:Tests = @{
         "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host " Windows is reporting a pending reboot is required." -Foreground Yellow -NoNewLine
+        Write-Host " Windows is reporting a pending reboot is required." -ForegroundColor Yellow -NoNewLine
         Write-Host "`nPlease exit the script and reboot your machine..." -ForegroundColor Cyan
 '@
     }
@@ -44,7 +44,7 @@ $global:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -Foreground Yellow -NoNewLine
+        Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -ForegroundColor Yellow -NoNewLine
         Write-Host "`n       Please remove this printer from your computer." -ForegroundColor Cyan
 '@
     }
@@ -52,7 +52,7 @@ $global:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your computer has not been restarted in over 1 day" -Foreground Yellow -NoNewLine
+        Write-Host "Your computer has not been restarted in over 1 day" -ForegroundColor Yellow -NoNewLine
         Write-Host "`nPlease restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
     }
@@ -60,7 +60,64 @@ $global:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your CPU does not support the AVX2 instruction set." -Foreground Yellow
+        Write-Host "       Your CPU does not support the AVX2 instruction set." -ForegroundColor Yellow
+'@
+    }
+    "DualChannelMemory" = @{
+        'TestPassed' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "Memory running in single-channel mode. This will hurt performance." -ForegroundColor Yellow
+'@
+    }
+    "MatchingMemory" = @{
+        'TestPassed' = $null
+        'RAMInfo' = $null
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
+        $formattedTable = $global:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
+        $indentedTable = $formattedTable -split "`n" | ForEach-Object { "       $_" }
+        $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+'@
+    }
+    "DomainTest" = @{
+        'TestPassed' = $null
+        'DomainList' = @(
+            [PSCustomObject]@{ RequiredDomains = 'akamaihd.net'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'api.live.prod.thehelldiversgame.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'cluster-a.playfabapi.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'gameguard.co.kr'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'gameguard.thehelldiversgame.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'mgr.gameguard.co.kr'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'ocsp.digicert.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'playfabapi.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'pss-cloud.net'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamcommunity.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamcontent.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamgames.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steampowered.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamstatic.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null }
+        )
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "The following URLs failed to resolve with DNS" -ForegroundColor Yellow
+        $global:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true } | ForEach-Object { "       $($_.RequiredDomains)" } | Write-Host -ForegroundColor White
+'@
+    }
+    "FirewallRules" = @{
+        'TestPassed' = $null
+        'Rules' = @(
+            [PSCustomObject]@{ RuleName = 'Inbound TCP Rule'; PassedTest = $null },
+            [PSCustomObject]@{ RuleName = 'Inbound UDP Rule'; PassedTest = $null }
+        )
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
+        $global:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
+        Start-Process wf.msc
 '@
     }
 }
@@ -109,10 +166,10 @@ Function Install-EXE {
     )
     # Turn off progress bar to speed up download
     $ProgressPreference = 'SilentlyContinue'
-    Write-Host "`nDownloading $CommonName..." -Foreground Cyan
+    Write-Host "`nDownloading $CommonName..." -ForegroundColor Cyan
     Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
     If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash) {
-        Write-Host 'Installing... look for UAC prompts' -Foreground Cyan
+        Write-Host 'Installing... look for UAC prompts' -ForegroundColor Cyan
         $Error.Clear()
         Try {
             $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
@@ -294,60 +351,130 @@ Function Show-GPUInfo {
     }
 }
 Function Test-AVX2 {
-        
-    # Get the current directory
-    $currentDirectory = (Get-Location).Path
+# Check for AVX2
+# Define the pattern to match the line
+    $pattern = "^\tInstructions\ssets\t.*AVX2"
+    # Search for the line that matches the pattern
+    $match = $global:HardwareInfoText | Select-String -Pattern $pattern
+    If ($match) {
+        $global:Tests.AVX2.TestPassed = $true
+    } Else {
+        $global:Tests.AVX2.TestPassed = $false
+    }
+}
+Function Get-MemorySpeed {
+# RAM Speed
+$pattern = '^Memory Frequency.*$'
+# Find and display lines matching the pattern
+    $match = $HardwareInfoText | Select-String -Pattern $pattern
+    $null = If ($match) {
+        $pattern = '\d\d\d\d.\d'
+        $match -match $pattern
+        $RAMFrequency = [int]$Matches[0]
+        $RAMFrequency = [string]::Concat(($RAMFrequency * 2), ' MHz')
+        Write-Host "`nRAM is currently running at " -NoNewLine -ForegroundColor Cyan
+        Write-Host $RAMFrequency -ForegroundColor White
+    }
+}
+
+Function Get-MemoryPartNumber{
+    # Load DIMM Data
+    $dimmData = @()
+    # Temporary storage for the current DIMM data
+    $currentDimm = @{}
+    $skipDimm = $false
+
+    # Iterate through each line
+    foreach ($line in $global:HardwareInfoText) {
+        If ($line -match "^DIMM #\s+(\d+)") {
+            # Save the current DIMM data if it exists
+            If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+                $dimmData += [PSCustomObject]@{
+                    DIMM = $currentDimm['DIMM']
+                    Size = $currentDimm['Size']
+                    PartNumber = $currentDimm['Part Number']
+                }
+            }
+            # Reset for the new DIMM
+            $currentDimm = @{}
+            $skipDimm = $false
+
+            # Add the DIMM number
+            $currentDimm['DIMM'] = $Matches[1]
+        } ElseIf ($line -match "^\s*SPD Registers") {
+            # Skip processing this DIMM if "SPD Registers" is the first line after "DIMM #"
+            $skipDimm = $true
+        } ElseIf (-not $skipDimm) {
+            If ($line -match "^\s+Size\s+(.+)") {
+                $currentDimm["Size"] = $Matches[1]
+            } ElseIf ($line -match "^\s+Part number\s+(.+)") {
+                $currentDimm['Part Number'] = $Matches[1]
+            }
+        }
+    }
+    # Save the last DIMM data if it wasn't skipped
+    If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+        $dimmData += [PSCustomObject]@{
+            DIMM = $currentDimm['DIMM']
+            Size = $currentDimm['Size']
+            PartNumber = $currentDimm['Part Number']
+        }
+    }
+    $global:Tests.MatchingMemory.RAMInfo = $dimmData
+    If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
+       $global:Tests.MatchingMemory.TestPassed = $true
+    } Else {
+        $global:Tests.MatchingMemory.TestPassed = $false
+    }
+}
+Function Get-HardwareInfo { 
+    $workingDirectory = "$env:USERPROFILE\Downloads"
     
     # Define URLs and paths
-    $coreinfoUrl = "https://download.sysinternals.com/files/Coreinfo.zip"
-    $coreinfoZip = "$currentDirectory\Coreinfo.zip"
-    $coreinfoExe = "$currentDirectory\Coreinfo64.exe"
-    $coreinfoFile = "Coreinfo64.exe"
+    $CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.15-en.zip"
+    $CPUZZip = "$workingDirectory\cpu-z_2.15-en.zip"
+    $CPUZExe = "$workingDirectory\cpuz_x64.exe"
+    $CPUZFile = "cpuz_x64.exe"
     
-    # Download and extract Coreinfo64.exe if it does not exist
-    If (-Not (Test-Path $coreinfoExe)) {
-        If (-Not (Test-Path $coreinfoZip)) {
+    # Download and extract CPU-Z if it does not exist
+    If (-Not (Test-Path $CPUZExe)) {
+        If (-Not (Test-Path $CPUZZip)) {
             Try {
-                Invoke-WebRequest -Uri $coreinfoUrl -OutFile $coreinfoZip -ErrorAction Stop
+                Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
             } Catch {
-                Write-Error "Failed to download Coreinfo.zip: $_" -ForegroundColor Red
+                Write-Error "Failed to download cpuz_2.15-en.zip: $_" -ForegroundColor Red
                 Throw
             }
         }
-        Get-Coreinfo64EXE -zipPath $coreinfoZip -extractTo $currentDirectory -targetFile $coreinfoFile
+        Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
     }
-    $coreinfoSHA256 = (Get-FileHash '.\Coreinfo64.exe').Hash
-    If ( $coreinfoSHA256 -ne '9C233B79795EF34595BC149F9C5EBCF0616C43AF1FA6E3C7FB94848A49F7C05E' -and $coreinfoSHA256 -ne 'BE611B10CC751F3F02DE8D8E6F7B01C091A464AA66C878165DDF729D3602DB4A' ) {
-        Return Write-Host 'Coreinfo64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -Foreground Red
+    $CPUZSHA256 = (Get-FileHash $workingDirectory\cpuz_x64.exe).Hash
+    If ( $CPUZSHA256 -ne 'FCAC6AA0D82943D6BB40D07FDA5C1A1573D7EA9259B9403F3607304ED345DBB9' ) {
+        Return Write-Host 'cpuz_x64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -ForegroundColor Red
     }
     
-    # Run Coreinfo64.exe and check for AVX2 support
+    # Run CPU-Z and dump report to file
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.FileName = 'Coreinfo64.exe'
-    $psi.Arguments = @('-f -accepteula')
-    # Set encoding to UTF8 so that Unicode compilation doesn't break Coreinfo64.exe console output
+    $psi.FileName = "$workingDirectory\cpuz_x64.exe"
+    $psi.Arguments = @('-accepteula -txt=CPUZHellbombReport')
+    # Set encoding to UTF8 so that Unicode compilation doesn't break CPU-Z console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
-    $CoreInfoOutput = $process.StandardOutput.ReadToEnd()
+    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan
     $process.WaitForExit()
-    $pattern = "AVX2\s+\*\s+Supports AVX2 instruction extensions"
-    $AVX2String = ($CoreInfoOutput | Select-String -Pattern $pattern)
-    If ($AVX2String) {
-        $global:Tests.AVX2.TestPassed = $true
-    } Else {
-        $global:Tests.AVX2.TestPassed = $false
-    }
+    $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
     # Clean up files
-    Remove-File -filePath $coreinfoExe
-    Remove-File -filePath $coreinfoZip
-}
-Function Get-Coreinfo64EXE {
+    Remove-File -filePath $CPUZExe
+    Remove-File -filePath $CPUZZip
+ }
+
+Function Get-CPUZ {
     param ($zipPath, $extractTo, $targetFile)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     Try {
@@ -364,10 +491,10 @@ Function Get-Coreinfo64EXE {
             $fileStream.Close()
             $entryStream.Close()
         } Else {
-            Write-Error "Coreinfo64.exe not found in the zip file." -ForegroundColor Yellow
+            Write-Error "cpuz_x64.exe not found in the zip file." -ForegroundColor Yellow
         }
     } Catch {
-        Write-Error "Failed to extract Coreinfo64.exe: $_" -ForegroundColor Red
+        Write-Error "Failed to extract cpuz_x64.exe: $_"
         Throw
     } Finally {
         # Properly dispose of the ZIP archive
@@ -532,7 +659,7 @@ Function Test-Programs {
         }
     }
     Else {
-        Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
+        Write-Host 'Checks complete. No problematic programs found!' -ForegroundColor Green
     }
     Return
 }
@@ -551,84 +678,28 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
-        Write-Host '⚠️ Windows Firewall is blocking Helldivers 2. No Inbound firewall rules were found that match the original rule names. Please add 2 Inbound rules, one for TCP and one for UDP.' -ForegroundColor Red
-        Start-Process wf.msc
+        $global:Tests.FirewallRules.TestPassed = $false
     }
     Else {
-        $TCPRule = $false
-        $UDPRule = $false
+        $global:Tests.FirewallRules.Rules[0].PassedTest = $false
+        $global:Tests.FirewallRules.Rules[1].PassedTest = $false
         ForEach ( $rule in $HD2FirewallRules) {
-            If ( !$TCPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
-                $TCPRule = $true
-                Write-Host 'Inbound TCP Rule ' -NoNewline
-                Write-Host '[OK]' -ForegroundColor Green
+            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
+                $global:Tests.FirewallRules.Rules[0].PassedTest = $true
             }
-            If ( !$UDPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
-                $UDPRule = $true
-                Write-Host 'Inbound UDP Rule ' -NoNewline
-                Write-Host '[OK]' -ForegroundColor Green
-                }
-        }
-        If (!$TCPRule) {
-            Write-Host 'Inbound TCP Rule ' -NoNewline
-            Write-Host '[FAIL]' -ForegroundColor Red
+            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
+                $global:Tests.FirewallRules.Rules[1].PassedTest = $true
             }
-        If (!$UDPRule) {
-            Write-Host 'Inbound UDP Rule ' -NoNewline
-            Write-Host '[FAIL]' -ForegroundColor Red
-            }
-        If (!$TCPRule -or !$UDPRule) {
-
-        Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -ForegroundColor Red
-        Write-Host 'On game launch, Steam should request Admin privileges and add the Inbound rule(s) for you.' -ForegroundColor Yellow
-        Write-Host 'You may need to add the rule(s) manually if this does not happen.' -ForegroundColor Yellow
-        Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
-        Start-Process wf.msc
         }
-        Write-Host "`nFirewall checks complete!" -ForegroundColor Cyan
+        If ( $global:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $global:Tests.FirewallRules.Rules[1].PassedTest -eq $true) {
+            $global:Tests.FirewallRules.TestPassed = $true
         }
+    }
 
     Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
     Clear-DnsClientCache
-    Write-Host " complete!`n"
-
-    [string[]]$RequiredDomains = 
-    'akamaihd.net',
-    'api.live.prod.thehelldiversgame.com',
-    'cluster-a.playfabapi.com',
-    'gameguard.co.kr',
-    'gameguard.thehelldiversgame.com',
-    'mgr.gameguard.co.kr',
-    'ocsp.digicert.com',
-    'playfabapi.com',
-    'pss-cloud.net',
-    'steamcommunity.com',
-    'steamcontent.com',
-    'steamgames.com',
-    'steampowered.com',
-    'steamstatic.com',
-    'steamusercontent.com',
-    'testament.api.wwsga.me'
-
-
-    ForEach ($domain in $RequiredDomains) {
-        Write-Host 'Resolving ' -NoNewline -ForegroundColor Cyan
-        Write-Host $domain -NoNewline
-    
-        # If not running in ISE or old PowerShell, let's make it pretty
-        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0') {
-            $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
-            [Console]::SetCursorPosition(46 , $y)
-        }
-    
-        If (Resolve-DnsName -Name $domain -DnsOnly -ErrorAction SilentlyContinue) {        
-            Write-Host ' [OK]' -ForegroundColor Green
-        }
-        Else {
-            Write-Host ' [FAIL]' -ForegroundColor Red
-        }
-    }
-    
+    Write-Host " complete!"
+  
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
@@ -675,7 +746,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     If ( Test-NetConnection 'oneocsp.microsoft.com' -ErrorAction SilentlyContinue -InformationLevel Quiet )
     {
         Write-Host "OCSP Connection " -NoNewLine
-        Write-Host ' [OK]' -Foreground Green
+        Write-Host ' [OK]' -ForegroundColor Green
     }
     Else {
         Write-Host 'OCSP Connection' -NoNewLine
@@ -687,6 +758,28 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     Return
 }
 
+Function Test-RequiredURLs {
+    ForEach ($domain in $global:Tests.DomainTest.DomainList) {
+        # If not running in ISE or old PowerShell, let's make it pretty
+        If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0') {
+            $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
+            [Console]::SetCursorPosition(46 , $y)
+        }
+        If (Resolve-DnsName -Name $domain.RequiredDomains -DnsOnly -ErrorAction SilentlyContinue) {        
+            $domain.PassedTest = $true
+        }
+        Else {
+            $domain.PassedTest = $false
+        }
+    }
+    # Filter and print RequiredDomains where PassedTest is false
+    If ($global:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true }) {
+        $global:Tests.DomainTest.TestPassed = $false
+    }
+    Else {
+        $global:Tests.DomainTest.TestPassed = $true
+    }
+}
 Function Test-DnsResolution {
     param (
         [string]$hostname,
@@ -944,7 +1037,7 @@ Function Test-DoubleNAT {
         Write-Host '⚠️ Possible Double-NAT connection detected.' -ForegroundColor Yellow
         Write-Host 'Private IPs detected are:'
         Write-Host $privateIPs -Separator "`n"
-        Write-Host "`nIf you're not sure what these results mean, the IP results are safe to share with others." -ForegroundColor Cyan
+        Write-Host "`nIf you're not sure what these results mean, these results are safe to share with others." -ForegroundColor Cyan
     }
     Else {
         Write-Host "`nNo Double-NAT connection detected." -ForegroundColor Green
@@ -1013,36 +1106,16 @@ Function Test-VisualC++Redists {
     Return
 }
 Function Test-MemoryChannels {
-    Write-Host 'Checking to see if multi-channel memory is enabled...' -ForegroundColor Cyan
-    $TextHolder = $null
-    $SystemMemoryInfoObj = Get-CimInstance Win32_PhysicalMemory
-    $DeviceLocatorChannels = 1
-    $BankLabelChannels = 1
-    Try { 
-            $DeviceLocatorChannels = ($SystemMemoryInfoObj.DeviceLocator | Sort-Object -Unique).Count
-            $BankLabelChannels = ($SystemMemoryInfoObj.BankLabel | Sort-Object -Unique).Count
-        }
-            
-    Catch {
-            # If that errors, then there is only one DIMM installed
-    }
-    $NumberofChannels = [Math]::Max($DeviceLocatorChannels, $BankLabelChannels)
-    $MemoryTextStrings = @(
-    [PSCustomObject]@{ChannelCount = '2'; String = 'Dual'},
-    [PSCustomObject]@{ChannelCount = '3'; String = 'Triple'},
-    [PSCustomObject]@{ChannelCount = '4'; String = 'Quad'}
-    )
-    $TextHolder = $MemoryTextStrings | Where-Object {$_.ChannelCount -match $NumberofChannels}
-    If ( $TextHolder ) {
-        Write-Host '[PASS] ' -NoNewLine -ForegroundColor Green
-        Write-Host ($TextHolder.String) -NoNewline
-        Write-Host '-channel Memory is enabled!'
-        } Else {
-            Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-            Write-Host "WARNING: It appears your system is running in single-channel memory mode." -ForegroundColor Yellow
-            Write-Host '       This detection is not perfect, but if true, this will usually cause severe performance issues.' -ForegroundColor Yellow
+    # Dual-Channel RAM test
+    # Define the pattern to search for
+    $pattern = "^Channels\t+[2-8]\s+x\s+\d\d-bit$"
+    If ($global:HardwareInfoText -match $pattern) {
+        $global:Tests.DualChannelMemory.TestPassed = $true
+    } Else {
+        $global:Tests.DualChannelMemory.TestPassed = $false
     }
 }
+
 # Function to check if a reboot is required
 Function Test-PendingReboot {
     ForEach ($key in $global:Tests.PendingReboot.keys) {
@@ -1063,7 +1136,7 @@ Function Reset-HD2SteamCloud {
     Write-Host 'You will lose any custom key bindings. ' -NoNewline
     Write-Host 'No game progress will be lost.' -ForegroundColor Yellow
     Write-Host "This can resolve a myriad of input issues, and in some instances,`ncan resolve the game not running at all."
-    Write-Host "If you have multiple Steam user profiles,`nthis function will clear the LAST USED HD2 Steam Cloud profile."-Foreground Yellow
+    Write-Host "If you have multiple Steam user profiles,`nthis function will clear the LAST USED HD2 Steam Cloud profile."-ForegroundColor Yellow
     Write-Host "If you need to switch Steam profiles before running this script,`nplease close the script or press " -NoNewline
     Write-Host 'Ctrl + C' -NoNewline -ForegroundColor Cyan
     Write-Host " to stop the script...`nOpen Steam using the correct Steam profile and re-run this script."
@@ -1127,14 +1200,14 @@ Function Reset-HD2SteamCloud {
     $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
     $modifiedContent = @()
     
-    Write-Host 'Cloud save for HD2 has been disabled.' -Foreground Cyan
+    Write-Host 'Cloud save for HD2 has been disabled.' -ForegroundColor Cyan
     Remove-Item -Path $HD2SteamCloudSaveFolder\* -Recurse
-    Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -Foreground Cyan
+    Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -ForegroundColor Cyan
     
     Write-Host "STOP! Please open Helldivers 2 and skip intro/wait until it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
     pause 'Press any key to continue...'
 
-    Write-Host 'Re-enabling Cloud Save for HD2...' -Foreground Cyan
+    Write-Host 'Re-enabling Cloud Save for HD2...' -ForegroundColor Cyan
     $configContent = Get-Content -Path $sharedConfigPath
     ForEach ($line in $configContent) {
         If ($line -match $global:AppID) {
@@ -1147,7 +1220,7 @@ Function Reset-HD2SteamCloud {
     }
     $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
     $modifiedContent = $null
-    Write-Host 'HD2 Steam Cloud clearing procedures completed!' -Foreground Cyan
+    Write-Host 'HD2 Steam Cloud clearing procedures completed!' -ForegroundColor Cyan
     Return
 }
 Function Switch-FullScreenOptimizations
@@ -1237,8 +1310,12 @@ Function Menu {
             Test-PendingReboot
             Reset-HostabilityKey
             Find-CPUInfo
+            Get-HardwareInfo
             Test-MemoryChannels
+            Get-MemoryPartNumber
+            Get-MemorySpeed
             Test-Network
+            Test-RequiredURLs
             Find-BlacklistedDrivers
             Test-BadPrinters
             Test-BTAGService
@@ -1310,7 +1387,6 @@ Function Menu {
 }
 Function Show-TestResults {
     $global:Tests.GetEnumerator() | ForEach-Object {
-
         If ($_.Value.TestPassed -ne $true) {
             Invoke-Expression $_.Value.TestFailMsg
         }
@@ -1327,7 +1403,7 @@ Try {
 }
 Catch { 
     Write-Host '[FAIL]' -NoNewline -ForegroundColor Red
-    Write-Host 'Steam was not detected. Exiting Steam to fix this issue.'
+    Write-Host 'Steam was not detected. Exiting Steam to fix this issue.' -ForegroundColor Cyan
     # Get the Steam process
     $steamProcess = Get-Process -Name "steam" -ErrorAction SilentlyContinue
     If ($steamProcess) {
