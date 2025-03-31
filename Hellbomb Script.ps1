@@ -1135,10 +1135,12 @@ Function Test-VisualC++Redists {
 Function Test-MemoryChannels {
     # Dual-Channel RAM test
     # Define the pattern to search for
-    $pattern = "^Channels\t+[2-8]\s+x\s+\d\d-bit$"
-    If ($global:HardwareInfoText -match $pattern) {
+    $DDR4pattern = "^Channels\t+[2-8]\s+x\s+64-bit$"
+    $DDR5pattern = "^Channels\t+[4-8]\s+x\s+32-bit$"
+    If ($global:HardwareInfoText -match $DDR4pattern -or $global:HardwareInfoText -match $DDR5pattern) {
         $global:Tests.DualChannelMemory.TestPassed = $true
-    } Else {
+    }
+    Else {
         $global:Tests.DualChannelMemory.TestPassed = $false
     }
 }
