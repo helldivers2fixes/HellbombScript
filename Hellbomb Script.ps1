@@ -456,7 +456,7 @@ Function Get-MemoryPartNumber{
     }
 }
 Function Get-HardwareInfo { 
-    $workingDirectory = "$env:USERPROFILE\Downloads"
+    $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
     
     # Define URLs and paths
     $CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.15-en.zip"
