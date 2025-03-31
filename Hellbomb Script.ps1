@@ -588,6 +588,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Your ver. may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html.' }
     [PSCustomObject]@{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
     [PSCustomObject]@{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes in the past.' }
+    [PSCustomObject]@{ProgramName = 'cFosSpeed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'ESET Endpoint'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET File'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Management'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
@@ -595,6 +596,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'ESET Rogue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'EVGA Precision'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues. Disabling the OSD may resolve the issue.' }
+    [PSCustomObject]@{ProgramName = 'Gigabyte Speed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Breaks connectivity. Recommend uninstalling or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
     [PSCustomObject]@{ProgramName = 'Lunar Client'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Exit Lunar Client before launching HD2 to prevent connectivity issues.' }
