@@ -34,13 +34,15 @@ Copy and paste the script manually per instructions below.
  8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
-Main Menu
-![image](https://github.com/user-attachments/assets/d06b4f0f-e0dc-4aec-a1ff-fe85f5f00d36)
-
-Running the HD2 Status Checks (H) in PowerShell 7:
-![Hellbomb Script Animation](https://github.com/user-attachments/assets/9eb51d3f-2140-4e02-afe9-450b056c00f8)
+Main Menu in EXE
+![image](https://github.com/user-attachments/assets/0054681c-8499-4c8e-81b2-ea2897e53404)
 
 
-Selecting Help (?) from the menu:
-![image](https://github.com/user-attachments/assets/c78138ca-8c30-4a26-8fa1-a8fef313e4b0)
+Running the HD2 Status Checks (H) from the EXE:
+![Hellbomb Script Animation](https://github.com/user-attachments/assets/fff55ef6-a617-4081-ab2b-3811c8f2d392)
+
+
+
+Selecting Help (?) from the menu in PowerShell 7:
+![image](https://github.com/user-attachments/assets/3a7bc950-fd78-4512-a1ba-be57598627b6)
 
