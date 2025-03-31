@@ -107,6 +107,19 @@ $global:Tests = @{
         $global:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true } | ForEach-Object { "       $($_.RequiredDomains)" } | Write-Host -ForegroundColor White
 '@
     }
+    "FirewallRules" = @{
+        'TestPassed' = $null
+        'Rules' = @(
+            [PSCustomObject]@{ RuleName = 'Inbound TCP Rule'; PassedTest = $null },
+            [PSCustomObject]@{ RuleName = 'Inbound UDP Rule'; PassedTest = $null }
+        )
+        'TestFailMsg' = @'
+        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
+        $global:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
+        Start-Process wf.msc
+'@
+    }
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -359,6 +372,8 @@ $pattern = '^Memory Frequency.*$'
         $match -match $pattern
         $RAMFrequency = [int]$Matches[0]
         $RAMFrequency = [string]::Concat(($RAMFrequency * 2), ' MHz')
+        Write-Host "`nRAM is currently running at " -NoNewLine -ForegroundColor Cyan
+        Write-Host $RAMFrequency -ForegroundColor White
     }
 }
 
@@ -644,7 +659,7 @@ Function Test-Programs {
         }
     }
     Else {
-        Write-Host 'Checks complete. No problematic programs found!'`n -ForegroundColor Green
+        Write-Host 'Checks complete. No problematic programs found!' -ForegroundColor Green
     }
     Return
 }
@@ -663,42 +678,23 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
-        Write-Host '⚠️ Windows Firewall is blocking Helldivers 2. No Inbound firewall rules were found that match the original rule names. Please add 2 Inbound rules, one for TCP and one for UDP.' -ForegroundColor Red
-        Start-Process wf.msc
+        $global:Tests.FirewallRules.TestPassed = $false
     }
     Else {
-        $TCPRule = $false
-        $UDPRule = $false
+        $global:Tests.FirewallRules.Rules[0].PassedTest = $false
+        $global:Tests.FirewallRules.Rules[1].PassedTest = $false
         ForEach ( $rule in $HD2FirewallRules) {
-            If ( !$TCPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
-                $TCPRule = $true
-                Write-Host 'Inbound TCP Rule ' -NoNewline
-                Write-Host '[OK]' -ForegroundColor Green
+            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
+                $global:Tests.FirewallRules.Rules[0].PassedTest = $true
             }
-            If ( !$UDPRule -and $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
-                $UDPRule = $true
-                Write-Host 'Inbound UDP Rule ' -NoNewline
-                Write-Host '[OK]' -ForegroundColor Green
-                }
-        }
-        If (!$TCPRule) {
-            Write-Host 'Inbound TCP Rule ' -NoNewline
-            Write-Host '[FAIL]' -ForegroundColor Red
+            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
+                $global:Tests.FirewallRules.Rules[1].PassedTest = $true
             }
-        If (!$UDPRule) {
-            Write-Host 'Inbound UDP Rule ' -NoNewline
-            Write-Host '[FAIL]' -ForegroundColor Red
-            }
-        If (!$TCPRule -or !$UDPRule) {
-
-        Write-Host "`n⚠️ Windows Firewall is blocking Helldivers 2." -ForegroundColor Red
-        Write-Host 'On game launch, Steam should request Admin privileges and add the Inbound rule(s) for you.' -ForegroundColor Yellow
-        Write-Host 'You may need to add the rule(s) manually if this does not happen.' -ForegroundColor Yellow
-        Write-Host "`nLaunching firewall settings..." -ForegroundColor Cyan
-        Start-Process wf.msc
         }
-        Write-Host "`nFirewall checks complete!" -ForegroundColor Cyan
+        If ( $global:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $global:Tests.FirewallRules.Rules[1].PassedTest -eq $true) {
+            $global:Tests.FirewallRules.TestPassed = $true
         }
+    }
 
     Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
     Clear-DnsClientCache
@@ -1391,7 +1387,6 @@ Function Menu {
 }
 Function Show-TestResults {
     $global:Tests.GetEnumerator() | ForEach-Object {
-
         If ($_.Value.TestPassed -ne $true) {
             Invoke-Expression $_.Value.TestFailMsg
         }
