@@ -120,6 +120,30 @@ $global:Tests = @{
         Start-Process wf.msc
 '@
     }
+"GameMods" = @{
+    'TestPassed' = $null
+    'KnownModFiles' = @(
+        '2b6904ecb991fcf1', '2b6904ecb991fcf1.stream', '2c26bc4c6592fa14.patch_0', '2c26bc4c6592fa14.patch_0.gpu_resources', '2c26bc4c6592fa14.patch_0.stream', 
+        '2d79d624be0debf8', '2d79d624be0debf8.stream', '33632bc69833746b', '36e6e5a719018781', '395e439fc282bc37', '395e439fc282bc37.stream', '3c346e5828ed8222', 
+        '3c346e5828ed8222.stream', '432afdb12428b80e', '432afdb12428b80e.stream', '4b8f9a84127fb95b', '4b8f9a84127fb95b.stream', '4e381abce2d425e8.patch_0', 
+        '4e381abce2d425e8.patch_0.gpu_resources', '4e381abce2d425e8.patch_0.stream', '63a0bc1ecfe77367', '63a0bc1ecfe77367.stream', '704a293cda09b9e3', '71ef8d93bd802871', 
+        '71ef8d93bd802871.stream', '76a8d181d1e7fb00', '76a8d181d1e7fb00.stream', '7c221cf5b12213ac.patch_0', '7c221cf5b12213ac.patch_0.gpu_resources', '7c221cf5b12213ac.patch_0.stream', 
+        '7f37db9b767844c2.patch_0', '7f37db9b767844c2.patch_0.gpu_resources', '7f37db9b767844c2.patch_0.stream', '8032cfd34661b7e4', '8032cfd34661b7e4.stream', '81a89b5d3e0e39ee', 
+        '81a89b5d3e0e39ee.stream', '8a98c9c339e9fa88', '8a98c9c339e9fa88.stream', '8eb3ba8c8c27aa86', '8eb3ba8c8c27aa86.stream', '8f5b881a9b27b51f', '8f5b881a9b27b51f.stream', 
+        '8ff1ad223459a2f1', '8ff1ad223459a2f1.stream', '9ba626afa44a3aa3.patch_0', '9ba626afa44a3aa3.patch_0.gpu_resources', '9ba626afa44a3aa3.patch_0.stream', 'a7e75155d4cdb987', 
+        'a87a414cada4ab3f', 'ad28c21c07eeb681', 'ad28c21c07eeb681.stream', 'b8375e877e52d40d', 'b8375e877e52d40d.stream', 'bf0b165bd7409a41', 'bf0b165bd7409a41.stream', 'cd606908b03291f4', 
+        'cd606908b03291f4.stream', 'cf1acde501ccfa1b.patch_0', 'cf1acde501ccfa1b.patch_0.gpu_resources', 'cf1acde501ccfa1b.patch_0.stream', 'e0e1c782c2847df8', 'e0e1c782c2847df8.stream', 
+        'e510cd4d81aabda6', 'f4dc2361985c3026.patch_0', 'f4dc2361985c3026.patch_0.gpu_resources', 'f4dc2361985c3026.patch_0.stream', 'f628c65c70559e26', 'f684a08f07d67b9d', 
+        'f684a08f07d67b9d.stream', 'f6c5246727ad78a5', 'f6c5246727ad78a5.stream', 'fdb74ff900824906'
+    )
+    'TestFailMsg' = @'
+    Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host "Mods were detected!" -ForegroundColor Yellow
+    Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
+    Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
+    Write-Host ' to attempt removal.' -ForegroundColor Cyan
+'@
+    }
 }
 Function Show-Variables {
     If ($global:AppIDFound -eq $true) {
@@ -466,12 +490,13 @@ Function Get-HardwareInfo {
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
-    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan
+    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
     $process.WaitForExit()
     $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
     # Clean up files
     Remove-File -filePath $CPUZExe
     Remove-File -filePath $CPUZZip
+    Write-Host ' complete!'
  }
 
 Function Get-CPUZ {
@@ -674,7 +699,7 @@ Function Get-SystemUptime {
         }
 }
 Function Test-Network {
-Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan
+Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
@@ -695,6 +720,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
             $global:Tests.FirewallRules.TestPassed = $true
         }
     }
+    Write-Host ' complete!'
 
     Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
     Clear-DnsClientCache
@@ -1276,6 +1302,30 @@ Function Reset-HostabilityKey {
     }    
 }
 
+Function Find-Mods {
+    $directoryPath = $global:AppInstallPath+'\data'
+    If ( (Get-ChildItem -Path $directoryPath -File).Count -ne 6523 ) {
+        $global:Tests.GameMods.TestPassed = $false
+    } Else { $global:Tests.GameMods.TestPassed = $true }
+}
+Function Remove-Mods {
+    Write-Host "`nWARNING: " -ForegroundColor Red -NoNewline
+    Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
+    Write-Host "$global:AppInstallPath\data\" -ForegroundColor Cyan
+    Write-Host 'If this location looks incorrect, press ' -ForegroundColor Yellow -NoNewline
+    Write-Host 'Ctrl ' -NoNewline
+    Write-Host '+ ' -ForegroundColor Yellow -NoNewline
+    Write-Host 'C ' -NoNewLine
+    Write-Host 'now to exit.' -ForegroundColor Yellow
+    Pause "`n Press any key to continue"
+    Foreach ( $file in $global:Tests.GameMods.KnownModFiles ) {
+        $file = $global:AppInstallPath+'\data\'+$file
+        If (Test-Path $file) {
+            Remove-Item -Path $file -Force
+        }
+    }
+}
+
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
@@ -1286,7 +1336,7 @@ Function Menu {
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks & flushes the DNS Cache.'),
+        [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
         [ChoiceDescription]::new("&Clear HD2 Settings (AppData)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
         [ChoiceDescription]::new("&Install VC++ Redists", 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and DLL errors.'),
         [ChoiceDescription]::new("Re-install &GameGuard", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
@@ -1298,6 +1348,7 @@ Function Menu {
         [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service`n", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new("Clear HD2 Stea&m Cloud", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
         [ChoiceDescription]::new("Clear &Z Hostability Key`n", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
+        [ChoiceDescription]::new("Attempt &quick mod removal`n", 'Can attempt to remove mods from the \data\ folder.'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
@@ -1323,6 +1374,7 @@ Function Menu {
             Test-Programs
             Get-SystemUptime
             Test-AVX2
+            Find-Mods
             Show-TestResults
             Write-Host "`n"
             Menu
@@ -1382,7 +1434,11 @@ Function Menu {
             Write-Host "`n"
             Menu
         }
-        12 { Return }
+        12 {
+            Remove-Mods
+            Menu
+        }
+        13 { Return }
     }
 }
 Function Show-TestResults {
