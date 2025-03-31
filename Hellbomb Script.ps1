@@ -139,6 +139,10 @@ $global:Tests = @{
     'TestFailMsg' = @'
     Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host "Mods were detected!" -ForegroundColor Yellow
+    If ( $global:BuildID -ne 17813906 ) {
+        Write-Host '       Mod detection was not authored for this game version.' -ForegroundColor Yellow
+        Write-Host '       This may be a false positive.' -ForegroundColor Cyan
+    }
     Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
     Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
     Write-Host ' to attempt removal.' -ForegroundColor Cyan
@@ -150,7 +154,7 @@ Function Show-Variables {
         Clear-Host
         Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
         Write-Host $AppInstallPath -ForegroundColor White
-        Write-Host "Current build of AppID $AppID is:$BuildID" -ForegroundColor Cyan
+        Write-Host "Current build of AppID $AppID is:$global:BuildID" -ForegroundColor Cyan
     }
     Else {
         Write-Host 'Error. AppID was not found.' -ForegroundColor Red
@@ -493,9 +497,6 @@ Function Get-HardwareInfo {
     Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
     $process.WaitForExit()
     $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
-    # Clean up files
-    Remove-File -filePath $CPUZExe
-    Remove-File -filePath $CPUZZip
     Write-Host ' complete!'
  }
 
@@ -1324,6 +1325,7 @@ Function Remove-Mods {
             Remove-Item -Path $file -Force
         }
     }
+    Write-Host 'Attemped removal complete. Please verify game integrity before launching.'
 }
 
 Function Restart-Resume {
@@ -1332,7 +1334,7 @@ Function Restart-Resume {
 
 Function Menu {
     $Title = "-------------------------------------------------------------------------------------------------------
-    💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 2.5.3.1
+    💣 Hellbomb 💣 Script for Fixing Helldivers 2 Version 3.0 alpha 1
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
@@ -1483,7 +1485,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         $global:AppIDFound = $true
         # Since we found the App location, let's get some data about it
         $GameData = Get-Content -Path $global:AppInstallPath\steamapps\appmanifest_$AppID.acf
-        $BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim()
+        $global:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim()
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
         $global:AppInstallPath = ( $global:AppInstallPath + "\steamapps\common\" + $GameFolderName[1] )
