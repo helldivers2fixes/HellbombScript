@@ -500,8 +500,8 @@ Function Get-HardwareInfo {
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
-    [void]$process.Start()
     Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
+    [void]$process.Start()
     $process.WaitForExit()
     $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
     Write-Host ' complete!'
