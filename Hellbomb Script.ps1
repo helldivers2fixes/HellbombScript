@@ -1488,7 +1488,7 @@ ForEach ($line in $($LibraryData -split "`r`n")) {
         $global:AppIDFound = $true
         # Since we found the App location, let's get some data about it
         $GameData = Get-Content -Path $global:AppInstallPath\steamapps\appmanifest_$AppID.acf
-        $global:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim()
+        $global:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
         $global:AppInstallPath = ( $global:AppInstallPath + "\steamapps\common\" + $GameFolderName[1] )
