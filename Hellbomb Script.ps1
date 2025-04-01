@@ -1313,14 +1313,36 @@ Function Reset-HostabilityKey {
         Write-host 'Hostabiltiy key could not be removed.`n' -ForegroundColor Yellow
     }    
 }
-
 Function Find-Mods {
     $directoryPath = $global:AppInstallPath+'\data'
     If ( (Get-ChildItem -Path $directoryPath -File).Count -ne 6523 ) {
         $global:Tests.GameMods.TestPassed = $false
     } Else { $global:Tests.GameMods.TestPassed = $true }
 }
-Function Remove-Mods {
+Function Remove-ModsMenu {
+    
+    $Title = "-------------------------------------------------------------------------------------------------------
+    ❌ Mod Removal Menu ❌
+-------------------------------------------------------------------------------------------------------"
+    $Prompt = "Enter your choice:"
+    $Choices = [ChoiceDescription[]](
+        [ChoiceDescription]::new("&Remove known mod files. This does not guarantee the game will work.", 'Deletes a known list of mod files.'),
+        [ChoiceDescription]::new("&Purge all mods. This will cause the game to work, but will break any working mods.", 'Deletes all .patch_ files'),
+        [ChoiceDescription]::new('Retur&n to Main Menu', 'Returns to Main Menu')        
+    )
+    $DefaultChoice = 0
+    $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $DefaultChoice)
+    switch ($Choice) {
+        0 { Display-ModRemovalWarning
+            Remove-KnownMods
+        }
+        1 { Display-ModRemovalWarning
+            Remove-AllMods
+        }
+        2 { Menu }
+    }
+}    
+Function Display-ModRemovalWarning {  
     Write-Host "`nWARNING: " -ForegroundColor Red -NoNewline
     Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
     Write-Host "$global:AppInstallPath\data\" -ForegroundColor Cyan
@@ -1330,15 +1352,36 @@ Function Remove-Mods {
     Write-Host 'C ' -NoNewLine
     Write-Host 'now to exit.' -ForegroundColor Yellow
     Pause "`n Press any key to continue"
-    Foreach ( $file in $global:Tests.GameMods.KnownModFiles ) {
+}
+Function Remove-KnownMods {
+Foreach ( $file in $global:Tests.GameMods.KnownModFiles ) {
         $file = $global:AppInstallPath+'\data\'+$file
         If (Test-Path $file) {
             Remove-Item -Path $file -Force
         }
     }
-    Write-Host 'Attemped removal complete. Please verify game integrity before launching.'
+    Write-Host 'Attemped removal complete. Please verify game integrity before launching.' -ForegroundColor Cyan
 }
 
+Function Remove-AllMods {
+    $dataFolder = $global:AppInstallPath + '\data\'
+    Foreach ($file in Get-ChildItem -Path $dataFolder -File) {
+        $filePath = $dataFolder + $file.Name
+        If ($file.Name -match "([0-9a-fA-F]{16})\.patch_") {
+            $hex = $matches[1]
+            If (Test-Path $filePath) {
+                Remove-Item -Path $filePath -Force
+            }
+            Foreach ($matchingFile in Get-ChildItem -Path $dataFolder -File | Where-Object { $_.Name -match "$hex" }) {
+                $matchingFilePath = $dataFolder + $matchingFile.Name
+                if (Test-Path $matchingFilePath) {
+                    Remove-Item -Path $matchingFilePath -Force
+                }
+            }
+        }
+    }
+    Write-Host 'Removed all .patch_ files and any files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
+}
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
@@ -1448,7 +1491,7 @@ Function Menu {
             Menu
         }
         12 {
-            Remove-Mods
+            Remove-ModsMenu
             Menu
         }
         13 { Return }
