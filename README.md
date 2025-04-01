@@ -8,6 +8,11 @@
 
 3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
+## Start with Option ``H`` (the default) Press ``Enter`` to run it or type ``H`` and press ``Enter``
+### Read through **all** the output for anything that is a [FAIL] or looks incorrect.
+
+Then you can work through the things below if you have specific issues.
+
 | Symptoms          | Recommended Things to Try                                       |
 |-------------------|-----------------------------------------------------------------|
 | Controller/Key binding Issues          | Option ``M``|
