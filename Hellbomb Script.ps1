@@ -51,8 +51,9 @@ $global:Tests = @{
    "LongSysUptime" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
+        'SystemUptime' = $null
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your computer has not been restarted in over 1 day" -ForegroundColor Yellow -NoNewLine
+        Write-Host "Your computer has not been restarted in $SystemUptime days." -ForegroundColor Yellow -NoNewLine
         Write-Host "`nPlease restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
     }
@@ -705,6 +706,7 @@ Function Get-SystemUptime {
         $global:Tests.LongSysUptime.TestPassed = $true
     }
     Else {
+        $global:Tests.LongSysUptime.SystemUptime = $uptime.Days
         $global:Tests.LongSysUptime.TestPassed = $false
         }
 }
