@@ -147,7 +147,7 @@ $global:Tests = @{
     'TestFailMsg' = @'
     Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host "Mods were detected!" -ForegroundColor Yellow
-    If ( $global:BuildID -ne 17813906 ) {
+    If ( $global:BuildID -ne 17889517 ) {
         Write-Host '       Mod detection was not authored for this game version.' -ForegroundColor Yellow
         Write-Host '       This may be a false positive.' -ForegroundColor Cyan
     }
