@@ -804,7 +804,9 @@ Function Test-RequiredURLs {
             [Console]::SetCursorPosition(46 , $y)
         }
         If (Resolve-DnsName -Name $domain.RequiredDomains -DnsOnly -ErrorAction SilentlyContinue) {        
-            $domain.PassedTest = $true
+            If ( $domain.PassedTest -ne $false ) {
+                $domain.PassedTest = $true
+            }
         }
         Else {
             $domain.PassedTest = $false
@@ -1395,6 +1397,9 @@ Function Menu {
             Get-MemoryPartNumber
             Get-MemorySpeed
             Test-Network
+            Test-RequiredURLs
+            Test-RequiredURLs
+            Test-RequiredURLs
             Test-RequiredURLs
             Find-BlacklistedDrivers
             Test-BadPrinters
