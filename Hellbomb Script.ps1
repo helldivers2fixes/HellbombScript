@@ -134,7 +134,15 @@ $global:Tests = @{
         'a87a414cada4ab3f', 'ad28c21c07eeb681', 'ad28c21c07eeb681.stream', 'b8375e877e52d40d', 'b8375e877e52d40d.stream', 'bf0b165bd7409a41', 'bf0b165bd7409a41.stream', 'cd606908b03291f4', 
         'cd606908b03291f4.stream', 'cf1acde501ccfa1b.patch_0', 'cf1acde501ccfa1b.patch_0.gpu_resources', 'cf1acde501ccfa1b.patch_0.stream', 'e0e1c782c2847df8', 'e0e1c782c2847df8.stream', 
         'e510cd4d81aabda6', 'f4dc2361985c3026.patch_0', 'f4dc2361985c3026.patch_0.gpu_resources', 'f4dc2361985c3026.patch_0.stream', 'f628c65c70559e26', 'f684a08f07d67b9d', 
-        'f684a08f07d67b9d.stream', 'f6c5246727ad78a5', 'f6c5246727ad78a5.stream', 'fdb74ff900824906'
+        'f684a08f07d67b9d.stream', 'f6c5246727ad78a5', 'f6c5246727ad78a5.stream', 'fdb74ff900824906',
+        '046d4441a6dae0a9.patch_0', '046d4441a6dae0a9.patch_0.gpu_resources', '046d4441a6dae0a9.patch_0.stream', '15eb7241c3616351.patch_0', '15eb7241c3616351.patch_0.gpu_resources',
+        '15eb7241c3616351.patch_0.stream', '1d9e8acfc3ee3ace.patch_0', '1d9e8acfc3ee3ace.patch_0.gpu_resources', '1d9e8acfc3ee3ace.patch_0.stream', '22749a294788af66.patch_0',
+        '22749a294788af66.patch_0.gpu_resources', '22749a294788af66.patch_0.stream', '292b09dac80ce1de.patch_0', '292b09dac80ce1de.patch_0.gpu_resources', '292b09dac80ce1de.patch_0.stream',
+        '2e24ba9dd702da5c.patch_0', '2e24ba9dd702da5c.patch_0.gpu_resources', '2e24ba9dd702da5c.patch_0.stream', '2e24ba9dd702da5c.patch_1', '2e24ba9dd702da5c.patch_1.gpu_resources',
+        '2e24ba9dd702da5c.patch_1.stream', '6ca87637eaeb5923.patch_0', '6ca87637eaeb5923.patch_0.gpu_resources', '6ca87637eaeb5923.patch_0.stream', '89de9c3d26d2adc1.patch_0',
+        '89de9c3d26d2adc1.patch_0.gpu_resources', '89de9c3d26d2adc1.patch_0.stream', 'e72d3e9b05c3db0b.patch_0', 'e72d3e9b05c3db0b.patch_0.gpu_resources', 'e72d3e9b05c3db0b.patch_0.stream',
+        'fc5b6bff0db90aab.patch_0', 'fc5b6bff0db90aab.patch_0.gpu_resources', 'fc5b6bff0db90aab.patch_0.stream', 'fc5b6bff0db90aab.patch_1', 'fc5b6bff0db90aab.patch_1.gpu_resources',
+        'fc5b6bff0db90aab.patch_1.stream', 'fdf011daecf24312.patch_0', 'fdf011daecf24312.patch_0.gpu_resources', 'fdf011daecf24312.patch_0.stream'
     )
     'TestFailMsg' = @'
     Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
