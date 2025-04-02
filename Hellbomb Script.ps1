@@ -51,9 +51,8 @@ $global:Tests = @{
    "LongSysUptime" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        'SystemUptime' = $null
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your computer has not been restarted in $SystemUptime days." -ForegroundColor Yellow
+        Write-Host "Your computer has not been restarted in $($global:Tests.LongSysUptime.SystemUptime) days." -ForegroundColor Yellow
         Write-Host "       Please restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
     }
@@ -64,7 +63,7 @@ $global:Tests = @{
         Write-Host "       Your CPU does not support the AVX2 instruction set." -ForegroundColor Yellow
 '@
     }
-    "DualChannelMemory" = @{
+    "MultiChannelMemory" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
@@ -488,6 +487,7 @@ Function Get-HardwareInfo {
     }
     
     # Run CPU-Z and dump report to file
+    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -499,7 +499,6 @@ Function Get-HardwareInfo {
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
-    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
     [void]$process.Start()
     $process.WaitForExit()
     $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
@@ -702,12 +701,12 @@ Function Test-Programs {
 }
 Function Get-SystemUptime {
     $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
-    $uptime = (Get-Date) - $lastBoot
-    If ( ($uptime.Days) -lt 1 ) {
+    $uptime = ([math]::Round(((Get-Date) - $lastBoot).TotalDays, 0))
+    If ( $uptime -lt 1 ) {
         $global:Tests.LongSysUptime.TestPassed = $true
     }
     Else {
-        $global:Tests.LongSysUptime.SystemUptime = $uptime.Days
+        $global:Tests.LongSysUptime.SystemUptime = $uptime
         $global:Tests.LongSysUptime.TestPassed = $false
         }
 }
@@ -1150,11 +1149,16 @@ Function Test-MemoryChannels {
     # Define the pattern to search for
     $DDR4pattern = "^Channels\t+[2-8]\s+x\s+64-bit$"
     $DDR5pattern = "^Channels\t+[4-8]\s+x\s+32-bit$"
-    If ($global:HardwareInfoText -match $DDR4pattern -or $global:HardwareInfoText -match $DDR5pattern) {
-        $global:Tests.DualChannelMemory.TestPassed = $true
+    $DualChannelPattern = "^Channels\t+s+Dual$"
+    $TripleChannelPattern = "^Channels\t+\s+Triple$"
+    $QuadChannelPattern = "^Channels\t+\s+Quad$"
+    If ($global:HardwareInfoText -match $DDR4pattern -or $global:HardwareInfoText -match $DDR5pattern `
+        -or $global:HardwareInfoText -match $DualChannelPattern -or $global:HardwareInfoText -match $TripleChannelPattern `
+        -or $global:HardwareInfoText -match $QuadChannelPattern ) {
+        $global:Tests.MultiChannelMemory.TestPassed = $true
     }
     Else {
-        $global:Tests.DualChannelMemory.TestPassed = $false
+        $global:Tests.MultiChannelMemory.TestPassed = $false
     }
 }
 
