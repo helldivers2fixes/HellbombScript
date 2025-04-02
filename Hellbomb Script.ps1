@@ -53,8 +53,8 @@ $global:Tests = @{
         'TestFailMsg' = @'
         'SystemUptime' = $null
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your computer has not been restarted in $SystemUptime days." -ForegroundColor Yellow -NoNewLine
-        Write-Host "`nPlease restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
+        Write-Host "Your computer has not been restarted in $SystemUptime days." -ForegroundColor Yellow
+        Write-Host "       Please restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
     }
        "AVX2" = @{
@@ -466,13 +466,11 @@ Function Get-MemoryPartNumber{
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
-    
     # Define URLs and paths
     $CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.15-en.zip"
     $CPUZZip = "$workingDirectory\cpu-z_2.15-en.zip"
     $CPUZExe = "$workingDirectory\cpuz_x64.exe"
     $CPUZFile = "cpuz_x64.exe"
-    
     # Download and extract CPU-Z if it does not exist
     If (-Not (Test-Path $CPUZExe)) {
         If (-Not (Test-Path $CPUZZip)) {
@@ -531,8 +529,11 @@ Function Get-CPUZ {
         Write-Error "Failed to extract cpuz_x64.exe: $_"
         Throw
     } Finally {
-        # Properly dispose of the ZIP archive
-        $zip.Dispose()
+        If ($null -ne $zip) {
+            Try {
+                $zip.Dispose()
+            } Catch {}
+        }
     }
 }
 Function Remove-File {
@@ -710,7 +711,7 @@ Function Get-SystemUptime {
         $global:Tests.LongSysUptime.TestPassed = $false
         }
 }
-Function Test-Network {
+Function Test-Firewall {
 Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
@@ -733,15 +734,13 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
         }
     }
     Write-Host ' complete!'
-
-    Write-Host "`nClearing the DNS Cache..." -ForegroundColor Cyan -NoNewline
-    Clear-DnsClientCache
-    Write-Host " complete!"
-  
+}
+Function Test-CRL {
     Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
     # will return false positives when it's actually broken.
+    Clear-DnsClientCache
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -797,6 +796,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
 }
 
 Function Test-RequiredURLs {
+    Clear-DnsClientCache
     ForEach ($domain in $global:Tests.DomainTest.DomainList) {
         # If not running in ISE or old PowerShell, let's make it pretty
         If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0') {
@@ -1327,7 +1327,7 @@ Function Find-Mods {
 }
 
 }
-Function Show-ModRemovalWarnin {  
+Function Show-ModRemovalWarning {  
     Write-Host "`nWARNING: " -ForegroundColor Red -NoNewline
     Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
     Write-Host "$global:AppInstallPath\data\" -ForegroundColor Cyan
@@ -1396,7 +1396,8 @@ Function Menu {
             Test-MemoryChannels
             Get-MemoryPartNumber
             Get-MemorySpeed
-            Test-Network
+            Test-Firewall
+            Test-CRL
             Test-RequiredURLs
             Test-RequiredURLs
             Test-RequiredURLs
@@ -1469,7 +1470,8 @@ Function Menu {
             Menu
         }
         12 {
-            Remove-ModsMenu
+            Show-ModRemovalWarning
+            Remove-AllMods
             Menu
         }
         13 { Return }
