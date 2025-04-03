@@ -1146,24 +1146,13 @@ Function Test-VisualC++Redists {
 }
 Function Test-MemoryChannels {
     # Dual-Channel RAM test
-    # Define the pattern to search for
-    $DDR4pattern = "^Channels\t+[2-8]\s+x\s+64-bit$"
-    $DDR5pattern = "^Channels\t+[4-8]\s+x\s+32-bit$"
-    $AM5DDR5pattern = "^Channels\t+[2-8]\s+x\s+32-bit$"
-    $DualChannelPattern = "^Channels\t+s+Dual$"
-    $TripleChannelPattern = "^Channels\t+\s+Triple$"
-    $QuadChannelPattern = "^Channels\t+\s+Quad$"
-    If ($global:HardwareInfoText -match "^\s*Package\s*Socket AM5 (LGA1718)" -and $global:HardwareInfoText -match $AM5DDR5pattern ) {
-        $global:Tests.MultiChannelMemory.TestPassed = $true
-        Return
-    }
-    If ($global:HardwareInfoText -match $DDR4pattern -or $global:HardwareInfoText -match $DDR5pattern `
-        -or $global:HardwareInfoText -match $DualChannelPattern -or $global:HardwareInfoText -match $TripleChannelPattern `
-        -or $global:HardwareInfoText -match $QuadChannelPattern ) {
-        $global:Tests.MultiChannelMemory.TestPassed = $true
+    # Define single-channel pattern to search for
+    $SingleChannelpattern = "^Channels\s*\b((1\s+x\s+\b(32|64)\b-bit)|(Single))$"
+    If ( $global:HardwareInfoText -match $SingleChannelPattern ) {
+        $global:Tests.MultiChannelMemory.TestPassed = $false
     }
     Else {
-        $global:Tests.MultiChannelMemory.TestPassed = $false
+        $global:Tests.MultiChannelMemory.TestPassed = $true
     }
 }
 
