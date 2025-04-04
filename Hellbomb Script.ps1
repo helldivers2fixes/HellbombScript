@@ -605,6 +605,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'ESET Rogue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'EVGA Precision'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues. Disabling the OSD may resolve the issue.' }
+    [PSCustomObject]@{ProgramName = 'ExpressVPN'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause networking issues. Open Device Manager and disable the adapter there.' }
     [PSCustomObject]@{ProgramName = 'Gigabyte Speed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Breaks connectivity. Recommend uninstalling or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
