@@ -359,8 +359,20 @@ Function Show-GPUInfo {
     ForEach ($gpu in $gpus) {
         $OEMDriverVersionNum = $gpu.DriverVersion
         If ( $gpu.Name.Contains( 'NVIDIA' ) ) {
-            Try {
-                    $OEMDriverVersionNum = & nvidia-smi --query-gpu=driver_version --format=csv,noheader | ForEach-Object { $_.Trim() }
+            Try { 
+                    $process = New-Object System.Diagnostics.Process
+                    $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
+                    $process.StartInfo.FileName = "nvidia-smi"
+                    $process.StartInfo.Arguments = "--query-gpu=driver_version --format=csv,noheader"
+                    $process.StartInfo.RedirectStandardOutput = $true
+                    $process.StartInfo.UseShellExecute = $false
+                    $process.StartInfo.CreateNoWindow = $true
+                    # Start the process
+                    $process.Start() | Out-Null
+                    # Read the output as a string
+                    $OEMDriverVersionNum = New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)
+                    $OEMDriverVersionNum =  $OEMDriverVersionNum.ReadToEnd().Trim()
+                    $process.WaitForExit()
                 } Catch {
                     $OEMDriverVersionNum = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
                 }
