@@ -489,7 +489,7 @@ Function Get-HardwareInfo {
     }
     
     # Run CPU-Z and dump report to file
-    Write-Host 'Scanning hardware. Please wait...' -ForegroundColor Cyan -NoNewline
+    Write-Host "`nScanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -1393,10 +1393,6 @@ Function Menu {
             Test-PendingReboot
             Reset-HostabilityKey
             Find-CPUInfo
-            Get-HardwareInfo
-            Test-MemoryChannels
-            Get-MemoryPartNumber
-            Get-MemorySpeed
             Test-Firewall
             Test-CRL
             Test-RequiredURLs
@@ -1409,7 +1405,11 @@ Function Menu {
             Test-VisualC++Redists
             Test-Programs
             Get-SystemUptime
+            Get-HardwareInfo
             Test-AVX2
+            Test-MemoryChannels
+            Get-MemoryPartNumber
+            Get-MemorySpeed
             Find-Mods
             Show-TestResults
             Write-Host "`n"
