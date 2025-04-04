@@ -376,14 +376,26 @@ Function Show-MotherboardInfo {
 }
 Function Show-GPUInfo {
     $GPUS = Get-CimInstance -ClassName Win32_VideoController
-
+    
     # Print GPU information
     ForEach ($gpu in $gpus) {
-        Write-Host "-----------------------------------"
-        Write-Host "GPU Model: $($gpu.Name)"
-        Write-Host "Drvr Ver.: $($gpu.DriverVersion)"
-        Write-Host "Status: $($gpu.Status)"
-        Write-Host "-----------------------------------"
+        $OEMDriverVersionNum = $gpu.DriverVersion
+        If ( $gpu.Name.Contains( 'NVIDIA' ) ) {
+            Try {
+                    $OEMDriverVersionNum = & nvidia-smi --query-gpu=driver_version --format=csv,noheader | ForEach-Object { $_.Trim() }
+                } Catch {
+                    $OEMDriverVersionNum = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+                }
+        }
+        Write-Host "-------------------------------------"
+        Write-Host "  GPU Model: $($gpu.Name)"
+        Write-Host "  Drvr Ver.: $OEMDriverVersionNum"
+        Write-Host "     Status: " -NoNewLine
+        If ( $gpu.Status -ne 'OK' ) {
+                Write-Host gpu.Status -ForegroundColor Red
+            }
+        Else { Write-Host $gpu.Status -ForegroundColor Green }
+        Write-Host "-------------------------------------"
     }
 }
 Function Test-AVX2 {
