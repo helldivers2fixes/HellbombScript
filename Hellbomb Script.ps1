@@ -322,7 +322,7 @@ Function Test-BadPrinters {
 
 Function Find-CPUInfo {
     $global:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
-    If ( $global:myCPU -contains 'Intel' ) {
+    If ( $global:myCPU.Contains('Intel') ) {
         ForEach ($cpuModel in $global:Tests.IntelMicrocodeCheck.AffectedModels) {
             If (($global:myCPU).Contains($cpuModel)) {
                 # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
