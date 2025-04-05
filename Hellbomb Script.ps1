@@ -7,7 +7,7 @@ $global:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = 0x12B
+        'LatestMicrocode' = '12B'
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForegroundColor White
@@ -16,9 +16,9 @@ $global:Tests = @{
         Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
         Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`nPress any key to continue..." -ForegroundColor Yellow
 '@
-        'TestPassMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
-        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+        'TestPassedMsg' = @'
+        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
+        Write-Host "is running the latest 0x12B microcode." -ForegroundColor Green
 '@
         'NotApplicableMsg' = @'
         Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
@@ -329,16 +329,18 @@ Function Find-CPUInfo {
             $CPUProperties = Get-ItemProperty -Path $registrypath
             $runningMicrocode = $CPUProperties."Update Revision"
             # Convert to string and remove leading zeros
-            Try { $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X12") } )).TrimStart('0'))
-                If ($runningMicrocodeInHex -lt $global:Tests.IntelMicrocodeCheck.LatestMicrocode) {
+            Try { $runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
+                If ( -not ($runningMicrocodeInHex -contains $global:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
                     $global:Tests.IntelMicrocodeCheck.TestPassed = $false
                     Return
                 }
             }
             Catch { $global:Tests.IntelMicrocodeCheck.TestPassed = $false }
         }
+        Invoke-Expression $global:Tests.IntelMicrocodeCheck.TestPassedMsg
     }
     $global:Tests.IntelMicrocodeCheck.TestPassed = $true
+    Invoke-Expression $global:Tests.IntelMicrocodeCheck.NotApplicableMsg
     Return
 }
 Function Show-MotherboardInfo {
@@ -414,7 +416,6 @@ $pattern = '^Memory Frequency.*$'
         Write-Host $RAMFrequency -ForegroundColor White
     }
 }
-
 Function Get-MemoryPartNumber{
     # Load DIMM Data
     $dimmData = @()
@@ -491,6 +492,7 @@ Function Get-HardwareInfo {
     If ( $CPUZSHA256 -ne 'FCAC6AA0D82943D6BB40D07FDA5C1A1573D7EA9259B9403F3607304ED345DBB9' ) {
         Return Write-Host 'cpuz_x64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -ForegroundColor Red
     }
+    
     # Run CPU-Z and dump report to file
     Write-Host "`nScanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -594,7 +596,6 @@ Function Get-InstalledPrograms {
 
     Return $installedPrograms | Where-Object { $_.DisplayName } | Sort-Object DisplayName
 }
-
 Function Test-Programs {
     Write-Host "`nChecking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan
     $ProblematicPrograms = @(
@@ -798,7 +799,6 @@ Function Test-CRL {
     Test-ClientDnsConfig
     Return
 }
-
 Function Test-RequiredURLs {
     Clear-DnsClientCache
     ForEach ($domain in $global:Tests.DomainTest.DomainList) {
@@ -841,7 +841,6 @@ Function Test-DnsResolution {
         }
     }
 }
-
 Function Test-ClientDnsConfig {
     # Define the hostname to test
     $hostname = "www.google.com"
@@ -931,7 +930,6 @@ Function Test-Wifi {
             $pingResults.Add($pingResult)
         }
     }
-
     # Summarize results
     $sent = $pingResults.Count
     # If Statements for PowerShell version compatibility
