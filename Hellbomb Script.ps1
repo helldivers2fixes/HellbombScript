@@ -491,7 +491,6 @@ Function Get-HardwareInfo {
     If ( $CPUZSHA256 -ne 'FCAC6AA0D82943D6BB40D07FDA5C1A1573D7EA9259B9403F3607304ED345DBB9' ) {
         Return Write-Host 'cpuz_x64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -ForegroundColor Red
     }
-}
     
     # Run CPU-Z and dump report to file
     Write-Host "`nScanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
