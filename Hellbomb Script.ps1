@@ -7,7 +7,7 @@ $global:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = 0x12B
+        'LatestMicrocode' = '12B'
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForegroundColor White
@@ -329,8 +329,8 @@ Function Find-CPUInfo {
             $CPUProperties = Get-ItemProperty -Path $registrypath
             $runningMicrocode = $CPUProperties."Update Revision"
             # Convert to string and remove leading zeros
-            Try { $runningMicrocodeInHex = 0x100 + ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X12") } )).TrimStart('0'))
-                If ($runningMicrocodeInHex -lt $global:Tests.IntelMicrocodeCheck.LatestMicrocode) {
+            Try { $runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
+                If ( -not ($runningMicrocodeInHex -contains $global:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
                     $global:Tests.IntelMicrocodeCheck.TestPassed = $false
                     Return
                 }
