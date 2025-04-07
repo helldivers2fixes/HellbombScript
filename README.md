@@ -2,13 +2,13 @@
 
 ## HOW TO USE:
 
-1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest EXE and run it. 
+1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it. 
 
-2.) Choose a selection using the corresponding letters in the Menu. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
+2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
 
 3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Start with Option ``H`` (the default) Press ``Enter`` to run it or type ``H`` and press ``Enter``
+## Start by pressing ``Enter`` to run the default choice (``H``) or type ``H`` and press ``Enter``
 ### Read through **all** the output for anything that is a [FAIL] or looks incorrect.
 
 Then you can work through the things below if you have specific issues.
