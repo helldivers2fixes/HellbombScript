@@ -1,16 +1,11 @@
-# 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)
-
-<p align="center">
-  <a><img src="https://img.shields.io/badge/os-windows-blue"></a> 
-  <a><img src="https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square&link=https%3A%2F%2Fgithub.com%2Fhelldivers2fixes%2FHellbombScript%2Freleases%2Fdownload%2Fv3.0.0.1%2FHellbomb.Script.v3.exe"></a> 
-  <a><img src="https://img.shields.io/github/license/helldivers2fixes/HellbombScript"></a>
-  <a><img src="https://img.shields.io/github/forks/helldivers2fixes/HellbombScript"></a>
-  <a><img src="https://img.shields.io/github/contributors/helldivers2fixes/HellbombScript"></a> 
-  <a><img src="https://img.shields.io/github/last-commit/helldivers2fixes/HellbombScript"></a>
-  <a><img src="https://img.shields.io/github/downloads/helldivers2fixes/HellbombScript/total"></a>
-  
-</a>
-</p>
+# 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)   
+  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v3.0.0.1/Hellbomb.Script.v3.exe)
+  [![GitHub release](https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
+  [![GitHub liscense](https://img.shields.io/github/license/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/tree/main?tab=MIT-1-ov-file)
+  [![GitHub forks](https://img.shields.io/github/forks/helldivers2fixes/HellbombScript)]()
+  [![GitHub contributors](https://img.shields.io/github/contributors/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/graphs/contributors)
+  [![GitHub lastcommit](https://img.shields.io/github/last-commit/helldivers2fixes/HellbombScript)]()
+  [![GitHub downloads](https://img.shields.io/github/downloads/helldivers2fixes/HellbombScript/total)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
 
 ## HOW TO USE:
 
