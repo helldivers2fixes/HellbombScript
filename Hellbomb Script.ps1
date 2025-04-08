@@ -346,13 +346,19 @@ Function Find-CPUInfo {
                         Return
                     }
                 }
-                Catch { $global:Tests.IntelMicrocodeCheck.TestPassed = $false }
+                Catch { 
+                    Write-Error "Error occurred while processing microcode..." -ForegroundColor Red
+                    $global:Tests.IntelMicrocodeCheck.TestPassed = $false
+                 }
             }
         }
-    Invoke-Expression $global:Tests.IntelMicrocodeCheck.TestPassedMsg
+        $global:Tests.IntelMicrocodeCheck.TestPassed = $true
+        Invoke-Expression $global:Tests.IntelMicrocodeCheck.TestPassedMsg
     }
-    $global:Tests.IntelMicrocodeCheck.TestPassed = $true
-    Invoke-Expression $global:Tests.IntelMicrocodeCheck.NotApplicableMsg
+    Else {
+        $global:Tests.IntelMicrocodeCheck.TestPassed = $true
+        Invoke-Expression $global:Tests.IntelMicrocodeCheck.NotApplicableMsg
+    }
     Return
 }
 Function Show-MotherboardInfo {
@@ -471,7 +477,8 @@ Function Get-MemoryPartNumber{
         }
     }
     $global:Tests.MatchingMemory.RAMInfo = $dimmData
-    If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
+    If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
+     ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
        $global:Tests.MatchingMemory.TestPassed = $true
     } Else {
         $global:Tests.MatchingMemory.TestPassed = $false
