@@ -234,7 +234,12 @@ Function Remove-HD2AppData {
     $Error.Clear()
     Try { Remove-Item -Path $env:APPDATA\Arrowhead\Helldivers2\* -Recurse }
     Catch { Write-Host "Error occurred deleting contents of $env:APPDATA\Arrowhead\Helldivers2\" -ForegroundColor Red }
-    If (!$Error) { Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green }
+    If (!$Error) { 
+        Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green
+        Write-Host "Now please use Steam's " -NoNewLine -ForegroundColor Cyan
+        Write-Host 'Verify Integrity of Game Files ' -NoNewLine
+        Write-Host 'function.' -ForegroundColor Cyan
+    }
     Menu
 }
 
@@ -413,9 +418,8 @@ $pattern = '^Memory Frequency.*$'
         $pattern = '\d\d\d\d.\d'
         $match -match $pattern
         $RAMFrequency = [int]$Matches[0]
-        $RAMFrequency = [string]::Concat(($RAMFrequency * 2), ' MHz')
         Write-Host "`nRAM is currently running at " -NoNewLine -ForegroundColor Cyan
-        Write-Host $RAMFrequency -ForegroundColor White
+        Write-Host ([string]::Concat(($RAMFrequency * 2), ' MHz')) -ForegroundColor White
     }
 }
 Function Get-MemoryPartNumber{
@@ -603,6 +607,8 @@ Function Test-Programs {
     $ProblematicPrograms = @(
     [PSCustomObject]@{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Your ver. may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html.' }
     [PSCustomObject]@{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
+    [PSCustomObject]@{ProgramName = 'Avast Free Antivirus'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
+    [PSCustomObject]@{ProgramName = 'AVG Antivirus'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
     [PSCustomObject]@{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes in the past.' }
     [PSCustomObject]@{ProgramName = 'cFosSpeed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'ESET Endpoint'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
@@ -652,27 +658,6 @@ Function Test-Programs {
     }
     Catch { # Value does not exist
     }
-    # Hack to check for Avast and Nahimic without requiring the script to need Admin privileges
-    $InstalledServices = Get-Service -Exclude McpManagementService, NPSMSvc_*, WaaSMedicSvc, WSAIFabricSvc -ErrorAction SilentlyContinue
-    $array = @()
-    ForEach ($service in $InstalledServices)
-    {
-        If ($service.Name -like 'avast*' -and $service.StartType -ne 'Disabled') {
-            $obj = [PSCustomObject]@{
-                DisplayName    = 'Avast Internet Security'
-                DisplayVersion = '0.0.0'
-            }
-            $array += $obj
-        }
-        If ($service.Name -like 'Nahimic*' -and $service.StartType -ne 'Disabled') {
-            $obj = [PSCustomObject]@{
-                DisplayName    = 'Nahimic'
-                DisplayVersion = '0.0.0'
-            }
-            $array += $obj
-        }
-    }    
-
     
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
@@ -795,7 +780,8 @@ Function Test-CRL {
     Else {
         Write-Host 'OCSP Connection' -NoNewLine
         Write-Host ' [FAIL]' -ForegroundColor Red
-        Write-Host 'Do you have a Pi-Hole or other DNS-blocking security software? Please whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
+        Write-Host 'Anti-Virus WebShields can cause this issue. Please whitelist microsoft.com or disable them.' -ForegroundColor Yellow
+        Write-Host 'Pi-Holes/DNS-blocking software can also cause this issue. Whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
     Write-Progress -Completed -Activity "make progress bar dissapear"
     Test-ClientDnsConfig
