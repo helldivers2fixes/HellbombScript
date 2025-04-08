@@ -386,7 +386,7 @@ Function Show-GPUInfo {
         Write-Host "  Drvr Ver.: $OEMDriverVersionNum"
         Write-Host "     Status: " -NoNewLine
         If ( $gpu.Status -ne 'OK' ) {
-                Write-Host gpu.Status -ForegroundColor Red
+                Write-Host $gpu.Status -ForegroundColor Red
             }
         Else { Write-Host $gpu.Status -ForegroundColor Green }
         Write-Host "-------------------------------------"
