@@ -23,4 +23,4 @@ No security software should detect the script as malicious.
 ## Why does it need Admin Privleges?
 - Reads firewall rules
 - Installs Microsoft Visual C++ redistributables
-- Downloads and runs [Coreinfo64.exe](https://learn.microsoft.com/en-us/sysinternals/downloads/coreinfo) from Microsoft as Administrator
+- Downloads and runs the zip file version of [CPU-Z](https://www.cpuid.com/softwares/cpu-z.html) from CPUID
