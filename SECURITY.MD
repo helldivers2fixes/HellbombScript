@@ -14,7 +14,7 @@ You can compare the File Hash to the Virus Total link to ensure that the Virus T
 
 1. Save the script as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
-3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $env:USERPROFILE\Downloads``
+3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path)``
 4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq e4fb55b1b275700672dac1b7f78c44fbd91d527b453b5b4f31acee30af6813df``
 5. The statement should return/evaluate to ``True``
 
