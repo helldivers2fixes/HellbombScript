@@ -292,16 +292,21 @@ Function Find-BlacklistedDrivers {
         Write-Host "No problematic devices found." -ForegroundColor Green
     }
     # Check for missing critical drivers (AMD and Intel only)
-    $MissingDriverCounter = ($DeviceDatabase | Where-Object {
-        $_.InstanceId -match "VEN_1022|VEN_8086" -and 
-        ($_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown')
+    $MissingDriverPresentCounter = ($DeviceDatabase | Where-Object {
+        $_.Present -eq $true -and $_.InstanceId -match "VEN_1022|VEN_8086" -and 
+        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
-
-    If ($MissingDriverCounter -gt 1) {
-        Write-Host "`nIt appears you are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+    $MissingDriverDisconnectedCounter = ($DeviceDatabase | Where-Object {
+        $_.Present -eq $false -and $_.InstanceId -match "VEN_1022|VEN_8086" -and 
+        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
+    } | Measure-Object).Count
+    If ( $MissingDriverPresentCounter -gt 0 ) {
+        Write-Host "`n⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
-        Write-Host "ℹ️ This message can be caused by re-using a Windows installation after upgrading motherboards without re-installing." -ForegroundColor Yellow
-        Write-Host "If this applies to you, recommend useing the Reset Windows feature or re-install Windows." -ForegroundColor Yellow
+    }
+    If ( $MissingDriverDisconnectedCounter -gt 2 ) {    
+        Write-Host "`nℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
+        Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
     }
     Return
 }
