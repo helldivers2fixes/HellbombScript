@@ -495,20 +495,25 @@ Function Get-HardwareInfo {
     If (-Not (Test-Path $CPUZExe)) {
         If (-Not (Test-Path $CPUZZip)) {
             Try {
-                Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
+                Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
             } Catch {
                 Return Write-Error "Failed to download cpuz_2.15-en.zip: $_" -ForegroundColor Red
             }
         }
     If ( (Get-FileHash $CPUZZip) -ne 'C8461D995D77A8FE1E8C5823403E88B04B733165CC151083B26379F1FE4B9501' ) {
         Remove-Item $CPUZZip
-        Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
+        Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     }
-        Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
+        Try {
+            Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
+        }
+        Catch {
+            Return Write-Error 'CPU-Z extraction failed. Download cpuz_2.15-en.zip from https://download.cpuid.com/cpu-z/cpu-z_2.15-en.zip and place in your Downloads.'
+        }
     }
     $CPUZSHA256 = (Get-FileHash $workingDirectory\cpuz_x64.exe).Hash
     If ( $CPUZSHA256 -ne 'FCAC6AA0D82943D6BB40D07FDA5C1A1573D7EA9259B9403F3607304ED345DBB9' ) {
-        Return Write-Host 'cpuz_x64.exe failed hash verification... cannot test for AVX2. Results will be negative.' -ForegroundColor Red
+        Return Write-Error 'cpuz_x64.exe failed hash verification... cannot scan hardware.'
     }
     
     # Run CPU-Z and dump report to file
