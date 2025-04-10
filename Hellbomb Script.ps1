@@ -255,7 +255,31 @@ Function Get-IsProcessRunning {
         Exit
     }
 }
+Function Uninstall-VCRedist {
+    # List of Visual C++ Redistributables to uninstall
+    $redistributables = @(
+        'Microsoft Visual C++ 2012 Redistributable (x64)',
+        'Microsoft Visual C++ 2013 Redistributable (x64)',
+        'Microsoft Visual C++ 2015-2022 Redistributable (x64)'
+    )
 
+    ForEach ($programName in $redistributables) {
+        $programlist = @($global:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
+        If ($programlist.Count -gt 0) {
+            ForEach ( $program in $programlist )
+                { Write-Host $program.QuietUninstallString -ForegroundColor Cyan
+                    Try {
+                            Invoke-Expression "& $($program.QuietUninstallString.ToString())"
+                            Write-Host "Uninstallation of $programName completed."
+                        } Catch {
+                                Write-Host "Failed to uninstall $programName $_" -ForegroundColor Red
+                            }
+                        }
+        } Else {
+            Write-Host "Program $programName not found."
+        }
+    }
+}
 Function Install-VCRedist {
     Pause "`n This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Yellow
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
@@ -1375,7 +1399,8 @@ Function Menu {
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
         [ChoiceDescription]::new("&Clear HD2 Settings (AppData)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new("&Install VC++ Redists", 'Installs the Microsoft Visual C++ Redistributables required for HD2. Fixes startup and DLL errors.'),
+        [ChoiceDescription]::new("&Install VC++ Redists", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
+        [ChoiceDescription]::new("&Uninstall VC++ Redists", 'Preps for installing VC++ Redists. Restart required.'),
         [ChoiceDescription]::new("Re-install &GameGuard", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
         [ChoiceDescription]::new("Re&set Steam`n", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
         [ChoiceDescription]::new("Set HD2 G&PU    ", 'Brings up the Windows GPU settings.'),
@@ -1431,56 +1456,61 @@ Function Menu {
             Menu
         }
         3 {
-            Reset-GameGuard
+            Uninstall-VCRedist
             Write-Host "`n"
             Menu
         }
         4 {
-            Reset-Steam
+            Reset-GameGuard
             Write-Host "`n"
             Menu
         }
         5 {
-            Open-AdvancedGraphics
+            Reset-Steam
             Write-Host "`n"
             Menu
         }
         6 {
-            Switch-FullScreenOptimizations
+            Open-AdvancedGraphics
             Write-Host "`n"
             Menu
         }
         7 {
-            Test-DoubleNat
+            Switch-FullScreenOptimizations
             Write-Host "`n"
             Menu
         }
         8 {
-            Test-WiFi
+            Test-DoubleNat
             Write-Host "`n"
             Menu
         }
         9 {
-            Switch-BTAGService
+            Test-WiFi
             Write-Host "`n"
             Menu
         }
         10 {
-            Reset-HD2SteamCloud
+            Switch-BTAGService
             Write-Host "`n"
             Menu
         }
         11 {
-            Reset-HostabilityKey
+            Reset-HD2SteamCloud
             Write-Host "`n"
             Menu
         }
         12 {
+            Reset-HostabilityKey
+            Write-Host "`n"
+            Menu
+        }
+        13 {
             Show-ModRemovalWarning
             Remove-AllMods
             Menu
         }
-        13 { Return }
+        14 { Return }
     }
 }
 Function Show-TestResults {
