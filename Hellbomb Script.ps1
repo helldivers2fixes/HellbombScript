@@ -3,25 +3,25 @@ using namespace System.Management.Automation.Host
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-$global:Tests = @{
+$script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         'LatestMicrocode' = '12B'
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$global:myCPU" -ForegroundColor White
+        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
         Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable`n        and permanently damaged." -ForegroundColor Red
         Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
         Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`nPress any key to continue..." -ForegroundColor Yellow
 '@
         'TestPassedMsg' = @'
-        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
+        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
         Write-Host "is running the latest 0x12B microcode." -ForegroundColor Green
 '@
         'NotApplicableMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$global:myCPU " -NoNewLine
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
     }
@@ -52,7 +52,7 @@ $global:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "Your computer has not been restarted in $($global:Tests.LongSysUptime.SystemUptime) days." -ForegroundColor Yellow
+        Write-Host "Your computer has not been restarted in $($script:Tests.LongSysUptime.SystemUptime) days." -ForegroundColor Yellow
         Write-Host "       Please restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
     }
@@ -76,7 +76,7 @@ $global:Tests = @{
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
-        $formattedTable = $global:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
+        $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
         $indentedTable = $formattedTable -split "`n" | ForEach-Object { "       $_" }
         $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
 '@
@@ -104,7 +104,7 @@ $global:Tests = @{
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "The following URLs failed to resolve with DNS" -ForegroundColor Yellow
-        $global:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true } | ForEach-Object { "       $($_.RequiredDomains)" } | Write-Host -ForegroundColor White
+        $script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true } | ForEach-Object { "       $($_.RequiredDomains)" } | Write-Host -ForegroundColor White
 '@
     }
     "FirewallRules" = @{
@@ -116,7 +116,7 @@ $global:Tests = @{
         'TestFailMsg' = @'
         Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
-        $global:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
+        $script:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
         Start-Process wf.msc
 '@
     }
@@ -125,7 +125,7 @@ $global:Tests = @{
     'TestFailMsg' = @'
     Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host "Mods were detected!" -ForegroundColor Yellow
-    If ( $global:BuildID -ne 17889517 ) {
+    If ( $script:BuildID -ne 17889517 ) {
         Write-Host '       Mod detection was not authored for this game version.' -ForegroundColor Yellow
         Write-Host '       This may be a false positive.' -ForegroundColor Cyan
     }
@@ -136,11 +136,11 @@ $global:Tests = @{
     }
 }
 Function Show-Variables {
-    If ($global:AppIDFound -eq $true) {
+    If ($script:AppIDFound -eq $true) {
         Clear-Host
         Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
         Write-Host $AppInstallPath -ForegroundColor White
-        Write-Host "Current build of AppID $AppID is:$global:BuildID" -ForegroundColor Cyan
+        Write-Host "Current build of AppID $AppID is:$script:BuildID" -ForegroundColor Cyan
     }
     Else {
         Write-Host 'Error. AppID was not found.' -ForegroundColor Red
@@ -264,7 +264,7 @@ Function Uninstall-VCRedist {
     )
 
     ForEach ($programName in $redistributables) {
-        $programlist = @($global:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
+        $programlist = @($script:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
         If ($programlist.Count -gt 0) {
             ForEach ( $program in $programlist )
                 { Write-Host $program.QuietUninstallString -ForegroundColor Cyan
@@ -346,42 +346,42 @@ Function Test-BadPrinters {
 
             Get-Printer | ForEach-Object {
                 If ($_.Name -eq 'OneNote for Windows 10') {
-                    $global:Tests.BadPrinter.TestPassed = $false
+                    $script:Tests.BadPrinter.TestPassed = $false
                 }
             }
-            $global:Tests.BadPrinter.TestPassed = $global:Tests.BadPrinter.TestPassed -ne $false
+            $script:Tests.BadPrinter.TestPassed = $script:Tests.BadPrinter.TestPassed -ne $false
     }
-    Else { $global:Tests.BadPrinter.TestPassed = $true }
+    Else { $script:Tests.BadPrinter.TestPassed = $true }
 }
 
 Function Find-CPUInfo {
-    $global:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
-    If ( $global:myCPU.Contains('Intel') ) {
-        ForEach ($cpuModel in $global:Tests.IntelMicrocodeCheck.AffectedModels) {
-            If (($global:myCPU).Contains($cpuModel)) {
+    $script:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
+    If ( $script:myCPU.Contains('Intel') ) {
+        ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
+            If (($script:myCPU).Contains($cpuModel)) {
                 # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
                 $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
                 $CPUProperties = Get-ItemProperty -Path $registrypath
                 $runningMicrocode = $CPUProperties."Update Revision"
                 # Convert to string and remove leading zeros
                 Try { $runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
-                    If ( -not ($runningMicrocodeInHex -contains $global:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
-                        $global:Tests.IntelMicrocodeCheck.TestPassed = $false
+                    If ( -not ($runningMicrocodeInHex -contains $script:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
+                        $script:Tests.IntelMicrocodeCheck.TestPassed = $false
                         Return
                     }
                 }
                 Catch { 
                     Write-Error "Error occurred while processing microcode..." -ForegroundColor Red
-                    $global:Tests.IntelMicrocodeCheck.TestPassed = $false
+                    $script:Tests.IntelMicrocodeCheck.TestPassed = $false
                  }
             }
         }
-        $global:Tests.IntelMicrocodeCheck.TestPassed = $true
-        Invoke-Expression $global:Tests.IntelMicrocodeCheck.TestPassedMsg
+        $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+        Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedMsg
     }
     Else {
-        $global:Tests.IntelMicrocodeCheck.TestPassed = $true
-        Invoke-Expression $global:Tests.IntelMicrocodeCheck.NotApplicableMsg
+        $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+        Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
     }
     Return
 }
@@ -437,11 +437,11 @@ Function Test-AVX2 {
 # Define the pattern to match the line
     $pattern = "^\tInstructions\ssets\t.*AVX2"
     # Search for the line that matches the pattern
-    $match = $global:HardwareInfoText | Select-String -Pattern $pattern
+    $match = $script:HardwareInfoText | Select-String -Pattern $pattern
     If ($match) {
-        $global:Tests.AVX2.TestPassed = $true
+        $script:Tests.AVX2.TestPassed = $true
     } Else {
-        $global:Tests.AVX2.TestPassed = $false
+        $script:Tests.AVX2.TestPassed = $false
     }
 }
 Function Get-MemorySpeed {
@@ -465,7 +465,7 @@ Function Get-MemoryPartNumber{
     $skipDimm = $false
 
     # Iterate through each line
-    foreach ($line in $global:HardwareInfoText) {
+    foreach ($line in $script:HardwareInfoText) {
         If ($line -match "^DIMM #\s+(\d+)") {
             # Save the current DIMM data if it exists
             If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
@@ -500,12 +500,12 @@ Function Get-MemoryPartNumber{
             PartNumber = $currentDimm['Part Number']
         }
     }
-    $global:Tests.MatchingMemory.RAMInfo = $dimmData
+    $script:Tests.MatchingMemory.RAMInfo = $dimmData
     If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
      ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
-       $global:Tests.MatchingMemory.TestPassed = $true
+       $script:Tests.MatchingMemory.TestPassed = $true
     } Else {
-        $global:Tests.MatchingMemory.TestPassed = $false
+        $script:Tests.MatchingMemory.TestPassed = $false
     }
 }
 Function Get-HardwareInfo { 
@@ -555,7 +555,7 @@ Function Get-HardwareInfo {
     $process.StartInfo = $psi
     [void]$process.Start()
     $process.WaitForExit()
-    $global:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
+    $script:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
     Write-Host ' complete!'
  }
 Function Get-CPUZ {
@@ -702,7 +702,7 @@ Function Test-Programs {
     
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
-        ForEach ($installedApp in $global:InstalledProgramsList) {
+        ForEach ($installedApp in $script:InstalledProgramsList) {
             $bool = $false
             If ($installedApp.DisplayName -like "*" + $program.ProgramName + "*" -and ([System.Version]$program.RecommendedVersion -gt [System.Version]$installedApp.DisplayVersion)) {
                 $bool = $true
@@ -737,11 +737,11 @@ Function Get-SystemUptime {
     $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
     $uptime = ([math]::Round(((Get-Date) - $lastBoot).TotalDays, 0))
     If ( $uptime -lt 1 ) {
-        $global:Tests.LongSysUptime.TestPassed = $true
+        $script:Tests.LongSysUptime.TestPassed = $true
     }
     Else {
-        $global:Tests.LongSysUptime.SystemUptime = $uptime
-        $global:Tests.LongSysUptime.TestPassed = $false
+        $script:Tests.LongSysUptime.SystemUptime = $uptime
+        $script:Tests.LongSysUptime.TestPassed = $false
         }
 }
 Function Test-Firewall {
@@ -749,21 +749,21 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
-        $global:Tests.FirewallRules.TestPassed = $false
+        $script:Tests.FirewallRules.TestPassed = $false
     }
     Else {
-        $global:Tests.FirewallRules.Rules[0].PassedTest = $false
-        $global:Tests.FirewallRules.Rules[1].PassedTest = $false
+        $script:Tests.FirewallRules.Rules[0].PassedTest = $false
+        $script:Tests.FirewallRules.Rules[1].PassedTest = $false
         ForEach ( $rule in $HD2FirewallRules) {
             If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
-                $global:Tests.FirewallRules.Rules[0].PassedTest = $true
+                $script:Tests.FirewallRules.Rules[0].PassedTest = $true
             }
             If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
-                $global:Tests.FirewallRules.Rules[1].PassedTest = $true
+                $script:Tests.FirewallRules.Rules[1].PassedTest = $true
             }
         }
-        If ( $global:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $global:Tests.FirewallRules.Rules[1].PassedTest -eq $true) {
-            $global:Tests.FirewallRules.TestPassed = $true
+        If ( $script:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $script:Tests.FirewallRules.Rules[1].PassedTest -eq $true) {
+            $script:Tests.FirewallRules.TestPassed = $true
         }
     }
     Write-Host ' complete!'
@@ -830,7 +830,7 @@ Function Test-CRL {
 }
 Function Test-RequiredURLs {
     Clear-DnsClientCache
-    ForEach ($domain in $global:Tests.DomainTest.DomainList) {
+    ForEach ($domain in $script:Tests.DomainTest.DomainList) {
         # If not running in ISE or old PowerShell, let's make it pretty
         If ((Get-Host).Name -ne 'Windows PowerShell ISE Host' -and (Get-Host).Version -ge '7.0.0') {
             $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
@@ -846,11 +846,11 @@ Function Test-RequiredURLs {
         }
     }
     # Filter and print RequiredDomains where PassedTest is false
-    If ($global:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true }) {
-        $global:Tests.DomainTest.TestPassed = $false
+    If ($script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true }) {
+        $script:Tests.DomainTest.TestPassed = $false
     }
     Else {
-        $global:Tests.DomainTest.TestPassed = $true
+        $script:Tests.DomainTest.TestPassed = $true
     }
 }
 Function Test-DnsResolution {
@@ -1151,7 +1151,7 @@ Function Test-VisualC++Redists {
     
     Write-Host "`nChecking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan
      # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
-    $filteredApps = $global:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
+    $filteredApps = $script:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
     
     ForEach ($vcRedist in $VCRedists) {
             If ($filteredApps.DisplayName -like "$($vcRedist.ProgramName)*") {
@@ -1180,26 +1180,26 @@ Function Test-MemoryChannels {
     # Dual-Channel RAM test
     # Define single-channel pattern to search for
     $SingleChannelpattern = "^Channels\s*\b((1\s+x\s+\b(32|64)\b-bit)|(Single))$"
-    If ( $global:HardwareInfoText -match $SingleChannelPattern ) {
-        $global:Tests.MultiChannelMemory.TestPassed = $false
+    If ( $script:HardwareInfoText -match $SingleChannelPattern ) {
+        $script:Tests.MultiChannelMemory.TestPassed = $false
     }
     Else {
-        $global:Tests.MultiChannelMemory.TestPassed = $true
+        $script:Tests.MultiChannelMemory.TestPassed = $true
     }
 }
 
 # Function to check if a reboot is required
 Function Test-PendingReboot {
-    ForEach ($key in $global:Tests.PendingReboot.keys) {
+    ForEach ($key in $script:Tests.PendingReboot.keys) {
         If (Test-Path $key) {
-            $global:Tests.PendingReboot.RebootRequired = $true
+            $script:Tests.PendingReboot.RebootRequired = $true
             Break
         }
     }
-    If ($global:Tests.PendingReboot.RebootRequired) {
-        $global:Tests.PendingReboot.TestPassed = $false
+    If ($script:Tests.PendingReboot.RebootRequired) {
+        $script:Tests.PendingReboot.TestPassed = $false
     } Else {
-        $global:Tests.PendingReboot.TestPassed = $true
+        $script:Tests.PendingReboot.TestPassed = $true
     }
 }
 Function Reset-HD2SteamCloud {
@@ -1242,7 +1242,7 @@ Function Reset-HD2SteamCloud {
         ForEach ($file in $files) {
             If ($file.LastWriteTime -gt $mostRecentTime) {
                 $mostRecentTime = $file.LastWriteTime
-                $global:mostRecentSteamUserProfilePath = $subfolder
+                $script:mostRecentSteamUserProfilePath = $subfolder
             }
         }
     }
@@ -1259,7 +1259,7 @@ Function Reset-HD2SteamCloud {
     
     # Parse the sharedconfig.vdf file and modify the cloudenabled value to '0'
     ForEach ($line in $configContent) {
-        If ($line -match $global:AppID) {
+        If ($line -match $script:AppID) {
             $inAppSection = $true
         } ElseIf ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"0"'
@@ -1282,7 +1282,7 @@ Function Reset-HD2SteamCloud {
     Write-Host 'Re-enabling Cloud Save for HD2...' -ForegroundColor Cyan
     $configContent = Get-Content -Path $sharedConfigPath
     ForEach ($line in $configContent) {
-        If ($line -match $global:AppID) {
+        If ($line -match $script:AppID) {
             $inAppSection = $true
         } ElseIf ($inAppSection -and $line -match '"cloudenabled"') {
             $line = $line -replace '("cloudenabled"\s+)"\d+"', '$1"1"'
@@ -1298,7 +1298,7 @@ Function Reset-HD2SteamCloud {
 Function Switch-FullScreenOptimizations
 {
     # Define the path to the executable
-    $exePath = "$global:AppInstallPath\bin\helldivers2.exe"
+    $exePath = "$script:AppInstallPath\bin\helldivers2.exe"
     # Define the registry path
     $regPath = "HKCU:\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"
     # Check if the registry key exists, create it if it doesn't
@@ -1348,19 +1348,19 @@ Function Reset-HostabilityKey {
     }    
 }
 Function Find-Mods {
-    $directoryPath = $global:AppInstallPath + '\data'
+    $directoryPath = $script:AppInstallPath + '\data'
     $patchFiles = Get-ChildItem -Path $directoryPath -File | Where-Object { $_.Name -match "\.patch_" }
     If ( $null -eq $patchFiles ) {
-        $global:Tests.GameMods.TestPassed = $true
+        $script:Tests.GameMods.TestPassed = $true
     } Else {
-        $global:Tests.GameMods.TestPassed = $false
+        $script:Tests.GameMods.TestPassed = $false
 }
 
 }
 Function Show-ModRemovalWarning {  
     Write-Host "`nWARNING: " -ForegroundColor Red -NoNewline
     Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
-    Write-Host "$global:AppInstallPath\data\" -ForegroundColor Cyan
+    Write-Host "$script:AppInstallPath\data\" -ForegroundColor Cyan
     Write-Host 'If this location looks incorrect, press ' -ForegroundColor Yellow -NoNewline
     Write-Host 'Ctrl ' -NoNewline
     Write-Host '+ ' -ForegroundColor Yellow -NoNewline
@@ -1369,7 +1369,7 @@ Function Show-ModRemovalWarning {
     Pause "`n Press any key to continue"
 }
 Function Remove-AllMods {
-    $dataFolder = $global:AppInstallPath + '\data\'
+    $dataFolder = $script:AppInstallPath + '\data\'
     Foreach ($file in Get-ChildItem -Path $dataFolder -File) {
         $filePath = $dataFolder + $file.Name
         If ($file.Name -match "([0-9a-fA-F]{16})\.patch_") {
@@ -1514,7 +1514,7 @@ Function Menu {
     }
 }
 Function Show-TestResults {
-    $global:Tests.GetEnumerator() | ForEach-Object {
+    $script:Tests.GetEnumerator() | ForEach-Object {
         If ($_.Value.TestPassed -ne $true) {
             Invoke-Expression $_.Value.TestFailMsg
         }
@@ -1522,12 +1522,12 @@ Function Show-TestResults {
 }
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
-$global:AppID = "553850"
-$global:AppIDFound = $false
+$script:AppID = "553850"
+$script:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
 Try { 
-    $global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+    $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
 Catch { 
     Write-Host '[FAIL]' -NoNewline -ForegroundColor Red
@@ -1538,7 +1538,7 @@ Catch {
     # Stop the Steam process
     Stop-Process -Name "steam" -Force
     }
-    $global:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+    $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
 $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
@@ -1547,18 +1547,18 @@ $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # If AppID is found, return current library path
 ForEach ($line in $($LibraryData -split "`r`n")) {
     If ($line -like '*path*') {
-        $global:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-        Write-Host $global:AppInstallPath
-        $global:AppInstallPath = $global:AppInstallPath.Replace('\\', '\')
+        $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
+        Write-Host $script:AppInstallPath
+        $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
     }
     If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
-        $global:AppIDFound = $true
+        $script:AppIDFound = $true
         # Since we found the App location, let's get some data about it
-        $GameData = Get-Content -Path $global:AppInstallPath\steamapps\appmanifest_$AppID.acf
-        $global:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
+        $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
+        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
-        $global:AppInstallPath = ( $global:AppInstallPath + "\steamapps\common\" + $GameFolderName[1] )
+        $script:AppInstallPath = ( $script:AppInstallPath + "\steamapps\common\" + $GameFolderName[1] )
         Break
     }
 }
@@ -1570,9 +1570,9 @@ $HelldiversProcess = [PSCustomObject]@{
          Please close the game. If the game appears closed, restart the system, and re-run this script.
     '
 }
-$global:InstalledProgramsList = $null
+$script:InstalledProgramsList = $null
 Write-Host 'Checking to see if Helldivers 2 is currently running...' -ForegroundColor Cyan
 Get-IsProcessRunning $HelldiversProcess
-$global:InstalledProgramsList = Get-InstalledPrograms
+$script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... `n`n"
 Menu
