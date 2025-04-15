@@ -9,12 +9,12 @@ $script:Tests = @{
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         'LatestMicrocode' = '12B'
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
-        Write-Host "`n        WARNING: If you are NOT currently having stability issues, please update `n        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
-        Write-Host "`n        If you ARE experiencing stability issues, your CPU may be unstable`n        and permanently damaged." -ForegroundColor Red
-        Write-Host "`n        For more information, visit: `n        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-        Pause "`n        Any proposed fixes by this tool may fail to work if your CPU is damaged.`nPress any key to continue..." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
+        Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+        Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
 '@
         'TestPassedMsg' = @'
         Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
@@ -35,23 +35,23 @@ $script:Tests = @{
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired",
         "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host " Windows is reporting a pending reboot is required." -ForegroundColor Yellow -NoNewLine
-        Write-Host "`nPlease exit the script and reboot your machine..." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)Please exit the script and reboot your machine..." -ForegroundColor Cyan
 '@
     }
     "BadPrinter" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -ForegroundColor Yellow -NoNewLine
-        Write-Host "`n       Please remove this printer from your computer." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)       Please remove this printer from your computer." -ForegroundColor Cyan
 '@
     }
    "LongSysUptime" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "Your computer has not been restarted in $($script:Tests.LongSysUptime.SystemUptime) days." -ForegroundColor Yellow
         Write-Host "       Please restart your computer. Restart only. Do not use 'Shutdown'." -ForegroundColor Cyan
 '@
@@ -59,14 +59,14 @@ $script:Tests = @{
        "AVX2" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "       Your CPU does not support the AVX2 instruction set." -ForegroundColor Yellow
 '@
     }
     "MultiChannelMemory" = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "Memory running in single-channel mode. This will hurt performance." -ForegroundColor Yellow
 '@
     }
@@ -74,10 +74,10 @@ $script:Tests = @{
         'TestPassed' = $null
         'RAMInfo' = $null
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
-        $indentedTable = $formattedTable -split "`n" | ForEach-Object { "       $_" }
+        $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
         $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
 '@
     }
@@ -102,7 +102,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null }
         )
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "The following URLs failed to resolve with DNS" -ForegroundColor Yellow
         $script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -ne $true } | ForEach-Object { "       $($_.RequiredDomains)" } | Write-Host -ForegroundColor White
 '@
@@ -114,7 +114,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RuleName = 'Inbound UDP Rule'; PassedTest = $null }
         )
         'TestFailMsg' = @'
-        Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
         $script:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
         Start-Process wf.msc
@@ -123,7 +123,7 @@ $script:Tests = @{
 "GameMods" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
-    Write-Host "`n[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host "Mods were detected!" -ForegroundColor Yellow
     If ( $script:BuildID -ne 17889517 ) {
         Write-Host '       Mod detection was not authored for this game version.' -ForegroundColor Yellow
@@ -155,7 +155,7 @@ Function pause ($message) {
         [System.Windows.Forms.MessageBox]::Show("$message")
     }
     Else {
-        Write-Host "$message"`n -ForegroundColor Yellow
+        Write-Host "$message"$([Environment]::NewLine) -ForegroundColor Yellow
         $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
@@ -180,7 +180,7 @@ Function Install-EXE {
     )
     # Turn off progress bar to speed up download
     $ProgressPreference = 'SilentlyContinue'
-    Write-Host "`nDownloading $CommonName..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Downloading $CommonName..." -ForegroundColor Cyan
     Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
     If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash) {
         Write-Host 'Installing... look for UAC prompts' -ForegroundColor Cyan
@@ -189,7 +189,7 @@ Function Install-EXE {
             $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
             
             If ( $installProcess.ExitCode -ne 0) {
-                Write-Host "`nUAC prompt was canceled, or another error occurred installing $CommonName`n" -ForegroundColor Red
+                Write-Host "$([Environment]::NewLine)UAC prompt was canceled, or another error occurred installing $CommonName$([Environment]::NewLine)" -ForegroundColor Red
                 Remove-Item -Path $DownloadPath$FileName
                 # Re-enable Progress Bar
                 $ProgressPreference = 'Continue'
@@ -227,7 +227,7 @@ Function Reset-GameGuard {
     $Error.Clear()
     Try { Start-Process $AppInstallPath\tools\GGSetup.exe -Wait }
     Catch { Write-Host "Error occurred installing GameGuard" -ForegroundColor Red }
-    If (!$Error) { Write-Host "GameGuard installed successfully"`n -ForegroundColor Green }
+    If (!$Error) { Write-Host "GameGuard installed successfully"$([Environment]::NewLine) -ForegroundColor Green }
     Return
 }
 Function Remove-HD2AppData {
@@ -281,7 +281,7 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "`n This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Yellow
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
@@ -294,13 +294,13 @@ Function Install-VCRedist {
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2019.exe' `
         -SHA256Hash '3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A' -CommonName '2019 Visual C++ Redistributable'
 
-    Pause "`nPlease restart the computer before continuing." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
     Exit
 }
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
     $FoundBlacklistedDevice = $false
-    Write-Host "`nChecking for devices that are known to cause issues..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for devices that are known to cause issues..." -ForegroundColor Cyan
     $DeviceDatabase = Get-PnpDevice
     # Check for blacklisted devices
     ForEach ($device in $DeviceDatabase) {
@@ -325,11 +325,11 @@ Function Find-BlacklistedDrivers {
         ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
     If ( $MissingDriverPresentCounter -gt 0 ) {
-        Write-Host "`n⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
     }
     If ( $MissingDriverDisconnectedCounter -gt 2 ) {    
-        Write-Host "`nℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
         Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
     }
     Return
@@ -453,7 +453,7 @@ $pattern = '^Memory Frequency.*$'
         $pattern = '\d\d\d\d.\d'
         $match -match $pattern
         $RAMFrequency = [int]$Matches[0]
-        Write-Host "`nRAM is currently running at " -NoNewLine -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)RAM is currently running at " -NoNewLine -ForegroundColor Cyan
         Write-Host ([string]::Concat(($RAMFrequency * 2), ' MHz')) -ForegroundColor White
     }
 }
@@ -541,7 +541,7 @@ Function Get-HardwareInfo {
     }
     
     # Run CPU-Z and dump report to file
-    Write-Host "`nScanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
+    Write-Host "$([Environment]::NewLine)Scanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -601,7 +601,7 @@ Function Remove-File {
 Function Get-InstalledPrograms {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
-       Write-Host "`nGathering installed programs..." -ForegroundColor Cyan
+       Write-Host "$([Environment]::NewLine)Gathering installed programs..." -ForegroundColor Cyan
 
     $UninstallPaths = @(
         "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
@@ -644,7 +644,7 @@ Function Get-InstalledPrograms {
     Return $installedPrograms | Where-Object { $_.DisplayName } | Sort-Object DisplayName
 }
 Function Test-Programs {
-    Write-Host "`nChecking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan
     $ProblematicPrograms = @(
     [PSCustomObject]@{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Your ver. may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html.' }
     [PSCustomObject]@{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
@@ -690,7 +690,7 @@ Function Test-Programs {
     $value = Get-ItemProperty -Path $regPath -Name $regName
     If ($value.$regName -eq 1)
         {
-            Write-Host "`n⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
+            Write-Host "$([Environment]::NewLine)⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
             Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
             Write-Host 'https://microsoft.com ' -NoNewline
             Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
@@ -717,7 +717,7 @@ Function Test-Programs {
     $result = $null
     $result = $ProblematicPrograms | Where-Object { $_.Installed -eq $true }
     If ($null -ne $result) {
-        Write-Host "`nFound the following programs that are known to cause issues:`n" -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)Found the following programs that are known to cause issues:$([Environment]::NewLine)" -ForegroundColor Yellow
         Write-Host ("{0,-33} {1,-20} {2,-35}" -f "Program Name", "Installed Version", "Notes") -ForegroundColor Cyan
         Write-Host ("{0,-33} {1,-20} {2,-35}" -f '--------------------------------',
         '-----------------',
@@ -745,7 +745,7 @@ Function Get-SystemUptime {
         }
 }
 Function Test-Firewall {
-Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
+Write-Host (("$([Environment]::NewLine)Checking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
@@ -769,7 +769,7 @@ Write-Host (("`nChecking for two Inbound Firewall rules named Helldivers") + [ch
     Write-Host ' complete!'
 }
 Function Test-CRL {
-    Write-Host "`nTesting Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Testing Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
     # will return false positives when it's actually broken.
@@ -788,7 +788,7 @@ Function Test-CRL {
     [void]$process.Start()
     $output = $process.StandardOutput.ReadToEnd()
     $process.WaitForExit()
-    $output = $output.Split("`n")
+    $output = $output.Split("$([Environment]::NewLine)")
     Write-Host 'HTTP  CRL access ' -NoNewline
     If ($output[0].Trim() -eq 'HTTP/1.1 200 OK') {
         Write-Host '[OK]' -ForegroundColor Green
@@ -803,7 +803,7 @@ Function Test-CRL {
     [void]$process.Start()
     $output = $process.StandardOutput.ReadToEnd()
     $process.WaitForExit()
-    $output = $output.Split("`n")
+    $output = $output.Split("$([Environment]::NewLine)")
     Write-Host 'HTTPS CRL access ' -NoNewline
     If ($output[0].Trim() -eq 'HTTP/1.1 200 OK') {
         Write-Host '[OK]' -ForegroundColor Green
@@ -812,7 +812,7 @@ Function Test-CRL {
         Write-Host '[FAIL]' -ForegroundColor Red
     }
 
-    Write-Host "`nTesting OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Testing OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
     If ( Test-NetConnection 'oneocsp.microsoft.com' -ErrorAction SilentlyContinue -InformationLevel Quiet )
     {
         Write-Host "OCSP Connection " -NoNewLine
@@ -885,14 +885,14 @@ Function Test-ClientDnsConfig {
         } Catch {
             # Will check if null or empty in next part of script
         }
-        Write-Host "`nCHECKING IPv4 DNS..." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)CHECKING IPv4 DNS..." -ForegroundColor Cyan
         # Print and test DNS servers for IPv4
         If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
             Write-Host "[PASS]" -ForegroundColor Green -NoNewline
             Write-Host " Detected IPv4 DNS servers:"
             $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
             }    
-            Write-Host "`n       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
+            Write-Host "$([Environment]::NewLine)       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
             Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
         }
         Else {
@@ -911,13 +911,13 @@ Function Test-ClientDnsConfig {
                 Start-Process 'ncpa.cpl'
             }
         # Print and test DNS servers for IPv6
-        Write-Host "`nCHECKING IPv6 DNS..." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)CHECKING IPv6 DNS..." -ForegroundColor Cyan
         If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
         Write-Host ' Detected IPv6 DNS server(s):'
         $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
         }
-        Write-Host "`n       Testing IPv6 DNS servers..." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)       Testing IPv6 DNS servers..." -ForegroundColor Cyan
         Try { 
             Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
         } Catch {
@@ -937,7 +937,7 @@ Function Test-ClientDnsConfig {
             Write-Host ' on your network adapter.'
         }
     }
-    Else { Write-Host "`nSkipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }       
+    Else { Write-Host "$([Environment]::NewLine)Skipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }       
 }
 Function Test-Wifi {
     # Ping the default gateway for 30 seconds and collect statistics
@@ -946,9 +946,9 @@ Function Test-Wifi {
         Write-Host "No default gateway available." -ForegroundColor Yellow
         Break
         }
-    Write-Host "`nTesting the connection to the default gateway..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Testing the connection to the default gateway..." -ForegroundColor Cyan
         If ((Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType -ne '802.11') {
-            Write-Host "`nThis is not a wireless connection. Testing anyway..." -ForegroundColor Yellow
+            Write-Host "$([Environment]::NewLine)This is not a wireless connection. Testing anyway..." -ForegroundColor Yellow
         }
     $ipAddress = ($mainAdapter.IPv4DefaultGateway).NextHop
     $endTime = ([datetime]::UtcNow).AddSeconds(30)
@@ -1004,26 +1004,26 @@ Function Test-Wifi {
     $results
     
     If ($stdDev -gt 5) {
-        Write-Host "Your connection to your default gateway has significant jitter (latency variance).`n`n" -ForegroundColor Yellow
+        Write-Host "Your connection to your default gateway has significant jitter (latency variance).$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Yellow
     }
     If ($packetLossPercentage -gt 1) {
-        Write-Host "Your connection to your default gateway has more than 1% packet loss.`n`n" -ForegroundColor Yellow
+        Write-Host "Your connection to your default gateway has more than 1% packet loss.$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Yellow
     } 
     If ($stdDev -le 5 -and $packetLossPercentage -le 1) {
-        Write-Host "Your connection appears to be operating normally.`n`n" -ForegroundColor Green
+        Write-Host "Your connection appears to be operating normally.$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Green
     }
 }
 Function Test-BTAGService {
     If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
-        Write-Host "`n⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
         Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
         Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
-        Write-Host "`nToggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
     }
     Else {
-        Write-Host "`nBluetooth Audio Gateway (BTAG) Service: DISABLED",
-        "`nIf using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway (BTAG) Service: DISABLED",
+        "$([Environment]::NewLine)If using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
     }
     Return
 }
@@ -1036,9 +1036,9 @@ Function Reset-Steam {
         '
     }
     Get-IsProcessRunning $SteamProcess
-    Pause "You will need to sign into Steam after this process completes.`nPress any key to continue..." ForegroundColor Yellow
+    Pause "You will need to sign into Steam after this process completes.$([Environment]::NewLine)Press any key to continue..." ForegroundColor Yellow
     # Remove CEF Cache
-    Write-Host "`nClearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Clearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
     Write-Host "Clearing contents of $SteamPath. Keeping \steamapps, \userdata, \logs and \dumps" -ForegroundColor Cyan
     $PropertyName = "Parent"
@@ -1051,17 +1051,17 @@ Function Reset-Steam {
                         "*" + $SteamPath + "\dumps*"
                     } }) } | Remove-Item
     Write-Host 'Steam Data cleared successfully!' -ForegroundColor Green
-    Write-Host 'Launching Steam now...'`n -ForegroundColor Cyan
+    Write-Host 'Launching Steam now...'$([Environment]::NewLine) -ForegroundColor Cyan
     Start-Process $SteamPath\steam.exe
     Return
 }
 Function Open-AdvancedGraphics {
     Start-Process ms-settings:display-advancedgraphics
-    Write-Host "`nVerify HellDivers 2 is set to use the correct GPU.",
-    "`nIf HD2 is not listed, click " -NoNewline -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Verify HellDivers 2 is set to use the correct GPU.",
+    "$([Environment]::NewLine)If HD2 is not listed, click " -NoNewline -ForegroundColor Cyan
     Write-Host "Add desktop app " -NoNewline -ForegroundColor Yellow
     Write-Host "and browse to:" -ForegroundColor Cyan
-    Write-Host $AppInstallPath, "\bin\helldivers2.exe"`n -ForegroundColor Yellow
+    Write-Host $AppInstallPath, "\bin\helldivers2.exe"$([Environment]::NewLine) -ForegroundColor Yellow
     Return
 }
 Function Test-PrivateIP {
@@ -1092,7 +1092,7 @@ Function Test-PrivateIP {
     }
 }
 Function Test-DoubleNAT {
-    Write-Host "`nRunning Double-NAT test... this will take a minute" -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Running Double-NAT test... this will take a minute" -ForegroundColor Cyan
     $server = 'cloudflare.com'
     $ip = Resolve-DnsName -Type A $server |
         Select-Object -Expand IPAddress
@@ -1107,37 +1107,37 @@ Function Test-DoubleNAT {
     If ($privateIPs.Count -gt 1) {
         Write-Host '⚠️ Possible Double-NAT connection detected.' -ForegroundColor Yellow
         Write-Host 'Private IPs detected are:'
-        Write-Host $privateIPs -Separator "`n"
-        Write-Host "`nIf you're not sure what these results mean, these results are safe to share with others." -ForegroundColor Cyan
+        Write-Host $privateIPs -Separator "$([Environment]::NewLine)"
+        Write-Host "$([Environment]::NewLine)If you're not sure what these results mean, these results are safe to share with others." -ForegroundColor Cyan
     }
     Else {
-        Write-Host "`nNo Double-NAT connection detected." -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)No Double-NAT connection detected." -ForegroundColor Green
     }
-    Pause "`nPress any key to continue..."
+    Pause "$([Environment]::NewLine)Press any key to continue..."
 }
 Function Switch-BTAGService {
     If (-not ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
     Write-Host 'This command requires Administrator privileges.',
-    "`nTo run PowerShell with admin privileges:",
-    "`nRight-click on PowerShell and click Run as Administrator",
-    "`nThen run the script again.`n" -ForegroundColor Cyan
+    "$([Environment]::NewLine)To run PowerShell with admin privileges:",
+    "$([Environment]::NewLine)Right-click on PowerShell and click Run as Administrator",
+    "$([Environment]::NewLine)Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
     } Else {
         If ((Get-Service -Name BTAGService).Status -eq 'Running') {
             Set-Service -Name BTAGService -StartupType Disabled
             Stop-Service -Name BTAGService
             Start-Sleep -Seconds 1.5
-            Write-Host "`nBluetooth Audio Gateway Service", 
+            Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service", 
             "is now " -ForegroundColor Cyan
             Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
-            Write-Host 'Please disconnect and re-connect your Bluetooth device.'`n -ForegroundColor Cyan
+            Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
         } Else {
             If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
                 Set-Service -Name BTAGService -StartupType Automatic
                 Set-Service -Name BTAGService -Status Running
                 Start-Sleep -Seconds 1.5
-                Write-Host "`nBluetooth Audio Gateway Service", 
+                Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service", 
                 "is now " -ForegroundColor Cyan
-                Write-Host (Get-Service -Name BTAGService).Status`n -ForegroundColor Green
+                Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
             }
         }
     }
@@ -1149,7 +1149,7 @@ Function Test-VisualC++Redists {
     [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2015-2022 Redistributable (x64)'; Installed = $false}
     )
     
-    Write-Host "`nChecking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan
      # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
     $filteredApps = $script:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
     
@@ -1160,14 +1160,14 @@ Function Test-VisualC++Redists {
         }
     $missingRedists = $VCRedists | Where-Object { $_.Installed -eq $false }
     If ($missingRedists) {
-        Write-Host "`nYou are missing critical Visual C++ Redists. The game will not run.`n" -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)You are missing critical Visual C++ Redists. The game will not run.$([Environment]::NewLine)" -ForegroundColor Yellow
         Write-Host ("{0,-33}" -f "Missing Visual C++ Redistributable(s)") -ForegroundColor Cyan
         Write-Host ("{0,-33}" -f '-------------------------------------')
         ForEach ($redist in $missingRedists) {
             Write-Host '[FAIL] ' -ForegroundColor Red -NoNewline
             Write-Host ("{0,-26}" -f $redist.ProgramName) -ForegroundColor Yellow
         }
-        Write-Host "`nPlease install them using the [" -ForegroundColor Yellow -NoNewline
+        Write-Host "$([Environment]::NewLine)Please install them using the [" -ForegroundColor Yellow -NoNewline
         Write-Host 'I' -NoNewLine
         Write-Host '] option on the menu.' -ForegroundColor Yellow
     }
@@ -1204,18 +1204,18 @@ Function Test-PendingReboot {
 }
 Function Reset-HD2SteamCloud {
     Clear-Host
-    Write-Host "`nThis function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)This function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
     Write-Host 'You will lose any custom key bindings. ' -NoNewline
     Write-Host 'No game progress will be lost.' -ForegroundColor Yellow
-    Write-Host "This can resolve a myriad of input issues, and in some instances,`ncan resolve the game not running at all."
-    Write-Host "If you have multiple Steam user profiles,`nthis function will clear the LAST USED HD2 Steam Cloud profile."-ForegroundColor Yellow
-    Write-Host "If you need to switch Steam profiles before running this script,`nplease close the script or press " -NoNewline
+    Write-Host "This can resolve a myriad of input issues, and in some instances,$([Environment]::NewLine)can resolve the game not running at all."
+    Write-Host "If you have multiple Steam user profiles,$([Environment]::NewLine)this function will clear the LAST USED HD2 Steam Cloud profile."-ForegroundColor Yellow
+    Write-Host "If you need to switch Steam profiles before running this script,$([Environment]::NewLine)please close the script or press " -NoNewline
     Write-Host 'Ctrl + C' -NoNewline -ForegroundColor Cyan
-    Write-Host " to stop the script...`nOpen Steam using the correct Steam profile and re-run this script."
-    Write-Host "`nThese are the steps that will be completed:"
-    Write-Host "1.) Script will close Steam if it is running`n2.) Script will temporarily disable Steam Cloud saves for HD2`n3.) Script will delete your HD2 Steam Cloud data`n4.) Script will pause`n5.) Script will request for you to run Helldivers 2`n    and load into the ship to generate new Steam Cloud files."
+    Write-Host " to stop the script...$([Environment]::NewLine)Open Steam using the correct Steam profile and re-run this script."
+    Write-Host "$([Environment]::NewLine)These are the steps that will be completed:"
+    Write-Host "1.) Script will close Steam if it is running$([Environment]::NewLine)2.) Script will temporarily disable Steam Cloud saves for HD2$([Environment]::NewLine)3.) Script will delete your HD2 Steam Cloud data$([Environment]::NewLine)4.) Script will pause$([Environment]::NewLine)5.) Script will request for you to run Helldivers 2$([Environment]::NewLine)    and load into the ship to generate new Steam Cloud files."
     Write-Host "6.) You will close the game, and continue the script."
-    Write-Host "7.) Script will re-enable Steam Cloud saves for HD2. `n    The new files to be synced to Steam Cloud next time Steam is launched."
+    Write-Host "7.) Script will re-enable Steam Cloud saves for HD2. $([Environment]::NewLine)    The new files to be synced to Steam Cloud next time Steam is launched."
     Pause 'Press any key to continue.'
     # Shutdown Steam and disable SteamCloud
     # Get the Steam process
@@ -1319,14 +1319,14 @@ Function Switch-FullScreenOptimizations
                 } Else {
                     Remove-ItemProperty -Path $regPath -Name $exePath
                 }
-                Return Write-Host "`nFullscreen optimizations enabled for $exePath. This is probably not desired." -ForegroundColor Yellow
+                Return Write-Host "$([Environment]::NewLine)Fullscreen optimizations enabled for $exePath. This is probably not desired." -ForegroundColor Yellow
             } Else {
                 # Append DISABLEDXMAXIMIZEDWINDOWEDMODE to the current value
                 $newValue = "$currentValue DISABLEDXMAXIMIZEDWINDOWEDMODE"
                 Set-ItemProperty -Path $regPath -Name $exePath -Value $newValue
             }
         }
-        Return Write-Host "`nFullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
+        Return Write-Host "$([Environment]::NewLine)Fullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
     }
 Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
@@ -1340,11 +1340,11 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
-        Write-Host "Hostability key removed successfully!`n" -ForegroundColor Green
+        Write-Host "Hostability key removed successfully!$([Environment]::NewLine)" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-        Write-host 'Hostabiltiy key could not be removed.`n' -ForegroundColor Yellow
+        Write-host 'Hostabiltiy key could not be removed.$([Environment]::NewLine)' -ForegroundColor Yellow
     }    
 }
 Function Find-Mods {
@@ -1358,7 +1358,7 @@ Function Find-Mods {
 
 }
 Function Show-ModRemovalWarning {  
-    Write-Host "`nWARNING: " -ForegroundColor Red -NoNewline
+    Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewline
     Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
     Write-Host "$script:AppInstallPath\data\" -ForegroundColor Cyan
     Write-Host 'If this location looks incorrect, press ' -ForegroundColor Yellow -NoNewline
@@ -1366,7 +1366,7 @@ Function Show-ModRemovalWarning {
     Write-Host '+ ' -ForegroundColor Yellow -NoNewline
     Write-Host 'C ' -NoNewLine
     Write-Host 'now to exit.' -ForegroundColor Yellow
-    Pause "`n Press any key to continue"
+    Pause "$([Environment]::NewLine) Press any key to continue"
 }
 Function Remove-AllMods {
     $dataFolder = $script:AppInstallPath + '\data\'
@@ -1397,20 +1397,20 @@ Function Menu {
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new("&HD2 Status Checks`n", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
+        [ChoiceDescription]::new("&HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
         [ChoiceDescription]::new("&Clear HD2 Settings (AppData)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
         [ChoiceDescription]::new("&Install VC++ Redists", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
         [ChoiceDescription]::new("&Uninstall VC++ Redists", 'Preps for installing VC++ Redists. Restart required.'),
         [ChoiceDescription]::new("Re-install &GameGuard", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
-        [ChoiceDescription]::new("Re&set Steam`n", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new("Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
         [ChoiceDescription]::new("Set HD2 G&PU    ", 'Brings up the Windows GPU settings.'),
-        [ChoiceDescription]::new("Full-Screen &Optimizations Toggle`n", 'Despite the name, having this off is usually recommended.'),
+        [ChoiceDescription]::new("Full-Screen &Optimizations Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
         [ChoiceDescription]::new("Double-NAT &Test", 'Tests network for Double NAT.'),
-        [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test`n", 'Tests the connection to the default gateway.'),
-        [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service`n", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
+        [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test$([Environment]::NewLine)", 'Tests the connection to the default gateway.'),
+        [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new("Clear HD2 Stea&m Cloud", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
-        [ChoiceDescription]::new("Clear &Z Hostability Key`n", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
-        [ChoiceDescription]::new("Attempt &quick mod removal`n", 'Can attempt to remove mods from the \data\ folder.'),
+        [ChoiceDescription]::new("Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
+        [ChoiceDescription]::new("Attempt &quick mod removal$([Environment]::NewLine)", 'Can attempt to remove mods from the \data\ folder.'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
@@ -1442,67 +1442,67 @@ Function Menu {
             Get-MemorySpeed
             Find-Mods
             Show-TestResults
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         1 {
             Remove-HD2AppData
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         2 {
             Install-VCRedist
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         3 {
             Uninstall-VCRedist
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         4 {
             Reset-GameGuard
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         5 {
             Reset-Steam
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         6 {
             Open-AdvancedGraphics
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         7 {
             Switch-FullScreenOptimizations
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         8 {
             Test-DoubleNat
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         9 {
             Test-WiFi
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         10 {
             Switch-BTAGService
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         11 {
             Reset-HD2SteamCloud
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         12 {
             Reset-HostabilityKey
-            Write-Host "`n"
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         13 {
@@ -1545,7 +1545,7 @@ $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # Read each line of the Steam library.vdf file
 # Save a library path, then scan that library for $AppID
 # If AppID is found, return current library path
-ForEach ($line in $($LibraryData -split "`r`n")) {
+ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
     If ($line -like '*path*') {
         $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
         Write-Host $script:AppInstallPath
@@ -1574,5 +1574,5 @@ $script:InstalledProgramsList = $null
 Write-Host 'Checking to see if Helldivers 2 is currently running...' -ForegroundColor Cyan
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
-Write-Host "Building menu... `n`n"
+Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
