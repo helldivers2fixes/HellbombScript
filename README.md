@@ -24,7 +24,7 @@ Then you can work through the things below if you have specific issues.
 |-------------------|-----------------------------------------------------------------|
 | Controller/Key binding Issues          | Option ``M``|
 | Crashing          | Option ``H`` and **read carefully & take any recommended fixes** then Option ``C`` then Option ``S``         |
-| Game Won't Start  | Option ``C`` then Option ``I`` then Option ``G``                            |
+| Game Won't Start  | Option ``C`` then Option ``G`` then try Option ``U`` restart then option ``I``                            |
 | High CPU Usage  | Option ``G``                            |
 | Memory Leaks      | Option ``S`` Note: If you have VRAM leaks instead, use [DDU](https://www.guru3d.com/download/display-driver-uninstaller-download/)                                                   |
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
