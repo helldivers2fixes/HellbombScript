@@ -1374,9 +1374,11 @@ Function Show-ModRemovalWarning {
 }
 Function Remove-AllMods {
     $dataFolder = $script:AppInstallPath + '\data\'
+    $filesFound = $false
     Foreach ($file in Get-ChildItem -Path $dataFolder -File) {
         $filePath = $dataFolder + $file.Name
         If ($file.Name -match "([0-9a-fA-F]{16})\.patch_") {
+            $filesFound = $true
             $hex = $matches[1]
             If (Test-Path $filePath) {
                 Remove-Item -Path $filePath -Force
@@ -1389,7 +1391,11 @@ Function Remove-AllMods {
             }
         }
     }
-    Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
+    If (-not $filesFound) {
+        Write-Host 'No mod files were found to remove.' -ForegroundColor Cyan
+    } Else {
+        Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
+    }
 }
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
