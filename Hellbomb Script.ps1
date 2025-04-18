@@ -626,6 +626,8 @@ Function Get-InstalledPrograms {
                         $displayVersion = $subKey.GetValue("DisplayVersion") -replace '^[a-zA-Z]+|[a-zA-Z]$', '' -replace '\s+', ''
                         $installLocation = $subKey.GetValue("InstallLocation")
                         $publisher = $subKey.GetValue("Publisher")
+                        $QuietUninstallString = $subKey.GetValue("QuietUninstallString")
+                        $UninstallString = $subKey.GetValue("UninstallString")
 
                         If ($displayName) {
                             $installedPrograms += [PSCustomObject]@{
@@ -633,6 +635,8 @@ Function Get-InstalledPrograms {
                                 DisplayVersion  = If ($displayVersion) { Try { [System.Version]$displayVersion } Catch { '0.0.0' } } Else { '0.0.0' }
                                 InstallLocation = $installLocation
                                 Publisher       = $publisher
+                                QuietUninstallString = $QuietUninstallString
+                                UninstallString = $UninstallString
                             }
                         }
                     }
