@@ -448,7 +448,7 @@ Function Get-MemorySpeed {
 # RAM Speed
 $pattern = '^Memory Frequency.*$'
 # Find and display lines matching the pattern
-    $match = $HardwareInfoText | Select-String -Pattern $pattern
+    $match = $script:HardwareInfoText | Select-String -Pattern $pattern
     $null = If ($match) {
         $pattern = '\d\d\d\d.\d'
         $match -match $pattern
