@@ -10,7 +10,7 @@ $script:Tests = @{
         'LatestMicrocode' = '12B'
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "`CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
+        Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
         Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
@@ -1041,7 +1041,7 @@ Function Reset-Steam {
         '
     }
     Get-IsProcessRunning $SteamProcess
-    Pause "You will need to sign into Steam after this process completes.$([Environment]::NewLine)Press any key to continue..." ForegroundColor Yellow
+    Pause "You will need to sign into Steam after this process completes.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
     # Remove CEF Cache
     Write-Host "$([Environment]::NewLine)Clearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
