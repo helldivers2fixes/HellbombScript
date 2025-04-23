@@ -959,7 +959,13 @@ Function Test-Wifi {
     $endTime = ([datetime]::UtcNow).AddSeconds(30)
     $pingResults = New-Object System.Collections.Generic.List[Object]
     While ([datetime]::UtcNow -lt $endTime) {
-        $pingResult = Test-Connection $ipAddress -Count 1
+        Try {
+            $pingResult = Test-Connection $ipAddress -Count 1
+        }
+        Catch { 
+            Write-Host 'Error pinging the default gateway... returning to menu' -ForegroundColor Yellow
+            Return
+        }
         If ($pingResult) {
             $pingResults.Add($pingResult)
         }
