@@ -842,6 +842,7 @@ Function Test-RequiredURLs {
             [Console]::SetCursorPosition(46 , $y)
         }
         If (Resolve-DnsName -Name $domain.RequiredDomains -DnsOnly -ErrorAction SilentlyContinue) {        
+            # Logic to handle intermittent domain connectivity. If it was marked false already, do not set to pass
             If ( $domain.PassedTest -ne $false ) {
                 $domain.PassedTest = $true
             }
@@ -1535,6 +1536,10 @@ Function Show-TestResults {
         If ($_.Value.TestPassed -ne $true) {
             Invoke-Expression $_.Value.TestFailMsg
         }
+    }
+    # After showing, reset URL tests
+    ForEach ($domain in $script:Tests.DomainTest.DomainList) {
+        $domain.PassedTest = $null
     }
 }
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
