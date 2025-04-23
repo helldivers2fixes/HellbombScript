@@ -815,6 +815,8 @@ Function Test-CRL {
     }
     Else {
         Write-Host '[FAIL]' -ForegroundColor Red
+        Write-Host 'Anti-Virus WebShields can cause this issue. Please whitelist microsoft.com or disable them.' -ForegroundColor Yellow
+        Write-Host 'Pi-Holes/DNS-blocking software can also cause this issue. Whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
 
     Write-Host "$([Environment]::NewLine)Testing OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
@@ -826,8 +828,6 @@ Function Test-CRL {
     Else {
         Write-Host 'OCSP Connection' -NoNewLine
         Write-Host ' [FAIL]' -ForegroundColor Red
-        Write-Host 'Anti-Virus WebShields can cause this issue. Please whitelist microsoft.com or disable them.' -ForegroundColor Yellow
-        Write-Host 'Pi-Holes/DNS-blocking software can also cause this issue. Whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
     Write-Progress -Completed -Activity "make progress bar dissapear"
     Test-ClientDnsConfig
