@@ -265,6 +265,7 @@ Function Uninstall-VCRedist {
 
     ForEach ($programName in $redistributables) {
         $programlist = @($script:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
+        Write-Host "$([Environment]::NewLine)⚠️ Please restart the computer once this process completes." -ForegroundColor Yellow
         If ($programlist.Count -gt 0) {
             ForEach ( $program in $programlist )
                 { Write-Host $program.QuietUninstallString -ForegroundColor Cyan
