@@ -1474,12 +1474,12 @@ Function Menu {
             Menu
         }
         2 {
-            Install-VCRedist
+            Reset-HD2SteamCloud
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         3 {
-            Uninstall-VCRedist
+            Reset-HostabilityKey
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
@@ -1494,43 +1494,43 @@ Function Menu {
             Menu
         }
         6 {
-            Open-AdvancedGraphics
+            Uninstall-VCRedist
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         7 {
-            Switch-FullScreenOptimizations
+            Install-VCRedist
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         8 {
-            Test-DoubleNat
+            Open-AdvancedGraphics
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         9 {
-            Test-WiFi
+            Switch-FullScreenOptimizations
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         10 {
-            Switch-BTAGService
+            Test-WiFi
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         11 {
-            Reset-HD2SteamCloud
+            Test-DoubleNat
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         12 {
-            Reset-HostabilityKey
-            Write-Host "$([Environment]::NewLine)"
+            Show-ModRemovalWarning
+            Remove-AllMods
             Menu
         }
         13 {
-            Show-ModRemovalWarning
-            Remove-AllMods
+            Switch-BTAGService
+            Write-Host "$([Environment]::NewLine)"
             Menu
         }
         14 { Return }
