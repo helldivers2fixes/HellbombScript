@@ -31,6 +31,9 @@ $script:Tests = @{
         Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
+        'ErrorMsg' = @'
+        Write-Host "Error occured determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:myCPU "
+'@
     }
     "PendingReboot" = @{
         'TestPassed' = $null
@@ -370,24 +373,26 @@ Function Find-CPUInfo {
                 $runningMicrocode = $CPUProperties."Update Revision"
                 # Convert to string and remove leading zeros
                 Try { $runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
-                    If ( -not ($runningMicrocodeInHex -contains $script:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
+                        If ( ($runningMicrocodeInHex -contains $script:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
+                            $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+                            Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedMsg
+                            Return
+                        }    
+                        Else {
                         $script:Tests.IntelMicrocodeCheck.TestPassed = $false
                         Return
+                        }
                     }
-                }
                 Catch { 
-                    Write-Error "Error occurred while processing microcode..." -ForegroundColor Red
+                    Invoke-Expression $script:Tests.IntelMicrocodeCheck.ErrorMsg
                     $script:Tests.IntelMicrocodeCheck.TestPassed = $false
+                    Return
                  }
             }
         }
-        $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-        Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedMsg
     }
-    Else {
-        $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-        Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
-    }
+    $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+    Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
     Return
 }
 Function Show-MotherboardInfo {
