@@ -124,11 +124,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-    Write-Host "Mods were detected!" -ForegroundColor Yellow
-    If ( $script:BuildID -ne 17889517 ) {
-        Write-Host '       Mod detection was not authored for this game version.' -ForegroundColor Yellow
-        Write-Host '       This may be a false positive.' -ForegroundColor Cyan
-    }
+    Write-Host 'Mods were detected!' -ForegroundColor Yellow
     Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
     Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
     Write-Host ' to attempt removal.' -ForegroundColor Cyan
