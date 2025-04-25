@@ -1,4 +1,11 @@
 using namespace System.Management.Automation.Host
+# Get the current host UI RawUI object
+$pshost = Get-Host
+$psWindow = $pshost.UI.RawUI
+# Set the window size (height and width)
+$newWindowSize = $psWindow.WindowSize
+$newWindowSize.Height = 50   # Adjust height as needed
+$psWindow.WindowSize = $newWindowSize
 # Hellbomb Script
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Stop'
@@ -278,7 +285,8 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) ⚠️ Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
@@ -538,7 +546,7 @@ Function Get-HardwareInfo {
     }
     
     # Run CPU-Z and dump report to file
-    Write-Host "$([Environment]::NewLine)Scanning hardware. Please wait..." -ForegroundColor Cyan -NoNewline
+    Write-Host "$([Environment]::NewLine)Scanning hardware using CPU-Z. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
@@ -1412,20 +1420,20 @@ Function Menu {
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new("&HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
-        [ChoiceDescription]::new("&Clear HD2 Settings (AppData)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new("&Install VC++ Redists", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
-        [ChoiceDescription]::new("&Uninstall VC++ Redists", 'Preps for installing VC++ Redists. Restart required.'),
-        [ChoiceDescription]::new("Re-install &GameGuard", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
-        [ChoiceDescription]::new("Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
-        [ChoiceDescription]::new("Set HD2 G&PU    ", 'Brings up the Windows GPU settings.'),
-        [ChoiceDescription]::new("Full-Screen &Optimizations Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
-        [ChoiceDescription]::new("Double-NAT &Test", 'Tests network for Double NAT.'),
+        [ChoiceDescription]::new("🔍 &HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
+        [ChoiceDescription]::new("🧹 &Clear HD2 Settings (AppData)$([Environment]::NewLine)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
+        [ChoiceDescription]::new("🧹 Clear HD2 Stea&m Cloud$([Environment]::NewLine)", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
+        [ChoiceDescription]::new("🧹 Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
+        [ChoiceDescription]::new("🔁 Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
+        [ChoiceDescription]::new("🔁 Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new("🗑️ &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
+        [ChoiceDescription]::new("➕ &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
+        [ChoiceDescription]::new("🛠️ Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
+        [ChoiceDescription]::new("📺 Full-Screen &Optimizations (FSO) Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
         [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test$([Environment]::NewLine)", 'Tests the connection to the default gateway.'),
-        [ChoiceDescription]::new("Toggle &Bluetooth Telephony Service$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
-        [ChoiceDescription]::new("Clear HD2 Stea&m Cloud", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
-        [ChoiceDescription]::new("Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
-        [ChoiceDescription]::new("Attempt &quick mod removal$([Environment]::NewLine)", 'Can attempt to remove mods from the \data\ folder.'),
+        [ChoiceDescription]::new("Double-NAT &Test$([Environment]::NewLine)", 'Tests network for Double NAT.'),
+        [ChoiceDescription]::new("❌ &Quick Mod Removal$([Environment]::NewLine)", 'Will remove ALL mods from the \data\ folder.'),
+        [ChoiceDescription]::new("🔈 Toggle &Bluetooth Telephony Service$([Environment]::NewLine)$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
