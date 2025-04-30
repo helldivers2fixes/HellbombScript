@@ -145,7 +145,7 @@ Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
         Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
-        Write-Host $AppInstallPath -ForegroundColor White
+        Write-Host $script:AppInstallPath -ForegroundColor White
         Write-Host "Current build of AppID $AppID is:$script:BuildID" -ForegroundColor Cyan
     }
     Else {
@@ -218,20 +218,20 @@ Function Install-EXE {
 Function Reset-GameGuard {
     # Delete GameGuard files
     $Error.Clear()
-    Try { Remove-Item -Path $AppInstallPath\bin\GameGuard\*.* }
+    Try { Remove-Item -Path $script:AppInstallPath\bin\GameGuard\*.* }
     Catch {
         Write-Host ("Error occurred deleting GameGuard files in " +
-            $AppInstallPath + "\bin\GameGuard") -ForegroundColor Red
+            $script:AppInstallPath + "\bin\GameGuard") -ForegroundColor Red
     }
     If (!$Error) { Write-Host "Helldivers 2\bin\GameGuard cleared successfully!" -ForegroundColor Green }
     # Uninstall GameGuard
     $Error.Clear()
-    Try { Start-Process $AppInstallPath\tools\gguninst.exe -Wait }
+    Try { Start-Process $script:AppInstallPath\tools\gguninst.exe -Wait }
     Catch { Write-Host "Error occurred uninstalling GameGuard" -ForegroundColor Red }
     If (!$Error) { Write-Host "GameGuard Uninstalled Successfully" -ForegroundColor Green }
     # Install GameGuard
     $Error.Clear()
-    Try { Start-Process $AppInstallPath\tools\GGSetup.exe -Wait }
+    Try { Start-Process $script:AppInstallPath\tools\GGSetup.exe -Wait }
     Catch { Write-Host "Error occurred installing GameGuard" -ForegroundColor Red }
     If (!$Error) { Write-Host "GameGuard installed successfully"$([Environment]::NewLine) -ForegroundColor Green }
     Return
@@ -1083,7 +1083,7 @@ Function Open-AdvancedGraphics {
     "$([Environment]::NewLine)If HD2 is not listed, click " -NoNewline -ForegroundColor Cyan
     Write-Host "Add desktop app " -NoNewline -ForegroundColor Yellow
     Write-Host "and browse to:" -ForegroundColor Cyan
-    Write-Host $AppInstallPath, "\bin\helldivers2.exe"$([Environment]::NewLine) -ForegroundColor Yellow
+    Write-Host $script:AppInstallPath, "\bin\helldivers2.exe"$([Environment]::NewLine) -ForegroundColor Yellow
     Return
 }
 Function Test-PrivateIP {
@@ -1370,6 +1370,11 @@ Function Reset-HostabilityKey {
     }    
 }
 Function Find-Mods {
+    If (-not $script:AppInstallPath)
+    {
+        Write-Host 'Helldivers 2 not found. Skipping mod detection.'
+        Return
+    }    
     $directoryPath = $script:AppInstallPath + '\data'
     $patchFiles = Get-ChildItem -Path $directoryPath -File | Where-Object { $_.Name -match "\.patch_" }
     If ( $null -eq $patchFiles ) {
@@ -1391,6 +1396,11 @@ Function Show-ModRemovalWarning {
     Pause "$([Environment]::NewLine) Press any key to continue"
 }
 Function Remove-AllMods {
+        If (-not $script:AppInstallPath)
+    {
+        Write-Host 'Helldivers 2 not found. Skipping mod removal.'
+        Return
+    } 
     $dataFolder = $script:AppInstallPath + '\data\'
     $filesFound = $false
     Foreach ($file in Get-ChildItem -Path $dataFolder -File) {
@@ -1586,7 +1596,17 @@ ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
     If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
         $script:AppIDFound = $true
         # Since we found the App location, let's get some data about it
-        $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
+        Try {
+                $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
+                }
+        Catch {
+                Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
+                Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
+                Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
+                Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
+                $script:AppInstallPath = $false
+                Break
+            }
         $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
