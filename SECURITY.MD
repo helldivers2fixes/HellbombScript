@@ -12,7 +12,7 @@ The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
-1. Save the script as Hellbomb Script.ps1
+1. Save the script [from the latest release](https://github.com/helldivers2fixes/HellbombScript/releases/latest) as Hellbomb Script.ps1
 2. Change to the directory where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path)``
 4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq b576446b3de9a8603cdaf03248122a7b3bb28563d916f2b742b169334313ad33``
