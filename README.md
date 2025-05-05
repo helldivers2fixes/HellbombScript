@@ -32,7 +32,7 @@ Then you can work through the things below if you have specific issues.
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 
-## Copy and paste using Terminal Console (Manual Method)
+## Copy and Paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
