@@ -140,13 +140,20 @@ $script:Tests = @{
     Write-Host ' to attempt removal.' -ForegroundColor Cyan
 '@
     }
+"VSyncDisabled" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'V-Sync is enabled in game settings. This may cause framerate issues.' -ForegroundColor Cyan
+'@
+    }
 }
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
         Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
         Write-Host $script:AppInstallPath -ForegroundColor White
-        Write-Host "Current build of AppID $AppID is:$script:BuildID" -ForegroundColor Cyan
+        Write-Host "Current build of AppID $AppID is: $script:BuildID" -ForegroundColor Cyan
     }
     Else {
         Write-Host 'Error. AppID was not found.' -ForegroundColor Red
@@ -1369,6 +1376,20 @@ Function Reset-HostabilityKey {
         Write-host 'Hostabiltiy key could not be removed.$([Environment]::NewLine)' -ForegroundColor Yellow
     }    
 }
+Function Get-VSyncConfig {
+    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
+    Try {
+            If ( Select-String $configPath -Pattern "vsync = false" -Quiet ) {
+                $script:Tests.VSyncDisabled.TestPassed = $true
+                }
+            Else {
+                $script:Tests.VSyncDisabled.TestPassed = $false
+            }
+        }
+    Catch {
+            Return
+    }
+}
 Function Find-Mods {
     If (-not $script:AppInstallPath)
     {
@@ -1479,6 +1500,7 @@ Function Menu {
             Get-MemoryPartNumber
             Get-MemorySpeed
             Find-Mods
+            Get-VSyncConfig
             Show-TestResults
             Write-Host "$([Environment]::NewLine)"
             Menu
