@@ -22,7 +22,7 @@ Or, you can avoid using an EXE completely and [copy & paste the latest code dire
 
 Then you can work through the things below if you have specific issues.
 
-| Symptoms          | Recommended Things to Try                                       |
+| Symptoms          | Recommended Things to Try AFTER running ``H``                                  |
 |-------------------|-----------------------------------------------------------------|
 | Controller/Key binding Issues          | Option ``M``|
 | Crashing          | Option ``H`` and **read carefully & take any recommended fixes** then Option ``C`` then Option ``S``         |
