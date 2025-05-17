@@ -419,6 +419,13 @@ Function Show-GPUInfo {
     # Print GPU information
     ForEach ($gpu in $gpus) {
         $OEMDriverVersionNum = $gpu.DriverVersion
+        If ( $gpu.Name.Contains( 'AMD' ) ) {
+            Try {
+                $OEMDriverVersionNum = (Get-ItemProperty -Path "HKLM:\SOFTWARE\ATI Technologies\Install" -Name RadeonSoftwareVersion).RadeonSoftwareVersion
+            } Catch {
+                $OEMDriverVersionNum = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+            }
+        }
         If ( $gpu.Name.Contains( 'NVIDIA' ) ) {
             Try { 
                     $process = New-Object System.Diagnostics.Process
