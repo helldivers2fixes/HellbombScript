@@ -140,6 +140,13 @@ $script:Tests = @{
     Write-Host ' to attempt removal.' -ForegroundColor Cyan
 '@
     }
+"PageFileEnabled" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'Your page file is set to zero. This may cause the game to crash on launch.' -ForegroundColor Cyan
+'@
+}
 "VSyncDisabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
@@ -1453,6 +1460,16 @@ Function Remove-AllMods {
         Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
     }
 }
+
+Function Get-PageFileSize {
+    If ( (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize -ne 0 ) {
+        $script:Tests.PageFileEnabled.TestPassed = $true
+    }
+    Else {
+        $script:Tests.PageFileEnabled.TestPassed = $false
+    }
+}
+
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
@@ -1500,6 +1517,7 @@ Function Menu {
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
+            Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
             Test-AVX2
