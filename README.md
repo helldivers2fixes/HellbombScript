@@ -27,6 +27,7 @@ Then you can work through the things below if you have specific issues.
 | Controller/Key binding Issues          | Option ``M``|
 | Crashing          | Option ``H`` and **read carefully & take any recommended fixes** then Option ``C`` then Option ``S``         |
 | Game Won't Start  | Option ``H`` and address any issues. Then option ``C`` then option ``G`` then try option ``U`` Restart, then option ``I``                            |
+| Game Gaurd 114 Error  | Option ``H`` and address any issues. Then option ``U`` Restart, then option ``I``                            |
 | High CPU Usage  | Option ``G``                            |
 | Memory Leaks      | Option ``S`` Note: If you have VRAM leaks instead, use [DDU](https://www.guru3d.com/download/display-driver-uninstaller-download/)                                                   |
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
