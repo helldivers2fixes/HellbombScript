@@ -147,6 +147,14 @@ $script:Tests = @{
     Write-Host 'Your page file is set to zero. This may cause the game to crash on launch.' -ForegroundColor Cyan
 '@
 }
+"SecureBootEnabled" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM.' -ForegroundColor Cyan
+
+'@
+    }
 "VSyncDisabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
@@ -926,7 +934,7 @@ Function Test-ClientDnsConfig {
         # Print and test DNS servers for IPv4
         If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
             Write-Host "[PASS]" -ForegroundColor Green -NoNewline
-            Write-Host " Detected IPv4 DNS servers:"
+            Write-Host " Detected IPv4 DNS servers:" -ForegroundColor Cyan
             $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
             }    
             Write-Host "$([Environment]::NewLine)       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
@@ -951,7 +959,7 @@ Function Test-ClientDnsConfig {
         Write-Host "$([Environment]::NewLine)CHECKING IPv6 DNS..." -ForegroundColor Cyan
         If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
         Write-Host "[PASS]" -ForegroundColor Green -NoNewline
-        Write-Host ' Detected IPv6 DNS server(s):'
+        Write-Host ' Detected IPv6 DNS server(s):' -ForegroundColor Cyan
         $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
         }
         Write-Host "$([Environment]::NewLine)       Testing IPv6 DNS servers..." -ForegroundColor Cyan
@@ -1469,7 +1477,10 @@ Function Get-PageFileSize {
         $script:Tests.PageFileEnabled.TestPassed = $false
     }
 }
-
+Function Get-SecureBootStatus {
+    If ( (Confirm-SecureBootUEFI) -eq $true ) { $script:Tests.SecureBootEnabled.TestPassed = $false }
+    Else { $script:Tests.SecureBootEnabled.TestPassed = $true }
+}
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
@@ -1520,6 +1531,7 @@ Function Menu {
             Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
+            Get-SecureBootStatus
             Test-AVX2
             Test-MemoryChannels
             Get-MemoryPartNumber
