@@ -1478,8 +1478,8 @@ Function Get-PageFileSize {
     }
 }
 Function Get-SecureBootStatus {
-    If ( (Confirm-SecureBootUEFI) -eq $true ) { $script:Tests.SecureBootEnabled.TestPassed = $false }
-    Else { $script:Tests.SecureBootEnabled.TestPassed = $true }
+    If ( (Confirm-SecureBootUEFI) -eq $true ) { $script:Tests.SecureBootEnabled.TestPassed = $true }
+    Else { $script:Tests.SecureBootEnabled.TestPassed = $false }
 }
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
