@@ -14,7 +14,7 @@ $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = '12B'
+        'LatestMicrocode' = '12F'
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
