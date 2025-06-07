@@ -470,6 +470,11 @@ Function Show-GPUInfo {
         Else { Write-Host $gpu.Status -ForegroundColor Green }
         Write-Host "-------------------------------------"
     }
+} 
+Function Show-OSInfo {
+    $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
+    Write-Host '' $script:OSversion -ForegroundColor Magenta
 }
 Function Test-AVX2 {
 # Check for AVX2
@@ -1391,7 +1396,7 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
-        Write-Host "Hostability key removed successfully!$([Environment]::NewLine)" -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!$([Environment]::NewLine)" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
@@ -1514,6 +1519,7 @@ Function Menu {
             Show-Variables
             Show-MotherboardInfo
             Show-GPUInfo
+            Show-OSInfo
             Test-PendingReboot
             Reset-HostabilityKey
             Find-CPUInfo
