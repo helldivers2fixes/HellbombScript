@@ -151,7 +151,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
-    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM.' -ForegroundColor Cyan
+    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
 
 '@
     }
