@@ -477,8 +477,8 @@ Function Show-OSInfo {
     Write-Host '' $script:OSversion -ForegroundColor Magenta
 }
 Function Test-AVX2 {
-# Check for AVX2
-# Define the pattern to match the line
+    # Check for AVX2
+    # Define the pattern to match the line
     $pattern = "^\tInstructions\ssets\t.*AVX2"
     # Search for the line that matches the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $pattern
@@ -489,9 +489,9 @@ Function Test-AVX2 {
     }
 }
 Function Get-MemorySpeed {
-# RAM Speed
-$pattern = '^Memory Frequency.*$'
-# Find and display lines matching the pattern
+    # RAM Speed
+    $pattern = '^Memory Frequency.*$'
+    # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $pattern
     $null = If ($match) {
         $pattern = '\d\d\d\d.\d'
@@ -794,7 +794,7 @@ Function Get-SystemUptime {
         }
 }
 Function Test-Firewall {
-Write-Host (("$([Environment]::NewLine)Checking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
+    Write-Host (("$([Environment]::NewLine)Checking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
