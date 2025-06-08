@@ -160,6 +160,12 @@ $script:Tests = @{
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host 'Your time and/or date is inaccurate. This will cause connection issues.' -ForegroundColor Cyan
+    Write-Host 'Correcting system time...'
+    Try {
+        w32tm /resync
+        Write-Host 'System time updated.' -ForegroundColor Green
+        }
+    Catch { Write-Host 'Error updating system time. Please set a correct time & date.' -ForegroundColor Red } 
 '@
     }
 "VSyncDisabled" = @{
@@ -815,7 +821,7 @@ Function Test-SystemClockAccuracy {
         If ($OffsetValue -ge 5.0) {
             $script:Tests.SystemClockAccurate.TestPassed = $false
         } Else {
-            $script:Tests.SystemClockAccurate.TestPassed = $false
+            $script:Tests.SystemClockAccurate.TestPassed = $true
         }
     } Else {
         Write-Host "Failed to retrieve time offset from NTP server."
