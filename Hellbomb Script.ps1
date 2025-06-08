@@ -160,12 +160,6 @@ $script:Tests = @{
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host 'Your time and/or date is inaccurate. This will cause connection issues.' -ForegroundColor Cyan
-    Write-Host 'Correcting system time...'
-    Try {
-        w32tm /resync
-        Write-Host 'System time updated.' -ForegroundColor Green
-        }
-    Catch { Write-Host 'Error updating system time. Please set a correct time & date.' -ForegroundColor Red } 
 '@
     }
 "VSyncDisabled" = @{
@@ -811,20 +805,16 @@ Function Test-SystemClockAccuracy {
     $NtpServer = "time.windows.com"
     # Query the NTP server for its time offset
     $NtpQuery = w32tm /stripchart /computer:$NtpServer /samples:1 /dataonly 2>&1
-    $OffsetString = $NtpQuery | Select-String ", \+([\d\.]+)s"
-    
+    $OffsetString = $NtpQuery | Select-String ", \+([\d\.]+)s"    
     If ($OffsetString) {
         # Extract the offset value
-        $OffsetValue = [double]$OffsetString.Matches[0].Groups[1].Value
-    
+        $OffsetValue = [Math]::Abs([double]$OffsetString.Matches[0].Groups[1].Value)
         # Check if the offset is 5.0 seconds or more
-        If ($OffsetValue -ge 5.0) {
-            $script:Tests.SystemClockAccurate.TestPassed = $false
-        } Else {
+        If ($OffsetValue -lt 5.0) {
             $script:Tests.SystemClockAccurate.TestPassed = $true
+        } Else {
+            $script:Tests.SystemClockAccurate.TestPassed = $false
         }
-    } Else {
-        Write-Host "Failed to retrieve time offset from NTP server."
     }
 }
 Function Test-Firewall {
@@ -1563,6 +1553,7 @@ Function Menu {
             Test-RequiredURLs
             Test-RequiredURLs
             Test-RequiredURLs
+            Test-SystemClockAccuracy
             Find-BlacklistedDrivers
             Test-BadPrinters
             Test-BTAGService
