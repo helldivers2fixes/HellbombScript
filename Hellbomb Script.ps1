@@ -155,6 +155,13 @@ $script:Tests = @{
 
 '@
     }
+"SystemClockAccurate" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host 'Your time and/or date is inaccurate. This will cause connection issues.' -ForegroundColor Cyan
+'@
+    }
 "VSyncDisabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
@@ -792,6 +799,27 @@ Function Get-SystemUptime {
         $script:Tests.LongSysUptime.SystemUptime = $uptime
         $script:Tests.LongSysUptime.TestPassed = $false
         }
+}
+Function Test-SystemClockAccuracy {
+    # Define the NTP server
+    $NtpServer = "time.windows.com"
+    # Query the NTP server for its time offset
+    $NtpQuery = w32tm /stripchart /computer:$NtpServer /samples:1 /dataonly 2>&1
+    $OffsetString = $NtpQuery | Select-String ", \+([\d\.]+)s"
+    
+    If ($OffsetString) {
+        # Extract the offset value
+        $OffsetValue = [double]$OffsetString.Matches[0].Groups[1].Value
+    
+        # Check if the offset is 5.0 seconds or more
+        If ($OffsetValue -ge 5.0) {
+            $script:Tests.SystemClockAccurate.TestPassed = $false
+        } Else {
+            $script:Tests.SystemClockAccurate.TestPassed = $false
+        }
+    } Else {
+        Write-Host "Failed to retrieve time offset from NTP server."
+    }
 }
 Function Test-Firewall {
     Write-Host (("$([Environment]::NewLine)Checking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
