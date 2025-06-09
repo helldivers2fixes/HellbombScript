@@ -23,7 +23,7 @@ $script:Tests = @{
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
         Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
 '@
-        'TestPassedMsg' = @'
+        'TestPassedIntelMsg' = @'
         Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
         Write-Host "is running the latest 0x12F microcode." -ForegroundColor Green
 '@
@@ -409,7 +409,7 @@ Function Find-CPUInfo {
                 Try { $runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
                         If ( ($runningMicrocodeInHex -contains $script:Tests.IntelMicrocodeCheck.LatestMicrocode) ) {
                             $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-                            Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedMsg
+                            Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedIntelMsg
                             Return
                         }    
                         Else {
