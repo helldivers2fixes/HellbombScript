@@ -1,5 +1,5 @@
 # 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)   
-  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v3.3.0.1/Hellbomb.Script.v3105.exe)
+  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v3.3.0.1/Hellbomb.Script.v3301.exe)
   [![GitHub release](https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
   [![GitHub liscense](https://img.shields.io/github/license/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/tree/main?tab=MIT-1-ov-file)
   [![GitHub forks](https://img.shields.io/github/forks/helldivers2fixes/HellbombScript)]()
@@ -50,14 +50,13 @@ Copy and paste the script manually per instructions below.
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
 Main Menu in EXE
-![image](https://github.com/user-attachments/assets/4028ab27-bb86-4c52-8e0f-70d06627e039)
+![image](https://github.com/user-attachments/assets/782b77c4-127c-4843-9a19-39e69e96055e)
 
 Main Menu in PowerShell 7
-![image](https://github.com/user-attachments/assets/3f7291f6-44b0-46f6-958f-6247c995d848)
+![image](https://github.com/user-attachments/assets/ec3ca366-c717-42a0-98a9-78b60a156c70)
 
-Running the HD2 Status Checks (H) from the EXE:
+Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 ![Hellbomb Script Animation](https://github.com/user-attachments/assets/8781f62f-3f5b-4530-9085-ea3042833220)
-
 
 Selecting Help (?) from the menu in PowerShell 7:
 ![image](https://github.com/user-attachments/assets/e664df63-d848-4d31-9b34-be8aa05bd13f)
