@@ -808,13 +808,22 @@ Function Get-SystemUptime {
 Function Test-SystemClockAccuracy {
     # Define the NTP server
     $NtpServer = "time.windows.com"
-    # Query the NTP server for its time offset
-    $NtpQuery = w32tm /stripchart /computer:$NtpServer /samples:1 /dataonly 2>&1
+    # Query the NTP server for its time offset using a process to support the EXE
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $process.StartInfo.FileName = "w32tm"
+    $process.StartInfo.Arguments = "/stripchart /computer:$NtpServer /samples:1 /dataonly"
+    $process.StartInfo.RedirectStandardOutput = $true
+    $process.StartInfo.UseShellExecute = $false
+    $process.StartInfo.CreateNoWindow = $true
+    $process.Start() | Out-Null
+    # Read the time output as a string
+    $NtpQuery = New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)
+    $NtpQuery =  $NtpQuery.ReadToEnd().Trim()
+    $process.WaitForExit()    
     $OffsetString = $NtpQuery | Select-String ", \+([\d\.]+)s"    
     If ($OffsetString) {
-        # Extract the offset value
         $OffsetValue = [Math]::Abs([double]$OffsetString.Matches[0].Groups[1].Value)
-        # Check if the offset is 5.0 seconds or more
         If ($OffsetValue -lt 5.0) {
             $script:Tests.SystemClockAccurate.TestPassed = $true
         } Else {
