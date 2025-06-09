@@ -25,7 +25,7 @@ $script:Tests = @{
 '@
         'TestPassedMsg' = @'
         Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
-        Write-Host "is running the latest 0x12B microcode." -ForegroundColor Green
+        Write-Host "is running the latest 0x12F microcode." -ForegroundColor Green
 '@
         'NotApplicableMsg' = @'
         Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
