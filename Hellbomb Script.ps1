@@ -1290,7 +1290,7 @@ Function Test-PendingReboot {
 Function Reset-HD2SteamCloud {
     Clear-Host
     Write-Host "$([Environment]::NewLine)This function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
-    Write-Host 'You will lose any custom key bindings. ' -NoNewline
+    Write-Host 'You will lose any custom key bindings & character customizations will be reset to defaults. ' -NoNewline
     Write-Host 'No game progress will be lost.' -ForegroundColor Yellow
     Write-Host "This can resolve a myriad of input issues, and in some instances,$([Environment]::NewLine)can resolve the game not running at all."
     Write-Host "If you have multiple Steam user profiles,$([Environment]::NewLine)this function will clear the LAST USED HD2 Steam Cloud profile."-ForegroundColor Yellow
