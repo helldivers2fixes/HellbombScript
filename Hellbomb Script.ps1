@@ -86,6 +86,11 @@ $script:Tests = @{
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
+'@
+        'TestPassedMsg' = @'
+        Write-Host "$([Environment]::NewLine)RAM Information:" -ForegroundColor Cyan
+'@
+        'AlwaysDisplayMsg' = @'
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
         $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
         $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
@@ -1516,7 +1521,7 @@ Function Restart-Resume {
 
 Function Menu {
     $Title = "-------------------------------------------------------------------------------------------------------
-    💣 Hellbomb 💣 Script for Fixing Helldivers 2       ||      Version 3.1.0.5
+    💣 Hellbomb 💣 Script for Fixing Helldivers 2       ||      Version 3.3.0.1
 -------------------------------------------------------------------------------------------------------"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
@@ -1643,10 +1648,20 @@ Function Menu {
 }
 Function Show-TestResults {
     $script:Tests.GetEnumerator() | ForEach-Object {
-        If ($_.Value.TestPassed -ne $true) {
-            Invoke-Expression $_.Value.TestFailMsg
+    $test = $_.Value
+    If ($test.TestPassed -ne $true) {
+        Invoke-Expression $test.TestFailMsg
+    }
+    Else {
+        # Check if TestPassedMsg exists using Get-Member
+        If ( $test.ContainsKey('TestPassedMsg') ) {
+            Invoke-Expression $test.TestPassedMsg
         }
     }
+    If ( $test.ContainsKey('AlwaysDisplayMsg') ) {
+        Invoke-Expression $test.AlwaysDisplayMsg
+    }
+}
     # After showing, reset URL tests
     ForEach ($domain in $script:Tests.DomainTest.DomainList) {
         $domain.PassedTest = $null
