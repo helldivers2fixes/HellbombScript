@@ -46,8 +46,8 @@ $script:Tests = @{
         "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\PendingFileRenameOperations")
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host " Windows is reporting a pending reboot is required." -ForegroundColor Yellow -NoNewLine
-        Write-Host "$([Environment]::NewLine)Please exit the script and reboot your machine..." -ForegroundColor Cyan
+        Write-Host "Windows is reporting a pending reboot is required." -ForegroundColor Yellow -NoNewLine
+        Write-Host "$([Environment]::NewLine)       Please exit the script and reboot your machine..." -ForegroundColor Cyan
 '@
     }
     "BadPrinter" = @{
@@ -70,7 +70,7 @@ $script:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "       Your CPU does not support the AVX2 instruction set." -ForegroundColor Yellow
+        Write-Host "Your CPU does not support the AVX2 instruction set." -ForegroundColor Yellow
 '@
     }
     "MultiChannelMemory" = @{
@@ -148,14 +148,14 @@ $script:Tests = @{
 "PageFileEnabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'Your page file is set to zero. This may cause the game to crash on launch.' -ForegroundColor Cyan
 '@
 }
 "SecureBootEnabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
 
 '@
@@ -164,13 +164,13 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-    Write-Host 'Your time and/or date is inaccurate. This will cause connection issues.' -ForegroundColor Cyan
+    Write-Host 'Your time and/or date is inaccurate. This will cause connection issues.' -ForegroundColor Yellow
 '@
     }
 "VSyncDisabled" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[WARNING] " -ForegroundColor Yellow -NoNewLine
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'V-Sync is enabled in game settings. This may cause framerate issues.' -ForegroundColor Cyan
 '@
     }
