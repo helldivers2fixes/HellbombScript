@@ -1,21 +1,21 @@
 ## Security Info:
 
-EXE [VirusTotal](https://www.virustotal.com/gui/file/f60d3b75f512ed3c8fced1529b97d02bcb3dc1b23af3aad94329d3a9c3668c4e) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/f60d3b75f512ed3c8fced1529b97d02bcb3dc1b23af3aad94329d3a9c3668c4e) link.
+EXE [VirusTotal](https://www.virustotal.com/gui/file/e122eb1de63de8eb7cb4ff1f3459c3adccea3b47348378a90542246bd76aaf7b) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/e122eb1de63de8eb7cb4ff1f3459c3adccea3b47348378a90542246bd76aaf7b) link.
 
 Not sure you trust the EXE? You can run ``"Hellbomb Script.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"`` in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
-**Script Version VirusTotal Results:** https://www.virustotal.com/gui/file/5a252fee47835369a409a0993b05d808bbfabe9461f17896a410bf8809969400
+**Script Version VirusTotal Results:** https://www.virustotal.com/gui/file/cda8f196fc9bccc69a04a09477adfbc5d9b0dd89c985a02e227fc9c38ebc8901
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``17f856931371e0d07aaa8c01e86a95db9846d3b67e508ec1f328ce31cb2ddf4e``.
+The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``cda8f196fc9bccc69a04a09477adfbc5d9b0dd89c985a02e227fc9c38ebc8901``.
 
-**Script Version Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/17f856931371e0d07aaa8c01e86a95db9846d3b67e508ec1f328ce31cb2ddf4e
+**Script Version Hybrid-Analysis Link:** https://www.hybrid-analysis.com/sample/cda8f196fc9bccc69a04a09477adfbc5d9b0dd89c985a02e227fc9c38ebc8901
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
 1. Download [the latest release](https://github.com/helldivers2fixes/HellbombScript/releases/latest) by clicking on Source Code.zip. Drill down into the folders and extract Hellbomb Script.ps1
 2. In Terminal or PowerShell ``cd`` (Change to the directory) where the script is saved
 3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path)``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq 17f856931371e0d07aaa8c01e86a95db9846d3b67e508ec1f328ce31cb2ddf4e``
+4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq cda8f196fc9bccc69a04a09477adfbc5d9b0dd89c985a02e227fc9c38ebc8901``
 5. The statement should return/evaluate to ``True``
 
 No security software should detect the script as malicious.
