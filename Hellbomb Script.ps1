@@ -487,7 +487,40 @@ Function Show-GPUInfo {
 Function Show-OSInfo {
     $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
     Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
-    Write-Host '' $script:OSversion -ForegroundColor Magenta
+    Write-Host '' $script:OSversion
+}
+Function Show-GameLaunchOptions {
+    $script:localconfigVDF = Join-Path -Path $script:mostRecentSteamUserProfilePath -ChildPath 'config\localconfig.vdf'
+    # Ensure the file exists before proceeding
+    If (-Not (Test-Path $script:localconfigVDF)) {
+        Write-Host "Error: File not found at $script:localconfigVDF" -ForegroundColor Red
+        Return
+    }
+
+    # Read file content efficiently
+    $Content = Get-Content -Path $script:localconfigVDF -Raw
+
+    $EulaIndex = $Content.IndexOf('"553850_eula_0"')
+    If ($EulaIndex -lt 0) {
+        Write-Output "Error: '553850_eula_0' not found"
+        Return
+    }
+
+    $RemainingContent = $Content.Substring($EulaIndex)
+
+    If ($RemainingContent -match '"LaunchOptions"\s*"([^"]+)"') {
+        $LaunchOptions = $matches[1]
+        Write-Host 'HD2 Launch Optns: ' -NoNewline -ForegroundColor Cyan
+        If ( $LaunchOptions -match '--use-d3d11' ) {
+            Write-Host " $LaunchOptions" -ForegroundColor Yellow
+        }
+        Else {
+            Write-Host " $LaunchOptions"
+        }
+        Write-Host 'Launch options retrieved from LAST USED Steam Profile'
+    } Else {
+        Write-Host "Error: 'LaunchOptions' not found after '553850_eula_0'."
+    }
 }
 Function Test-AVX2 {
     # Check for AVX2
@@ -1324,28 +1357,11 @@ Function Reset-HD2SteamCloud {
     } Else {
         Write-Host "Steam is not running... continuing"
     }
-
-    # Get all immediate subfolders
-    $subfolders = Get-ChildItem -Path (Join-Path $SteamPath -ChildPath 'userdata') -Directory
-    
-    # Initialize variables to track the most recently modified subfolder
-    $mostRecentTime = [datetime]::MinValue
-    
-    # Iterate through each subfolder to find the most recently modified files
-    ForEach ($subfolder in $subfolders) {
-        $files = Get-ChildItem -Path $subfolder.FullName -Recurse -File
-        ForEach ($file in $files) {
-            If ($file.LastWriteTime -gt $mostRecentTime) {
-                $mostRecentTime = $file.LastWriteTime
-                $script:mostRecentSteamUserProfilePath = $subfolder
-            }
-        }
-    }
-    
-    $HD2SteamCloudSaveFolder = Join-Path $mostRecentSteamUserProfilePath.FullName -ChildPath $AppID
+  
+    $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath.FullName -ChildPath $AppID
 
     # Define the path to the sharedconfig.vdf file
-    $sharedConfigPath = Join-Path $mostRecentSteamUserProfilePath.FullName -ChildPath '\7\remote\sharedconfig.vdf'
+    $sharedConfigPath = Join-Path $script:mostRecentSteamUserProfilePath.FullName -ChildPath '\7\remote\sharedconfig.vdf'
     
     $configContent = Get-Content -Path $sharedConfigPath
     
@@ -1559,6 +1575,7 @@ Function Menu {
             Show-MotherboardInfo
             Show-GPUInfo
             Show-OSInfo
+            Show-GameLaunchOptions
             Test-PendingReboot
             Reset-HostabilityKey
             Find-CPUInfo
@@ -1677,6 +1694,24 @@ Function Show-TestResults {
         $domain.PassedTest = $null
     }
 }
+Function Get-MostRecentlyUsedSteamProfilePath {
+    # Get all immediate subfolders
+    $subfolders = Get-ChildItem -Path (Join-Path $SteamPath -ChildPath 'userdata') -Directory
+    
+    # Initialize variables to track the most recently modified subfolder
+    $mostRecentTime = [datetime]::MinValue
+    
+    # Iterate through each subfolder to find the most recently modified files
+    ForEach ($subfolder in $subfolders) {
+        $files = Get-ChildItem -Path $subfolder.FullName -Recurse -File
+        ForEach ($file in $files) {
+            If ($file.LastWriteTime -gt $mostRecentTime) {
+                $mostRecentTime = $file.LastWriteTime
+                $script:mostRecentSteamUserProfilePath = $subfolder
+            }
+        }
+    }
+}
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
@@ -1729,7 +1764,7 @@ ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
         Break
     }
 }
-
+Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
     ErrorMsg    = '
