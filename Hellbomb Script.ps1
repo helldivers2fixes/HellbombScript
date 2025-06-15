@@ -857,7 +857,7 @@ Function Test-SystemClockAccuracy {
     $NtpQuery = New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)
     $NtpQuery =  $NtpQuery.ReadToEnd().Trim()
     $process.WaitForExit()    
-    $OffsetString = $NtpQuery | Select-String ", \+([\d\.]+)s"    
+    $OffsetString = $NtpQuery | Select-String "[+-]([\d]+)\.([\d]+)s"    
     If ($OffsetString) {
         $OffsetValue = [Math]::Abs([double]$OffsetString.Matches[0].Groups[1].Value)
         If ($OffsetValue -lt 5.0) {
