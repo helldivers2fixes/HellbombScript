@@ -1360,10 +1360,10 @@ Function Reset-HD2SteamCloud {
         Write-Host "Steam is not running... continuing"
     }
   
-    $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath.FullName -ChildPath $AppID
+    $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath $AppID
 
     # Define the path to the sharedconfig.vdf file
-    $sharedConfigPath = Join-Path $script:mostRecentSteamUserProfilePath.FullName -ChildPath '\7\remote\sharedconfig.vdf'
+    $sharedConfigPath = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
     
     $configContent = Get-Content -Path $sharedConfigPath
     
@@ -1709,7 +1709,7 @@ Function Get-MostRecentlyUsedSteamProfilePath {
         ForEach ($file in $files) {
             If ($file.LastWriteTime -gt $mostRecentTime) {
                 $mostRecentTime = $file.LastWriteTime
-                $script:mostRecentSteamUserProfilePath = $subfolder
+                $script:mostRecentSteamUserProfilePath = $subfolder.FullName
             }
         }
     }
