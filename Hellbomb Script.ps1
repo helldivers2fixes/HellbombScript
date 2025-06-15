@@ -54,8 +54,9 @@ $script:Tests = @{
         'TestPassed' = $null
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "OneNote for Windows 10 printer detected! This can cause crashes on game startup." -ForegroundColor Yellow -NoNewLine
-        Write-Host "$([Environment]::NewLine)       Please remove this printer from your computer." -ForegroundColor Cyan
+        Write-Host "OneNote for Windows 10 virtual printer detected! This can cause crashes on game startup." -ForegroundColor Yellow -NoNewLine
+        Write-Host "$([Environment]::NewLine)       Please remove this printer driver from your computer." -ForegroundColor Cyan
+        Start-Process "explorer.exe" -ArgumentList "shell:PrintersFolder"
 '@
     }
    "LongSysUptime" = @{
