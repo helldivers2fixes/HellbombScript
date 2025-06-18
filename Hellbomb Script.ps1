@@ -493,35 +493,37 @@ Function Show-OSInfo {
 }
 Function Show-GameLaunchOptions {
     $script:localconfigVDF = Join-Path -Path $script:mostRecentSteamUserProfilePath -ChildPath 'config\localconfig.vdf'
-    # Ensure the file exists before proceeding
+
     If (-Not (Test-Path $script:localconfigVDF)) {
         Write-Host "Error: File not found at $script:localconfigVDF" -ForegroundColor Red
         Return
     }
 
-    # Read file content efficiently
     $Content = Get-Content -Path $script:localconfigVDF -Raw
+    $pattern = '(?sm)"553850"\s*\{(?:[^{}]|(?<open>\{)|(?<-open>\}))*(?(open)(?!))[^}]*?"LaunchOptions"\s*"([^"]*)"[^}]*?\}'
+    $allMatches = [regex]::Matches($Content, $pattern)
 
-    $EulaIndex = $Content.IndexOf('"553850_eula_0"')
-    If ($EulaIndex -lt 0) {
-        Write-Output "Error: '553850_eula_0' not found"
-        Return
-    }
-
-    $RemainingContent = $Content.Substring($EulaIndex)
-
-    If ($RemainingContent -match '"LaunchOptions"\s*"([^"]+)"') {
-        $LaunchOptions = $matches[1]
-        Write-Host 'HD2 Launch Optns: ' -NoNewline -ForegroundColor Cyan
-        If ( $LaunchOptions -match '--use-d3d11' ) {
-            Write-Host " $LaunchOptions" -ForegroundColor Yellow
-        }
-        Else {
-            Write-Host " $LaunchOptions"
-        }
-        Write-Host 'Launch options retrieved from LAST USED Steam Profile'
+    If ($allMatches.Count -eq 0) {
+        Write-Host "Error: '553850' block or 'LaunchOptions' within it not found in $script:localconfigVDF." -ForegroundColor Red
     } Else {
-        Write-Host "Error: 'LaunchOptions' not found after '553850_eula_0'."
+        Foreach ($match in $allMatches) {
+            # Check if the "LaunchOptions" capture group actually has a value for this match
+            If ($match.Groups[1].Success) {
+                $LaunchOptions = $match.Groups[1].Value
+
+                Write-Host 'HD2 Launch Optns: ' -NoNewline -ForegroundColor Cyan
+                If ( $LaunchOptions -match '--use-d3d11' ) {
+                    Write-Host " $LaunchOptions" -ForegroundColor Yellow
+                }
+                Else {
+                    Write-Host " $LaunchOptions"
+                }
+            } Else {
+                # This case means a "553850" block was found, but "LaunchOptions" wasn't inside it
+                Write-Host "No launch options currently in use." -ForegroundColor Yellow
+            }
+        }
+        Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
     }
 }
 Function Test-AVX2 {
