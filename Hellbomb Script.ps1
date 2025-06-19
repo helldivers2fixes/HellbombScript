@@ -160,7 +160,7 @@ $script:Tests = @{
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'Your page file is set to zero. This may cause the game to crash on launch.' -ForegroundColor Cyan
 '@
-}
+    }
 "SecureBootEnabled" = @{
     'TestPassed' = $null
     'SecureBootNotSupported' = $null
@@ -184,6 +184,38 @@ $script:Tests = @{
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'V-Sync is enabled in game settings. This may cause framerate issues.' -ForegroundColor Cyan
+'@
+    }
+"GameResolution" = @{
+    'TestPassed' = $null
+    'WidthValue' = $null
+    'HeightValue' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'Screen resolution unable to be retrieved.' -ForegroundColor Cyan
+'@
+    'TestPassedMsg' = @'
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+    Write-Host "Output resolution is: " -ForegroundColor Cyan -NoNewLine
+    Write-Host "$($script:Tests.GameResolution.WidthValue) x $($script:Tests.GameResolution.HeightValue)"
+    If ( $($script:Tests.GameResolution.HeightValue) -le 1080 ) { Write-Host 'Your resolution is low. With a powerful GPU, this may increase CPU usage & hurt performance' -ForegroundColor Yellow }
+    If ( $($script:Tests.GameResolution.HeightValue) -ge 2160 ) { Write-Host 'Your resolution is high. This may hurt FPS if your GPU isn''t powerful enough' -ForegroundColor Yellow }
+'@
+    }
+"RenderResolution" = @{
+    'TestPassed' = $null
+    'WidthValue' = $null
+    'HeightValue' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'Render resolution unable to be retrieved.' -ForegroundColor Cyan
+'@
+    'TestPassedMsg' = @'
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+    Write-Host "Game engine render resolution is: " -ForegroundColor Cyan -NoNewLine
+    Write-Host "$($script:Tests.RenderResolution.WidthValue) x $($script:Tests.RenderResolution.HeightValue)"
+    If ( $($script:Tests.RenderResolution.HeightValue) -le 1080 ) { Write-Host 'Game rendering resolution is low. With a powerful GPU, this may increase CPU usage & hurt performance' -ForegroundColor Yellow }
+    If ( $($script:Tests.RenderResolution.HeightValue) -ge 2160 ) { Write-Host 'Game rendering resolution is high. This may hurt FPS if your GPU isn''t powerful enough' -ForegroundColor Yellow }
 '@
     }
 }
@@ -1498,6 +1530,46 @@ Function Get-VSyncConfig {
             Return
     }
 }
+Function Get-GameResolution {
+    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
+    $lines = Get-Content $configPath
+    Try {
+    $screen = Get-ConfigResolutionBlock -SettingName 'screen_resolution' -Lines $lines
+    $render = Get-ConfigResolutionBlock -SettingName 'render_resolution' -Lines $lines
+    If ($screen) {
+        $script:Tests.GameResolution.WidthValue = $screen.Width
+        $script:Tests.GameResolution.HeightValue = $screen.Height
+        $script:Tests.GameResolution.TestPassed = $true
+    } Else {
+        $script:Tests.GameResolution.TestPassed = $false
+    }
+    If ($render) {
+        $script:Tests.RenderResolution.WidthValue = $render.Width
+        $script:Tests.RenderResolution.HeightValue = $render.Height
+        $script:Tests.RenderResolution.TestPassed = $true
+    } Else {
+        $script:Tests.RenderResolution.TestPassed = $false
+    }
+    } Catch {
+        $script:Tests.GameResolution.TestPassed = $false
+        $script:Tests.RenderResolution.TestPassed = $false
+    }
+}
+Function Get-ConfigResolutionBlock {
+    Param (
+        [string]$SettingName,
+        [string[]]$Lines
+    )
+
+    For ($i = 0; $i -lt $Lines.Count; $i++) {
+        If ($Lines[$i] -match "^\s*$SettingName\s*=\s*\[\s*$") {
+            $w = [int]$Lines[$i + 1].Trim()
+            $h = [int]$Lines[$i + 2].Trim()
+            Return @{ Width = $w; Height = $h }
+        }
+    }
+    Return $null
+}
 Function Find-Mods {
     If (-not $script:AppInstallPath)
     {
@@ -1631,6 +1703,7 @@ Function Menu {
             Get-MemorySpeed
             Find-Mods
             Get-VSyncConfig
+            Get-GameResolution
             Show-TestResults
             Write-Host "$([Environment]::NewLine)"
             Menu
