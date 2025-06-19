@@ -562,7 +562,9 @@ Function Get-MemoryPartNumber{
     $skipDimm = $false
 
     # Iterate through each line
-    foreach ($line in $script:HardwareInfoText) {
+    For ( $i = 0; $i -lt $script:HardwareInfoText.Count; $i++ ) {
+        $line = $script:HardwareInfoText[$i]
+        $nextLine = if ($i + 1 -lt $script:HardwareInfoText.Count) { $script:HardwareInfoText[$i + 1] } else { $null }
         If ($line -match "^DIMM #\s+(\d+)") {
             # Save the current DIMM data if it exists
             If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
@@ -582,9 +584,11 @@ Function Get-MemoryPartNumber{
             # Skip processing this DIMM if "SPD Registers" is the first line after "DIMM #"
             $skipDimm = $true
         } ElseIf (-not $skipDimm) {
-            If ($line -match "^\s+Size\s+(.+)") {
+            # Order of match checking matters here because it only caches the last match for $Matches
+            If ($nextLine -and $nextLine -match 'Max bandwidth' -and $line -match "^\s+Size\s+(.+)" ) {
                 $currentDimm["Size"] = $Matches[1]
-            } ElseIf ($line -match "^\s+Part number\s+(.+)") {
+            # Order of match  checking matters here because it only caches the last match for $Matches
+            } ElseIf ( $nextLine -and $nextLine -match 'Nominal Voltage' -and $line -match "^\s+Part number\s+(.+)" ) {
                 $currentDimm['Part Number'] = $Matches[1]
             }
         }
