@@ -1554,9 +1554,9 @@ Function Get-SecureBootStatus {
      	If ( $secureBoot -eq $true) { $script:Tests.SecureBootEnabled.TestPassed = $true }
     }
       Catch { 
-    	  If ( $_.Exception.HResult -eq 0xC0000002 -or $_.Exception.HResult -eq -1073741806 ) {
+    	  If ( $_.Exception.Message -like "*Cmdlet not supported on this platform:*" ) {
        		$script:Tests.SecureBootEnabled.SecureBootNotSupported = $true
-	 	    $script:Tests.SecureBootEnabled.TestPassed = $false
+	 	$script:Tests.SecureBootEnabled.TestPassed = $false
           }
       }
 }
