@@ -86,6 +86,7 @@ $script:Tests = @{
     "MatchingMemory" = @{
         'TestPassed' = $null
         'RAMInfo' = $null
+        'NotFound' = $null
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
@@ -94,9 +95,13 @@ $script:Tests = @{
         Write-Host "$([Environment]::NewLine)RAM Information:" -ForegroundColor Cyan
 '@
         'AlwaysDisplayMsg' = @'
+        If ( $script:Tests.MatchingMemory.NotFound ) {
+            Write-Host 'RAM Information not found. -ForegroundColor Yellow'
+        } Else {
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
         $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
         $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+        }
 '@
     }
     "DomainTest" = @{
@@ -604,13 +609,16 @@ Function Get-MemoryPartNumber{
             PartNumber = $currentDimm['Part Number']
         }
     }
-    $script:Tests.MatchingMemory.RAMInfo = $dimmData
-    If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
-     ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
-       $script:Tests.MatchingMemory.TestPassed = $true
-    } Else {
+    If ( $dimmData ) {
+        $script:Tests.MatchingMemory.RAMInfo = $dimmData
+        If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
+            ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
+            $script:Tests.MatchingMemory.TestPassed = $true
+        } Else {
         $script:Tests.MatchingMemory.TestPassed = $false
+        }
     }
+    Else { $script:Tests.MatchingMemory.NotFound = $true }
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
