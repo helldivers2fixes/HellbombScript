@@ -96,7 +96,8 @@ $script:Tests = @{
 '@
         'AlwaysDisplayMsg' = @'
         If ( $script:Tests.MatchingMemory.NotFound ) {
-            Write-Host 'RAM Information not found. -ForegroundColor Yellow'
+            Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+	    Write-Host 'RAM Information not found.' -ForegroundColor Cyan
         } Else {
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
         $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
@@ -618,7 +619,10 @@ Function Get-MemoryPartNumber{
         $script:Tests.MatchingMemory.TestPassed = $false
         }
     }
-    Else { $script:Tests.MatchingMemory.NotFound = $true }
+    Else { 
+    	$script:Tests.MatchingMemory.NotFound = $true
+     	$script:Tests.MatchingMemory.TestPassed = $true
+     }
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
