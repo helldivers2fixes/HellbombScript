@@ -515,12 +515,15 @@ Function Show-GameLaunchOptions {
                 If ( $LaunchOptions -match '--use-d3d11' ) {
                     Write-Host " $LaunchOptions" -ForegroundColor Yellow
                 }
-                Else {
-                    Write-Host " $LaunchOptions"
-                }
+                ElseIf ( -not [string]::IsNullOrWhiteSpace($LaunchOptions) ) {
+      			Write-Host $LaunchOptions
+      		}
+	 	Else {
+       			Write-Host 'No launch options currently in use.'
+	  	}
             } Else {
                 # This case means a "553850" block was found, but "LaunchOptions" wasn't inside it
-                Write-Host "No launch options currently in use." -ForegroundColor Yellow
+                Write-Host 'No launch options currently in use.'
             }
         }
         Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
