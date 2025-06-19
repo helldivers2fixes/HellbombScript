@@ -1535,14 +1535,10 @@ Function Remove-AllMods {
         Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
     }
 }
-
 Function Get-PageFileSize {
-    If ( (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize -ne 0 ) {
-        $script:Tests.PageFileEnabled.TestPassed = $true
-    }
-    Else {
-        $script:Tests.PageFileEnabled.TestPassed = $false
-    }
+    $pageFileUsage = Get-CimInstance Win32_PageFileUsage
+    $script:Tests.PageFileEnabled.TestPassed = 
+    ( $pageFileUsage -and $pageFileUsage.AllocatedBaseSize -ne 0 )
 }
 Function Get-SecureBootStatus {
     If ( (Confirm-SecureBootUEFI) -eq $true ) { $script:Tests.SecureBootEnabled.TestPassed = $true }
