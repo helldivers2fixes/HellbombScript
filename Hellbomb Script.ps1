@@ -164,7 +164,6 @@ $script:Tests = @{
     	Write-Host 'Secure Boot is not supported on this platform. If you experience constant GameGuard errors, ensure that no unverified drivers are loaded at boot.'
     }
     Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
-    }
 '@
     }
 "SystemClockAccurate" = @{
