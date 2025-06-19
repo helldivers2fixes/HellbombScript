@@ -157,10 +157,13 @@ $script:Tests = @{
 }
 "SecureBootEnabled" = @{
     'TestPassed' = $null
+    'SecureBootNotSupported' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    If ( $script:Tests.SecureBootEnabled.SecureBootNotSupported -eq $true ) {
+    	Write-Host 'Secure Boot is not supported on this platform. If you experience constant GameGuard errors, ensure that no unverified drivers are loaded at boot.'
+    }
     Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
-
 '@
     }
 "SystemClockAccurate" = @{
@@ -1539,18 +1542,22 @@ Function Remove-AllMods {
         Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
     }
 }
-
 Function Get-PageFileSize {
-    If ( (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize -ne 0 ) {
-        $script:Tests.PageFileEnabled.TestPassed = $true
-    }
-    Else {
-        $script:Tests.PageFileEnabled.TestPassed = $false
-    }
+    $pageFileUsage = Get-CimInstance Win32_PageFileUsage
+    $script:Tests.PageFileEnabled.TestPassed = 
+    ( $pageFileUsage -and $pageFileUsage.AllocatedBaseSize -ne 0 )
 }
 Function Get-SecureBootStatus {
-    If ( (Confirm-SecureBootUEFI) -eq $true ) { $script:Tests.SecureBootEnabled.TestPassed = $true }
-    Else { $script:Tests.SecureBootEnabled.TestPassed = $false }
+    Try {
+    	$secureBoot = Confirm-SecureBootUEFI
+     	If ( $secureBoot -eq $true) { $script:Tests.SecureBootEnabled.TestPassed = $true }
+    }
+      Catch { 
+    	  If ( $_.Exception.Message -like "*Cmdlet not supported on this platform:*" ) {
+       		$script:Tests.SecureBootEnabled.SecureBootNotSupported = $true
+	 	$script:Tests.SecureBootEnabled.TestPassed = $false
+          }
+      }
 }
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
