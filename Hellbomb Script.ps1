@@ -86,6 +86,7 @@ $script:Tests = @{
     "MatchingMemory" = @{
         'TestPassed' = $null
         'RAMInfo' = $null
+        'NotFound' = $null
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "You have mixed memory. This can cause performance and stability issues." -ForegroundColor Yellow
@@ -94,9 +95,14 @@ $script:Tests = @{
         Write-Host "$([Environment]::NewLine)RAM Information:" -ForegroundColor Cyan
 '@
         'AlwaysDisplayMsg' = @'
+        If ( $script:Tests.MatchingMemory.NotFound ) {
+            Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+	    Write-Host 'RAM Information not found.' -ForegroundColor Cyan
+        } Else {
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
         $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
         $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+        }
 '@
     }
     "DomainTest" = @{
@@ -565,7 +571,9 @@ Function Get-MemoryPartNumber{
     $skipDimm = $false
 
     # Iterate through each line
-    foreach ($line in $script:HardwareInfoText) {
+    For ( $i = 0; $i -lt $script:HardwareInfoText.Count; $i++ ) {
+        $line = $script:HardwareInfoText[$i]
+        $nextLine = if ($i + 1 -lt $script:HardwareInfoText.Count) { $script:HardwareInfoText[$i + 1] } else { $null }
         If ($line -match "^DIMM #\s+(\d+)") {
             # Save the current DIMM data if it exists
             If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
@@ -585,9 +593,11 @@ Function Get-MemoryPartNumber{
             # Skip processing this DIMM if "SPD Registers" is the first line after "DIMM #"
             $skipDimm = $true
         } ElseIf (-not $skipDimm) {
-            If ($line -match "^\s+Size\s+(.+)") {
+            # Order of match checking matters here because it only caches the last match for $Matches
+            If ($nextLine -and $nextLine -match 'Max bandwidth' -and $line -match "^\s+Size\s+(.+)" ) {
                 $currentDimm["Size"] = $Matches[1]
-            } ElseIf ($line -match "^\s+Part number\s+(.+)") {
+            # Order of match  checking matters here because it only caches the last match for $Matches
+            } ElseIf ( $nextLine -and $nextLine -match 'Nominal Voltage' -and $line -match "^\s+Part number\s+(.+)" ) {
                 $currentDimm['Part Number'] = $Matches[1]
             }
         }
@@ -600,13 +610,19 @@ Function Get-MemoryPartNumber{
             PartNumber = $currentDimm['Part Number']
         }
     }
-    $script:Tests.MatchingMemory.RAMInfo = $dimmData
-    If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
-     ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
-       $script:Tests.MatchingMemory.TestPassed = $true
-    } Else {
+    If ( $dimmData ) {
+        $script:Tests.MatchingMemory.RAMInfo = $dimmData
+        If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
+            ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
+            $script:Tests.MatchingMemory.TestPassed = $true
+        } Else {
         $script:Tests.MatchingMemory.TestPassed = $false
+        }
     }
+    Else { 
+    	$script:Tests.MatchingMemory.NotFound = $true
+     	$script:Tests.MatchingMemory.TestPassed = $true
+     }
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
