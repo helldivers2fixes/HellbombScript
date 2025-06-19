@@ -159,10 +159,10 @@ $script:Tests = @{
     'TestPassed' = $null
     'SecureBootNotSupported' = $null
     'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     If ( $script:Tests.SecureBootEnabled.SecureBootNotSupported -eq $true ) {
     	Write-Host 'Secure Boot is not supported on this platform. If you experience constant GameGuard errors, ensure that no unverified drivers are loaded at boot.'
-    } Else {
-    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    }
     Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
     }
 '@
