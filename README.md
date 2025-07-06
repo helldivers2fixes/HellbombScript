@@ -61,5 +61,5 @@ Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 Selecting Help (?) from the menu in PowerShell 7:
 ![image](https://github.com/user-attachments/assets/e664df63-d848-4d31-9b34-be8aa05bd13f)
 
-## Special Thanks to Franck at CPU-Z for allowing me to use CPU-Z asa dependency in this program.
+## Special Thanks to Franck at CPU-Z for allowing me to use CPU-Z as a dependency in this program.
 <img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" height=200>
