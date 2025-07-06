@@ -838,21 +838,20 @@ Function Test-Programs {
     # Avast Web Shield checks
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
-
-    Try {
-    $value = Get-ItemProperty -Path $regPath -Name $regName
-    If ($value.$regName -eq 1)
-        {
-            Write-Host "$([Environment]::NewLine)⚠️ Avast Webshield is enabled!" -ForegroundColor Yellow
-            Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
-            Write-Host 'https://microsoft.com ' -NoNewline
-            Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
-            Write-Host 'More information can be found here: https://discord.com/channels/1102970375731691612/1218153537914273802/1273154218022408252'
+   
+    If (Test-Path $regPath) {
+        $regProps = Get-ItemProperty -Path $regPath
+        If ($regProps.PSObject.Properties.Name -contains $regName) {
+            If ($regProps.$regName -eq 1) {
+                Write-Host "$([Environment]::NewLine)⚠️ Avast WebShield is enabled!" -ForegroundColor Yellow
+                Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
+                Write-Host 'https://microsoft.com ' -NoNewline
+                Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
+                Write-Host 'More information can be found here: https://discord.com/channels/1102970375731691612/1218153537914273802/1273154218022408252'
+            }
         }
     }
-    Catch { # Value does not exist
-    }
-    
+
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
         ForEach ($installedApp in $script:InstalledProgramsList) {
