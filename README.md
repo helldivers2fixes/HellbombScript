@@ -40,13 +40,16 @@ Copy and paste the script manually per instructions below.
  2. Middle/Ctrl + click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1) so that these instructions stay open
  3. **Copy** entire script by clicking the copy button in the top right by the script
     
-       <img src = "https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" height=50>
+       <img src="https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" width="300">
        
  4. **Paste** into Terminal (Admin) or Windows PowerShell (Admin). Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
  5. Acknowledge the warning prompt and click **Paste Anyway**
  6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)         
  7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
  8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+
+## This program uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
+<img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="200">
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
 Main Menu in EXE
@@ -61,5 +64,4 @@ Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 Selecting Help (?) from the menu in PowerShell 7:
 ![image](https://github.com/user-attachments/assets/e664df63-d848-4d31-9b34-be8aa05bd13f)
 
-## Special Thanks to Franck at CPU-Z for allowing me to use CPU-Z as a dependency in this program.
-<img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" height=200>
+
