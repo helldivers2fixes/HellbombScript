@@ -8,7 +8,7 @@ $newWindowSize.Height = 50   # Adjust height as needed
 $psWindow.WindowSize = $newWindowSize
 # Hellbomb Script
 # Requires -RunAsAdministrator
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 Set-StrictMode -Version Latest
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
