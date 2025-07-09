@@ -35,7 +35,7 @@ Then you can work through the things below if you have specific issues.
 
 ## Copy and Paste using Terminal Console (Semi-Automated)
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
- 2. Copy and paste the below line into Terminal/PowerShell and press ``Enter``
+ 2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
     ```
     Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
