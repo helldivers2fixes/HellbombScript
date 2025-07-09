@@ -33,6 +33,16 @@ Then you can work through the things below if you have specific issues.
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 
+## Copy and Paste using Terminal Console (Semi-Automated)
+ 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
+ 2. Copy and paste the below line into Terminal/PowerShell and press ``Enter``
+    ```
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
+    ```
+    💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
+    If you want to verify, paste the URL into the browser and it will reveal the raw script text
+     This  method has not been tested by the author, so you _may_ encounter weird errors.
+
 ## Copy and Paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
