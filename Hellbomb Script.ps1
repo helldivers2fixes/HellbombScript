@@ -590,7 +590,8 @@ Function Get-MemorySpeed {
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
     If ($match -and $match.Line -match $freqpattern) {     
     	$RAMFrequency = [int]$Matches[0]
-        Write-Host "$([Environment]::NewLine)RAM is currently running at " -NoNewLine -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+	Write-Host 'RAM is currently running at ' -NoNewLine -ForegroundColor Cyan
         Write-Host ([string]::Concat(($RAMFrequency * 2), ' MHz')) -ForegroundColor White
     } Else {
     	Write-Host "$([Environment]::NewLine) RAM Info not found." -ForegroundColor Yellow
@@ -1777,8 +1778,26 @@ Function Menu {
     }
 }
 Function Show-TestResults {
-    $script:Tests.GetEnumerator() | ForEach-Object {
-    $test = $_.Value
+    $keyDisplayOrder = @(
+    "GameResolution",
+    "RenderResolution",
+    "AVX2",
+    "IntelMicrocodeCheck",
+    "LongSysUptime",
+    "SystemClockAccurate",
+    "PendingReboot",
+    "PageFileEnabled",
+    "BadPrinter",
+    "MultiChannelMemory",
+    "MatchingMemory",
+    "FirewallRules",
+    "DomainTest",
+    "GameMods",
+    "SecureBootEnabled",
+    "VSyncDisabled"
+    )
+    ForEach ( $key in $keyDisplayOrder ) {
+    $test = $script:Tests[$key]
     If ($test.TestPassed -ne $true) {
         Invoke-Expression $test.TestFailMsg
     }
@@ -1791,7 +1810,7 @@ Function Show-TestResults {
     If ( $test.ContainsKey('AlwaysDisplayMsg') ) {
         Invoke-Expression $test.AlwaysDisplayMsg
     }
-}
+    }
     # After showing, reset URL tests
     ForEach ($domain in $script:Tests.DomainTest.DomainList) {
         $domain.PassedTest = $null
