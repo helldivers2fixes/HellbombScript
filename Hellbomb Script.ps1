@@ -584,15 +584,16 @@ Function Test-AVX2 {
 }
 Function Get-MemorySpeed {
     # RAM Speed
-    $pattern = '^Memory Frequency.*$'
+    $linepattern = '^Memory Frequency.*$'
+    $freqpattern = '\d{4}'
     # Find and display lines matching the pattern
-    $match = $script:HardwareInfoText | Select-String -Pattern $pattern
-    $null = If ($match) {
-        $pattern = '\d\d\d\d.\d'
-        $match -match $pattern
-        $RAMFrequency = [int]$Matches[0]
+    $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
+    If ($match -and $match.Line -match $freqpattern) {     
+    	$RAMFrequency = [int]$Matches[0]
         Write-Host "$([Environment]::NewLine)RAM is currently running at " -NoNewLine -ForegroundColor Cyan
         Write-Host ([string]::Concat(($RAMFrequency * 2), ' MHz')) -ForegroundColor White
+    } Else {
+    	Write-Host "$([Environment]::NewLine) RAM Info not found." -ForegroundColor Yellow
     }
 }
 Function Get-MemoryPartNumber{
