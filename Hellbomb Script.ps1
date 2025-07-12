@@ -659,7 +659,7 @@ Function Get-MemoryPartNumber {
                 $sizeFound   = $null
                 If ($i + 1 -lt $lines.Count) {
                     $designationLine = $lines[$i + 1]
-                    If ($designationLine -Match "^designation\s+") {
+                    If ($designationLine -Match "designation\s+") {
                         $designation = ($designationLine -Split "\s{2,}" | Select-Object -Last 1).Trim()
                     }
                 }
