@@ -105,6 +105,18 @@ $script:Tests = @{
         }
 '@
     }
+    "GetMemorySpeed" = @{
+        'TestPassed' = $null
+        'RAMSpeed' = $null
+        'TestFailMsg' = @'
+        Write-Host "$([Environment]::NewLine) RAM Info not found." -ForegroundColor Yellow
+'@
+    'TestPassedMsg' = @'
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+	Write-Host 'RAM is currently running at ' -NoNewLine -ForegroundColor Cyan
+    Write-Host ([string]::Concat(($script:Tests.GetMemorySpeed.RAMSpeed * 2), ' MHz')) -ForegroundColor White
+'@
+    }
     "DomainTest" = @{
         'TestPassed' = $null
         'DomainList' = @(
@@ -589,12 +601,10 @@ Function Get-MemorySpeed {
     # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
     If ($match -and $match.Line -match $freqpattern) {     
-    	$RAMFrequency = [int]$Matches[0]
-        Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
-	Write-Host 'RAM is currently running at ' -NoNewLine -ForegroundColor Cyan
-        Write-Host ([string]::Concat(($RAMFrequency * 2), ' MHz')) -ForegroundColor White
+    	$script:Tests.GetMemorySpeed.RAMSpeed = [int]$Matches[0]
+        $script:Tests.GetMemorySpeed.TestPassed = $true
     } Else {
-    	Write-Host "$([Environment]::NewLine) RAM Info not found." -ForegroundColor Yellow
+    	$script:Tests.GetMemorySpeed.TestPassed = $false
     }
 }
 Function Get-MemoryPartNumber{
@@ -1790,6 +1800,7 @@ Function Show-TestResults {
     "PendingReboot",
     "PageFileEnabled",
     "BadPrinter",
+    "GetMemorySpeed",
     "MultiChannelMemory",
     "MatchingMemory",
     "FirewallRules",
