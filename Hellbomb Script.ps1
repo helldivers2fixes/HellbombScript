@@ -650,10 +650,11 @@ Function Get-MemoryPartNumber {
         }
     }
     # Parse DMI-based Memory Devices if it found no normal memory devices
+    $lines = $script:HardwareInfoText
     If ( $dimmData.count -eq 0 ) {
         For ($i = 0; $i -lt $script:HardwareInfoText.Count; $i++) {
-            $lines = $script:HardwareInfoText
             If ($lines[$i] -Match "^DMI Memory Device") {
+                Write-Host 'Match!'
                 $designation = $null
                 $typeFound   = $false
                 $sizeFound   = $null
@@ -665,19 +666,20 @@ Function Get-MemoryPartNumber {
                 }
                 For ($j = $i + 1; $j -lt $lines.Count; $j++) {
                     If ($lines[$j] -Match "^DMI Memory Device") { Break }
-                    If ($lines[$j] -Match "type\s(DDR4|DDR5)") {
+                    If ($lines[$j] -Match "type\s+(DDR4|DDR5)") {
                         $typeFound = $True
                     }
-                    If ($lines[$j] -Match "size\s" -and $typeFound) {
-                        $sizeFound = ($lines[$j] -split "\s{1,}" | Select-Object -Last 2).Trim()
-                        If ($sizeFound -and $sizeFound -ne "NO DIMM") {
+                    If ( $lines[$j] -Match "size\s" -and $typeFound) {
+                        $sizeFound = (($lines[$j] -split "\s{1,}" | Select-Object -Last 2) -join ' ')
+                        If ( $sizeFound -and $sizeFound -ne "NO DIMM" ) {
                             $dimmData += [PSCustomObject]@{
                                 DIMM       = $designation
                                 Size       = $sizeFound
-                                PartNumber = $Null
+                                PartNumber = $null
                             }
+                            $typeFound = $false
+                            Break
                         }
-                        Break
                     }
                 }
             }
