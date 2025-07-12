@@ -669,7 +669,7 @@ Function Get-MemoryPartNumber {
                         $typeFound = $True
                     }
                     If ($lines[$j] -Match "size\s" -and $typeFound) {
-                        $sizeFound = ($lines[$j] -split "\s{1,}" | Select-Object -Last 1).Trim()
+                        $sizeFound = ($lines[$j] -split "\s{1,}" | Select-Object -Last 2).Trim()
                         If ($sizeFound -and $sizeFound -ne "NO DIMM") {
                             $dimmData += [PSCustomObject]@{
                                 DIMM       = $designation
