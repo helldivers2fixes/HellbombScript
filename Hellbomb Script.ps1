@@ -1781,8 +1781,10 @@ Function Show-TestResults {
     $keyDisplayOrder = @(
     "GameResolution",
     "RenderResolution",
-    "AVX2",
+    "SecureBootEnabled",
+    "VSyncDisabled"
     "IntelMicrocodeCheck",
+    "AVX2",
     "LongSysUptime",
     "SystemClockAccurate",
     "PendingReboot",
@@ -1792,9 +1794,7 @@ Function Show-TestResults {
     "MatchingMemory",
     "FirewallRules",
     "DomainTest",
-    "GameMods",
-    "SecureBootEnabled",
-    "VSyncDisabled"
+    "GameMods"
     )
     ForEach ( $key in $keyDisplayOrder ) {
     $test = $script:Tests[$key]
