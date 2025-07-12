@@ -607,66 +607,100 @@ Function Get-MemorySpeed {
     	$script:Tests.GetMemorySpeed.TestPassed = $false
     }
 }
-Function Get-MemoryPartNumber{
+Function Get-MemoryPartNumber {
     # Load DIMM Data
     $dimmData = @()
-    # Temporary storage for the current DIMM data
     $currentDimm = @{}
-    $skipDimm = $false
+    $skipDimm = $False
 
     # Iterate through each line
-    For ( $i = 0; $i -lt $script:HardwareInfoText.Count; $i++ ) {
+    For ($i = 0; $i -Lt $script:HardwareInfoText.Count; $i++) {
         $line = $script:HardwareInfoText[$i]
-        $nextLine = if ($i + 1 -lt $script:HardwareInfoText.Count) { $script:HardwareInfoText[$i + 1] } else { $null }
-        If ($line -match "^DIMM #\s+(\d+)") {
-            # Save the current DIMM data if it exists
-            If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+        $nextLine = If ($i + 1 -Lt $script:HardwareInfoText.Count) { $script:HardwareInfoText[$i + 1] } Else { $Null }
+
+        If ($line -Match "^DIMM #\s+(\d+)") {
+            If ($currentDimm.Count -Gt 0 -And -Not $skipDimm) {
                 $dimmData += [PSCustomObject]@{
-                    DIMM = $currentDimm['DIMM']
-                    Size = $currentDimm['Size']
+                    DIMM       = $currentDimm['DIMM']
+                    Size       = $currentDimm['Size']
                     PartNumber = $currentDimm['Part Number']
                 }
             }
-            # Reset for the new DIMM
             $currentDimm = @{}
-            $skipDimm = $false
-
-            # Add the DIMM number
+            $skipDimm = $False
             $currentDimm['DIMM'] = $Matches[1]
-        } ElseIf ($line -match "^\s*SPD Registers") {
-            # Skip processing this DIMM if "SPD Registers" is the first line after "DIMM #"
-            $skipDimm = $true
-        } ElseIf (-not $skipDimm) {
-            # Order of match checking matters here because it only caches the last match for $Matches
-            If ($nextLine -and $nextLine -match 'Max bandwidth' -and $line -match "^\s+Size\s+(.+)" ) {
-                $currentDimm["Size"] = $Matches[1]
-            # Order of match  checking matters here because it only caches the last match for $Matches
-            } ElseIf ( $nextLine -and $nextLine -match 'Nominal Voltage' -and $line -match "^\s+Part number\s+(.+)" ) {
+        }
+        ElseIf ($line -Match "^\s*SPD Registers") {
+            $skipDimm = $True
+        }
+        ElseIf (-Not $skipDimm) {
+            If ($nextLine -And $nextLine -Match 'Max bandwidth' -And $line -Match "^\s+Size\s+(.+)") {
+                $currentDimm['Size'] = $Matches[1]
+            }
+            ElseIf ($nextLine -And $nextLine -Match 'Nominal Voltage' -And $line -Match "^\s+Part number\s+(.+)") {
                 $currentDimm['Part Number'] = $Matches[1]
             }
         }
     }
-    # Save the last DIMM data if it wasn't skipped
-    If ($currentDimm.Count -gt 0 -and -not $skipDimm) {
+    If ($currentDimm.Count -Gt 0 -And -Not $skipDimm) {
         $dimmData += [PSCustomObject]@{
-            DIMM = $currentDimm['DIMM']
-            Size = $currentDimm['Size']
+            DIMM       = $currentDimm['DIMM']
+            Size       = $currentDimm['Size']
             PartNumber = $currentDimm['Part Number']
         }
     }
-    If ( $dimmData ) {
-        $script:Tests.MatchingMemory.RAMInfo = $dimmData
-        If ( ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -eq 1 -and
-            ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -eq 1 ) {
-            $script:Tests.MatchingMemory.TestPassed = $true
-        } Else {
-        $script:Tests.MatchingMemory.TestPassed = $false
+    # Parse DMI-based Memory Devices if it found no normal memory devices
+    If ( $dimmData.count -eq 0 ) {
+        For ($i = 0; $i -lt $script:HardwareInfoText.Count; $i++) {
+            $lines = $script:HardwareInfoText
+            If ($lines[$i] -Match "^DMI Memory Device") {
+                $designation = $null
+                $typeFound   = $false
+                $sizeFound   = $null
+                If ($i + 1 -lt $lines.Count) {
+                    $designationLine = $lines[$i + 1]
+                    If ($designationLine -Match "^designation\s+") {
+                        $designation = ($designationLine -Split "\s+{2,}" | Select-Object -Last 1).Trim()
+                    }
+                }
+                For ($j = $i + 1; $j -lt $lines.Count; $j++) {
+                    If ($lines[$j] -Match "^DMI Memory Device") { Break }
+                    If ($lines[$j] -Match "type\s+(DDR4|DDR5)") {
+                        $typeFound = $True
+                    }
+                    If ($lines[$j] -Match "size\s+" -and $typeFound) {
+                        $sizeFound = ($lines[$j] -split "\s+{2,}" | Select-Object -Last 1).Trim()
+                        If ($sizeFound -and $sizeFound -ne "NO DIMM") {
+                            $dimmData += [PSCustomObject]@{
+                                DIMM       = $designation
+                                Size       = $sizeFound
+                                PartNumber = $Null
+                            }
+                        }
+                        Break
+                    }
+                }
+            }
         }
     }
-    Else { 
-    	$script:Tests.MatchingMemory.NotFound = $true
-     	$script:Tests.MatchingMemory.TestPassed = $true
-     }
+
+    # Validate results
+    If ($dimmData) {
+        $script:Tests.MatchingMemory.RAMInfo = $dimmData
+        If (
+            ($dimmData.PartNumber | Select-Object -Unique | Measure-Object).Count -Eq 1 -And
+            ($dimmData.Size | Select-Object -Unique | Measure-Object).Count -Eq 1
+        ) {
+            $script:Tests.MatchingMemory.TestPassed = $True
+        }
+        Else {
+            $script:Tests.MatchingMemory.TestPassed = $False
+        }
+    }
+    Else {
+        $script:Tests.MatchingMemory.NotFound = $True
+        $script:Tests.MatchingMemory.TestPassed = $True
+    }
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
