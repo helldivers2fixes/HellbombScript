@@ -28,11 +28,12 @@ Then you can work through the things below if you have specific issues.
 | Crashing          | Option ``H`` and **read carefully & take any recommended fixes** then Option ``C`` then Option ``S``         |
 | Game Won't Start  | Option ``H`` and address any issues. Then option ``C`` then option ``G`` then try option ``U`` Restart, then option ``I``                            |
 | Game Guard 114 Error  | Option ``H`` and address any issues. Then option ``U`` Restart, then option ``I``                            |
-| Game launches, but version mismatch errors even though game seems up-to-date | Option ``S``. Then verify the game & it should update.
+| Game launches, but version mismatch errors even though game seems up-to-date | Option ``S``. Then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB) & it should update.
 | **Abnormally** High CPU Usage  | Option ``G``                            |
 | Memory Leaks      | Option ``S`` Note: If you have VRAM leaks instead, use [DDU](https://www.guru3d.com/download/display-driver-uninstaller-download/)                                                   |
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
+| WinLiscense Error An error has occurred while loading imports. Wrong DLL present. | Option ``S`` then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB)    |
 
 ## Copy and Paste using Terminal Console (Semi-Automated)
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
