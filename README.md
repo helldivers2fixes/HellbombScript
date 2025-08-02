@@ -11,7 +11,7 @@
 
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
 
-Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript/tree/main#copy-and-paste-using-terminal-console-manual-method) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
+Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
 
 2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
 
