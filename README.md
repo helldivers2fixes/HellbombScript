@@ -42,7 +42,7 @@ Then you can work through the things below if you have specific issues.
     Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
     💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
-    If you want to verify, paste the URL into the browser and it will reveal the raw script text
+    If you want to verify, paste the URL into the browser and it will reveal the raw script text.
      This  method has not been tested by the author, so you _may_ encounter weird errors.
 
 ## Copy and Paste using Terminal Console (Manual Method)
