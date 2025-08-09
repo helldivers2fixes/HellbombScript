@@ -4,13 +4,13 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/22a537dc88cfa45d192c49f5b3a
 
 Not sure you trust the EXE? You can run
 ```powershell
-"Hellbomb Script.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
+"Hellbomb Script v35.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
 **Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10)
 
-The ``Hellbomb Script.ps1`` SHA265 hash should match the VirusTotal file hash of ``c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10``.
+The ``Hellbomb Script v35.ps1`` SHA265 hash should match the VirusTotal file hash of ``c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10``.
 
 **Script Version** [Hybrid-Analysis Link](https://www.virustotal.com/gui/file/c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10)
 
