@@ -1357,11 +1357,11 @@ Function Test-DoubleNAT {
     Pause "$([Environment]::NewLine)Press any key to continue..."
 }
 Function Switch-BTAGService {
-    If (-not ([Security.Principal.WindowsIdentity]::GetCurrent().Groups -contains 'S-1-5-32-544')) {
+    If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host 'This command requires Administrator privileges.',
     "$([Environment]::NewLine)To run PowerShell with admin privileges:",
-    "$([Environment]::NewLine)Right-click on PowerShell and click Run as Administrator",
-    "$([Environment]::NewLine)Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
+    "$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
+    "$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
     } Else {
         If ((Get-Service -Name BTAGService).Status -eq 'Running') {
             Set-Service -Name BTAGService -StartupType Disabled
@@ -1967,3 +1967,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
