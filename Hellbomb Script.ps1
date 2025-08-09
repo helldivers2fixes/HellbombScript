@@ -699,8 +699,14 @@ Function Get-MemoryPartNumber {
         }
     }
     Else {
-        $script:Tests.MatchingMemory.NotFound = $True
+        # Print RAM info only if all DIMMs have a Size
+		If ($dimmData.Count -gt 0 -and ($dimmData | Where-Object { -not $_.Size }).Count -eq 0) {
+    		$script:Tests.MatchingMemory.NotFound = $False
+		}
+  		Else {
+		$script:Tests.MatchingMemory.NotFound = $True
         $script:Tests.MatchingMemory.TestPassed = $True
+		}
     }
 }
 Function Get-HardwareInfo { 
@@ -764,7 +770,10 @@ Function Get-CPUZ {
         If ($entry) {
             # Extract the file manually using streams
             $targetPath = Join-Path -Path $extractTo -ChildPath $targetFile
-            $fileStream = [System.IO.File]::Create($targetPath)
+            If (Test-Path $targetPath) {
+    			Remove-Item $targetPath -Force
+			}
+			$fileStream = [System.IO.File]::Create($targetPath)
             $entryStream = $entry.Open()
             $entryStream.CopyTo($fileStream)
             $fileStream.Close()
