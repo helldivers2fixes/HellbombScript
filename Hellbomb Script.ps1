@@ -654,7 +654,6 @@ Function Get-MemoryPartNumber {
     If ( $dimmData.count -eq 0 ) {
         For ($i = 0; $i -lt $script:HardwareInfoText.Count; $i++) {
             If ($lines[$i] -Match "^DMI Memory Device") {
-                Write-Host 'Match!'
                 $designation = $null
                 $typeFound   = $false
                 $sizeFound   = $null
@@ -1947,3 +1946,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
