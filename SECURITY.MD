@@ -18,8 +18,14 @@ You can compare the File Hash to the Virus Total link to ensure that the Virus T
 
 1. Download [the latest release](https://github.com/helldivers2fixes/HellbombScript/releases/latest) by clicking on Source Code.zip. Drill down into the folders and extract Hellbomb Script.ps1
 2. In Terminal or PowerShell ``cd`` (Change to the directory) where the script is saved
-3. If you downloaded the .ps1 file to your Downloads folder, run ``cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path)``
-4. Run ``Get-FileHash 'Hellbomb Script.ps1' -eq c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10``
+3. If you downloaded the .ps1 file to your Downloads folder, run
+```powershell
+cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path)
+```
+4. Run
+```powershell
+Get-FileHash 'Hellbomb Script.ps1' -eq c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10
+```
 5. The statement should return/evaluate to ``True``
 
 No security software should detect the script as malicious.
