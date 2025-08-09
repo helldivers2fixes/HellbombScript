@@ -1694,9 +1694,21 @@ Function Restart-Resume {
 }
 
 Function Menu {
-    $Title = "-------------------------------------------------------------------------------------------------------
-    💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.3.1.1 Zoson Edition
--------------------------------------------------------------------------------------------------------"
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$AdminBanner = If (-not $IsAdmin) {
+    @"
+⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
+>>> Some tests may fail or produce inaccurate results. <<<
+"@
+} Else {
+    ""
+}
+$Title = @"
+-------------------------------------------------------------------------------------------------------
+💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.3.1.1 Zoson Edition
+-------------------------------------------------------------------------------------------------------
+$AdminBanner
+"@
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new("🔍 &HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
@@ -1946,5 +1958,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
-
