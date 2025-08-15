@@ -1257,7 +1257,7 @@ Function Test-Wifi {
 Function Test-BTAGService {
     If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
-        Write-Host "$([Environment]::NewLine)warning Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine) !Warning! Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
         Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
         Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
         Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
@@ -1272,7 +1272,7 @@ Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
         ProcessName = 'steam'
         ErrorMsg    = '
-    warning Steam is currently running. warning
+    !Warning! Steam is currently running. !Warning!
         Please close Steam first.
         '
     }
@@ -1346,7 +1346,7 @@ Function Test-DoubleNAT {
         }
     }
     If ($privateIPs.Count -gt 1) {
-        Write-Host 'warning Possible Double-NAT connection detected.' -ForegroundColor Yellow
+        Write-Host '!Warning! Possible Double-NAT connection detected.' -ForegroundColor Yellow
         Write-Host 'Private IPs detected are:'
         Write-Host $privateIPs -Separator "$([Environment]::NewLine)"
         Write-Host "$([Environment]::NewLine)If you're not sure what these results mean, these results are safe to share with others." -ForegroundColor Cyan
@@ -1706,7 +1706,7 @@ Function Menu {
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $AdminBanner = If (-not $IsAdmin) {
     @"
-warningwarningwarning WARNING: Script is NOT running with Administrator privileges! warningwarningwarning
+!!!! WARNING: Script is NOT running with Administrator privileges! !!!!
 >>> Some tests may fail or produce inaccurate results. <<<
 "@
 } Else {
