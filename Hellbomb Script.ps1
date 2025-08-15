@@ -361,7 +361,7 @@ Function Uninstall-VCRedist {
 
     ForEach ($programName in $redistributables) {
         $programlist = @($script:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
-        Write-Host "$([Environment]::NewLine)⚠️ Please restart the computer once this process completes." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)warning Please restart the computer once this process completes." -ForegroundColor Yellow
         If ($programlist.Count -gt 0) {
             ForEach ( $program in $programlist )
                 { Write-Host $program.QuietUninstallString -ForegroundColor Cyan
@@ -378,7 +378,7 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) ⚠️ Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) warning Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
     Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
@@ -404,7 +404,7 @@ Function Find-BlacklistedDrivers {
     ForEach ($device in $DeviceDatabase) {
         ForEach ($badDevice in $BadDeviceList) {
             If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
-                Write-Host ("⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
+                Write-Host ("warning " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
                 $FoundBlacklistedDevice = $true
                 Break # Exit the inner loop if a bad device is found
             }
@@ -423,11 +423,11 @@ Function Find-BlacklistedDrivers {
         ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
     If ( $MissingDriverPresentCounter -gt 0 ) {
-        Write-Host "$([Environment]::NewLine)⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)warningYou are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
     }
     If ( $MissingDriverDisconnectedCounter -gt 2 ) {    
-        Write-Host "$([Environment]::NewLine)ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine) It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
         Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
     }
     Return
@@ -899,7 +899,7 @@ Function Test-Programs {
         $regProps = Get-ItemProperty -Path $regPath
         If ($regProps.PSObject.Properties.Name -contains $regName) {
             If ($regProps.$regName -eq 1) {
-                Write-Host "$([Environment]::NewLine)⚠️ Avast WebShield is enabled!" -ForegroundColor Yellow
+                Write-Host "$([Environment]::NewLine)warning Avast WebShield is enabled!" -ForegroundColor Yellow
                 Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
                 Write-Host 'https://microsoft.com ' -NoNewline
                 Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
@@ -1257,7 +1257,7 @@ Function Test-Wifi {
 Function Test-BTAGService {
     If ((Get-Service -Name BTAGService).Status -eq 'Running')
     {
-        Write-Host "$([Environment]::NewLine)⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)warning Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
         Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
         Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
         Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
@@ -1272,7 +1272,7 @@ Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
         ProcessName = 'steam'
         ErrorMsg    = '
-    ⚠️ Steam is currently running. ⚠️
+    warning Steam is currently running. warning
         Please close Steam first.
         '
     }
@@ -1346,7 +1346,7 @@ Function Test-DoubleNAT {
         }
     }
     If ($privateIPs.Count -gt 1) {
-        Write-Host '⚠️ Possible Double-NAT connection detected.' -ForegroundColor Yellow
+        Write-Host 'warning Possible Double-NAT connection detected.' -ForegroundColor Yellow
         Write-Host 'Private IPs detected are:'
         Write-Host $privateIPs -Separator "$([Environment]::NewLine)"
         Write-Host "$([Environment]::NewLine)If you're not sure what these results mean, these results are safe to share with others." -ForegroundColor Cyan
@@ -1706,7 +1706,7 @@ Function Menu {
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $AdminBanner = If (-not $IsAdmin) {
     @"
-⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
+warningwarningwarning WARNING: Script is NOT running with Administrator privileges! warningwarningwarning
 >>> Some tests may fail or produce inaccurate results. <<<
 "@
 } Else {
@@ -1714,26 +1714,26 @@ $AdminBanner = If (-not $IsAdmin) {
 }
 $Title = @"
 -------------------------------------------------------------------------------------------------------
-💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.5
+ Hellbomb  Script for Troubleshooting Helldivers 2       ||      Version 3.5
 -------------------------------------------------------------------------------------------------------
 $AdminBanner
 "@
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new("🔍 &HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
-        [ChoiceDescription]::new("🧹 &Clear HD2 Settings (AppData)$([Environment]::NewLine)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new("🧹 Clear HD2 Stea&m Cloud$([Environment]::NewLine)", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
-        [ChoiceDescription]::new("🧹 Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
-        [ChoiceDescription]::new("🔁 Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
-        [ChoiceDescription]::new("🔁 Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
-        [ChoiceDescription]::new("🗑️ &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
-        [ChoiceDescription]::new("➕ &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
-        [ChoiceDescription]::new("🛠️ Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
-        [ChoiceDescription]::new("📺 Full-Screen &Optimizations (FSO) Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
-        [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test$([Environment]::NewLine)", 'Tests the connection to the default gateway.'),
+        [ChoiceDescription]::new("&HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
+        [ChoiceDescription]::new(" &Clear HD2 Settings (AppData)$([Environment]::NewLine)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
+        [ChoiceDescription]::new(" Clear HD2 Stea&m Cloud$([Environment]::NewLine)", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
+        [ChoiceDescription]::new(" Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
+        [ChoiceDescription]::new(" Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
+        [ChoiceDescription]::new(" Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new(" &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
+        [ChoiceDescription]::new(" &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
+        [ChoiceDescription]::new(" Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
+        [ChoiceDescription]::new("Full-Screen &Optimizations (FSO) Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
+        [ChoiceDescription]::new(" &Wi-Fi LAN Test$([Environment]::NewLine)", 'Tests the connection to the default gateway.'),
         [ChoiceDescription]::new("Double-NAT &Test$([Environment]::NewLine)", 'Tests network for Double NAT.'),
-        [ChoiceDescription]::new("❌ &Quick Mod Removal$([Environment]::NewLine)", 'Will remove ALL mods from the \data\ folder.'),
-        [ChoiceDescription]::new("🔈 Toggle &Bluetooth Telephony Service$([Environment]::NewLine)$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
+        [ChoiceDescription]::new(" &Quick Mod Removal$([Environment]::NewLine)", 'Will remove ALL mods from the \data\ folder.'),
+        [ChoiceDescription]::new(" Toggle &Bluetooth Telephony Service$([Environment]::NewLine)$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
         [ChoiceDescription]::new('E&xit', 'Exits the script.')
     )
     $DefaultChoice = 0
@@ -1957,7 +1957,7 @@ Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
     ErrorMsg    = '
-    ⚠️ The Helldivers 2 process is currently running. ⚠️
+    warning The Helldivers 2 process is currently running. warning
          Please close the game. If the game appears closed, restart the system, and re-run this script.
     '
 }
