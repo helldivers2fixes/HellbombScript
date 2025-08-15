@@ -18,7 +18,7 @@ $script:Tests = @{
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
-        Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)        !Warning!: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
         Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
@@ -361,7 +361,7 @@ Function Uninstall-VCRedist {
 
     ForEach ($programName in $redistributables) {
         $programlist = @($script:InstalledProgramsList | Where-Object { $_.DisplayName -like "$programName*" })
-        Write-Host "$([Environment]::NewLine)warning Please restart the computer once this process completes." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)!Warning! Please restart the computer once this process completes." -ForegroundColor Yellow
         If ($programlist.Count -gt 0) {
             ForEach ( $program in $programlist )
                 { Write-Host $program.QuietUninstallString -ForegroundColor Cyan
@@ -378,7 +378,7 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) warning Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) !Warning! Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
     Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
@@ -404,7 +404,7 @@ Function Find-BlacklistedDrivers {
     ForEach ($device in $DeviceDatabase) {
         ForEach ($badDevice in $BadDeviceList) {
             If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
-                Write-Host ("warning " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
+                Write-Host ("!Warning! " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
                 $FoundBlacklistedDevice = $true
                 Break # Exit the inner loop if a bad device is found
             }
@@ -423,7 +423,7 @@ Function Find-BlacklistedDrivers {
         ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
     If ( $MissingDriverPresentCounter -gt 0 ) {
-        Write-Host "$([Environment]::NewLine)warningYou are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
+        Write-Host "$([Environment]::NewLine)!Warning! You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
     }
     If ( $MissingDriverDisconnectedCounter -gt 2 ) {    
@@ -899,7 +899,7 @@ Function Test-Programs {
         $regProps = Get-ItemProperty -Path $regPath
         If ($regProps.PSObject.Properties.Name -contains $regName) {
             If ($regProps.$regName -eq 1) {
-                Write-Host "$([Environment]::NewLine)warning Avast WebShield is enabled!" -ForegroundColor Yellow
+                Write-Host "$([Environment]::NewLine) !Warning! Avast WebShield is enabled!" -ForegroundColor Yellow
                 Write-Host 'Ensure an exception is added for ' -ForegroundColor Cyan -NoNewline
                 Write-Host 'https://microsoft.com ' -NoNewline
                 Write-Host 'to prevent HTTPS CRL access issues.' -ForegroundColor Cyan
@@ -1957,7 +1957,7 @@ Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
     ErrorMsg    = '
-    warning The Helldivers 2 process is currently running. warning
+    !Warning! The Helldivers 2 process is currently running. !Warning!
          Please close the game. If the game appears closed, restart the system, and re-run this script.
     '
 }
