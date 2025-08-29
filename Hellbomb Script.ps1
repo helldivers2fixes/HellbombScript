@@ -13,7 +13,7 @@ Set-StrictMode -Version Latest
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
-        'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
+        'AffectedModels' = @("13900", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
         'LatestMicrocode' = @("0x12F", "0x3A")
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
@@ -2003,4 +2003,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
