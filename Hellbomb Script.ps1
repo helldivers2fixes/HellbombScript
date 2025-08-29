@@ -1599,7 +1599,7 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
-        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!$([Environment]::NewLine)" -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
@@ -2003,6 +2003,7 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
 
