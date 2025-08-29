@@ -4,7 +4,7 @@ $pshost = Get-Host
 $psWindow = $pshost.UI.RawUI
 # Set the window size (height and width)
 $newWindowSize = $psWindow.WindowSize
-$newWindowSize.Height = 50   # Adjust height as needed
+$newWindowSize.Height = 60   # Adjust height as needed
 $psWindow.WindowSize = $newWindowSize
 # Hellbomb Script
 # Requires -RunAsAdministrator
@@ -1995,4 +1995,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
