@@ -1,18 +1,18 @@
 ## Security Info:
 
-EXE [VirusTotal](https://www.virustotal.com/gui/file/22a537dc88cfa45d192c49f5b3a08fd98accd90809622c51a0c657e233efb2e1) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/22a537dc88cfa45d192c49f5b3a08fd98accd90809622c51a0c657e233efb2e1) link.
+EXE [VirusTotal](https://www.virustotal.com/gui/file/bddb0b14f4052f0cb6145ca0e0b7c387a740ffc08f1142eeee890734d09997e6) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/bddb0b14f4052f0cb6145ca0e0b7c387a740ffc08f1142eeee890734d09997e6) link.
 
 Not sure you trust the EXE? You can run
 ```powershell
-"Hellbomb Script v35.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
+"Hellbomb Script v36.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
 **Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10)
 
-The ``Hellbomb Script v35.ps1`` SHA265 hash should match the VirusTotal file hash of ``c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10``.
+The ``Hellbomb Script v36.ps1`` SHA265 hash should match the VirusTotal file hash of ``c6f0145e960f5c35983db4b7e5ce9c3691e39c95a607789b6c05861f3c0f4802``.
 
-**Script Version** [Hybrid-Analysis Link](https://www.virustotal.com/gui/file/c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10)
+**Script Version** [Hybrid-Analysis Link](https://www.virustotal.com/gui/file/c6f0145e960f5c35983db4b7e5ce9c3691e39c95a607789b6c05861f3c0f4802)
 
 You can compare the File Hash to the Virus Total link to ensure that the Virus Total results match the file you're attempting to run.
 
@@ -24,7 +24,7 @@ cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self
 ```
 4. Run
 ```powershell
-Get-FileHash 'Hellbomb Script v35.ps1' -eq c1dc4ee8a79f09a1c58cb490001fe1e27cacf376f31e1fe79982bd1bcd4f4a10
+Get-FileHash 'Hellbomb Script v36.ps1' -eq c6f0145e960f5c35983db4b7e5ce9c3691e39c95a607789b6c05861f3c0f4802
 ```
 5. The statement should return/evaluate to ``True``
 
