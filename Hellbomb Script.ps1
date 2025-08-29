@@ -236,7 +236,7 @@ Function Show-Variables {
         Clear-Host
         Write-Host "AppID: $($script:AppID) is located in directory:" -ForegroundColor Green
         Write-Host $script:AppInstallPath -ForegroundColor White
-        Write-Host "Current build of AppID $AppID is: $script:BuildID" -ForegroundColor Cyan
+        Write-Host "Current build of AppID $($script:AppID) is: $script:BuildID" -ForegroundColor Cyan
     }
     Else {
         Write-Host 'Error. AppID was not found.' -ForegroundColor Red
@@ -1506,7 +1506,7 @@ Function Reset-HD2SteamCloud {
         Write-Host "Steam is not running... continuing"
     }
   
-    $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath $AppID
+    $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath $script:AppID
 
     # Define the path to the sharedconfig.vdf file
     $sharedConfigPath = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
