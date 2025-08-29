@@ -234,7 +234,7 @@ $script:Tests = @{
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
-        Write-Host "AppID: $AppID is located in directory:" -ForegroundColor Green
+        Write-Host "AppID: $($script:AppID) is located in directory:" -ForegroundColor Green
         Write-Host $script:AppInstallPath -ForegroundColor White
         Write-Host "Current build of AppID $AppID is: $script:BuildID" -ForegroundColor Cyan
     }
@@ -2003,6 +2003,7 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
 
