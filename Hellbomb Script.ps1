@@ -476,7 +476,6 @@ Function Find-CPUInfo {
                  }
             }
         }
-    }
     $script:Tests.IntelMicrocodeCheck.TestPassed = $true
     Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
     Return
@@ -2009,3 +2008,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
