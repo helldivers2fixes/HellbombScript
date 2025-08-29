@@ -492,7 +492,7 @@ Function Show-ISPInfo {
 	}
 	Catch {
 	    Write-Host "Error: Could not retrieve ISP."
-	    exit
+	    Return
 	}
 	
 	# Check if the query was successful and has a status of 'success'
@@ -2003,3 +2003,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
