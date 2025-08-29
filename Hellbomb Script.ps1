@@ -1227,7 +1227,7 @@ Function Test-Wifi {
     Write-Host "$([Environment]::NewLine)Testing the connection to the default gateway..." -ForegroundColor Cyan
         $NetworkType = (Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType
 		$NetworkType = $NetworkType -replace '.*?(802\.\d+).*','$1'
-		If ((Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType -ne '802.11') {
+		If ($NetworkType -ne '802.11') {
             Write-Host "$([Environment]::NewLine)This is not a wireless connection. Testing anyway..." -ForegroundColor Yellow
         }
     $ipAddress = ($mainAdapter.IPv4DefaultGateway).NextHop
@@ -2013,5 +2013,6 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
