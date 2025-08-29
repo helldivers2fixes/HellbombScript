@@ -496,6 +496,27 @@ Function Show-MotherboardInfo {
     )
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
 }
+Function Show-ISPInfo {
+	Try {
+	    $ipInfo = Invoke-RestMethod -Uri "http://ip-api.com/json" -ErrorAction Stop
+	}
+	Catch {
+	    Write-Host "Error: Could not retrieve ISP."
+	    exit
+	}
+	
+	# Check if the query was successful and has a status of 'success'
+	If ($ipInfo.status -eq "success") {
+	    $asn = ($ipInfo.as -split " ")[0]
+	    $isp = $ipInfo.isp
+	
+	        Write-Host "Your ISP is: $($isp)" -ForegroundColor Cyan
+	        Write-Host "Your ASN is: $($asn)" -ForegroundColor Cyan
+	    }
+	Else {
+	    Write-Host "Could not retrieve ISP information. The service returned an error: $($ipInfo.message)" -ForegroundColor Yellow
+	}
+}
 Function Show-GPUInfo {
     $GPUS = Get-CimInstance -ClassName Win32_VideoController
     
@@ -1712,12 +1733,12 @@ $AdminBanner = If (-not $IsAdmin) {
 } Else {
     ""
 }
-$Title = @"
--------------------------------------------------------------------------------------------------------
-💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.5
--------------------------------------------------------------------------------------------------------
-$AdminBanner
-"@
+$Title = @(
+    "-------------------------------------------------------------------------------------------------------",
+    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.5",
+    "-------------------------------------------------------------------------------------------------------",
+    $AdminBanner
+) -join "`n"
     $Prompt = "Enter your choice:"
     $Choices = [ChoiceDescription[]](
         [ChoiceDescription]::new("🔍 &HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
@@ -1744,6 +1765,7 @@ $AdminBanner
             Show-MotherboardInfo
             Show-GPUInfo
             Show-OSInfo
+			Show-ISPInfo
             Show-GameLaunchOptions
             Test-PendingReboot
             Reset-HostabilityKey
@@ -1848,7 +1870,7 @@ Function Show-TestResults {
     "GameResolution",
     "RenderResolution",
     "SecureBootEnabled",
-    "VSyncDisabled"
+    "VSyncDisabled",
     "IntelMicrocodeCheck",
     "AVX2",
     "LongSysUptime",
@@ -1967,5 +1989,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
-
