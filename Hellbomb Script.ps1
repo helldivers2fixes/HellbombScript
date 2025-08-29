@@ -1788,7 +1788,6 @@ $Title = @(
             Show-GameLaunchOptions
             Test-PendingReboot
             Reset-HostabilityKey
-            Find-CPUInfo
             Test-Firewall
             Test-CRL
             Test-RequiredURLs
@@ -1804,6 +1803,7 @@ $Title = @(
             Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
+			Find-CPUInfo
             Get-SecureBootStatus
             Test-AVX2
             Test-MemoryChannels
@@ -2008,4 +2008,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
