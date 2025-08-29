@@ -255,7 +255,6 @@ Function pause ($message) {
         $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
-
 Function Install-EXE {
     param (
         [Parameter(Mandatory = $true, Position = 0)]
@@ -304,7 +303,6 @@ Function Install-EXE {
     # Re-enable Progress Bar
     $ProgressPreference = 'Continue'
 }
-
 Function Reset-GameGuard {
     # Delete GameGuard files
     $Error.Clear()
@@ -338,7 +336,6 @@ Function Remove-HD2AppData {
     }
     Menu
 }
-
 Function Get-IsProcessRunning {
     [CmdletBinding()]
     Param(
@@ -451,7 +448,6 @@ Function Test-BadPrinters {
     }
     Else { $script:Tests.BadPrinter.TestPassed = $true }
 }
-
 Function Find-CPUInfo {
     $script:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
     If ( $script:myCPU.Contains('Intel') ) {
@@ -494,14 +490,14 @@ Function Show-ISPInfo {
 	    Write-Host "Error: Could not retrieve ISP."
 	    Return
 	}
-	
 	# Check if the query was successful and has a status of 'success'
 	If ($ipInfo.status -eq "success") {
 	    $asn = ($ipInfo.as -split " ")[0]
 	    $isp = $ipInfo.isp
-	
-	        Write-Host "Your ISP is: $($isp)" -ForegroundColor Cyan
-	        Write-Host "Your ASN is: $($asn)" -ForegroundColor Cyan
+	        Write-Host 'Your ISP is: ' -NoNewLine -ForegroundColor Cyan
+		 	Write-Host $($isp)
+	        Write-Host 'Your ASN is: ' -NoNewLine -ForegroundColor Cyan
+		 	Write-Host $($asn)
 	    }
 	Else {
 	    Write-Host "Could not retrieve ISP information. The service returned an error: $($ipInfo.message)" -ForegroundColor Yellow
@@ -509,7 +505,6 @@ Function Show-ISPInfo {
 }
 Function Show-GPUInfo {
     $GPUS = Get-CimInstance -ClassName Win32_VideoController
-    
     # Print GPU information
     ForEach ($gpu in $gpus) {
         $OEMDriverVersionNum = $gpu.DriverVersion
@@ -1463,8 +1458,6 @@ Function Test-MemoryChannels {
         $script:Tests.MultiChannelMemory.TestPassed = $true
     }
 }
-
-# Function to check if a reboot is required
 Function Test-PendingReboot {
     ForEach ($key in $script:Tests.PendingReboot.keys) {
         If (Test-Path $key) {
@@ -1586,7 +1579,7 @@ Function Switch-FullScreenOptimizations
             }
         }
         Return Write-Host "$([Environment]::NewLine)Fullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
-    }
+}
 Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
     Try { $OriginalHash = Get-FileHash $configPath }
@@ -1736,13 +1729,12 @@ Function Get-SecureBootStatus {
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
-
 Function Menu {
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 $AdminBanner = If (-not $IsAdmin) {
     @"
 ⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
->>> Some tests may fail or produce inaccurate results. <<<
+        >>> SOME TESTS WILL FAIL OR PRODUCE INCORRECT RESULTS. <<<
 "@
 } Else {
     ""
