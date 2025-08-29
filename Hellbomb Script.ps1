@@ -458,8 +458,8 @@ Function Find-CPUInfo {
         ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
             If (($script:myCPU).Contains($cpuModel)) {
             $pattern = "Microcode Revision\s+(0x[0-9A-Fa-f]+)"    
-            $match = $script:HardwareInfoText | Select-String -Pattern $pattern
-                If ( $match -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $match -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1] ) {
+            $script:runningMicrocode = ($script:HardwareInfoText | Select-String -Pattern $pattern | Select-Object -First 1).Matches[0].Groups[1].Value
+                If ( $runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1] ) {
                             $script:Tests.IntelMicrocodeCheck.TestPassed = $true
                             Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedIntelMsg
                             Return
@@ -469,11 +469,6 @@ Function Find-CPUInfo {
                         Return
                         }
                     }
-                Catch { 
-                    Invoke-Expression $script:Tests.IntelMicrocodeCheck.ErrorMsg
-                    $script:Tests.IntelMicrocodeCheck.TestPassed = $false
-                    Return
-                 }
             }
         }
     $script:Tests.IntelMicrocodeCheck.TestPassed = $true
@@ -2008,5 +2003,6 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
