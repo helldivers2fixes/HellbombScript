@@ -14,7 +14,7 @@ $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
         'AffectedModels' = @("13900", "13700", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = @("12F", "3A")
+        'LatestMicrocode' = @("0x12F", "0x3A")
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
         Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
@@ -457,13 +457,9 @@ Function Find-CPUInfo {
     If ( $script:myCPU.Contains('Intel') ) {
         ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
             If (($script:myCPU).Contains($cpuModel)) {
-                # Check Microcode; adapted from: https://www.xf.is/2018/06/28/view-cpu-microcode-revision-from-powershell/
-                $registrypath = "Registry::HKEY_LOCAL_MACHINE\HARDWARE\DESCRIPTION\System\CentralProcessor\0\"
-                $CPUProperties = Get-ItemProperty -Path $registrypath
-	            $script:runningMicrocode = $CPUProperties."Update Revision"
-                # Convert to string and remove leading zeros
-                Try { $script:runningMicrocodeInHex = ('0x'+(-join ( $runningMicrocode[0..4] | ForEach-Object { $_.ToString("X2") } )).TrimStart('0'))
-                        If ( ($script:runningMicrocodeInHex -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $script:runningMicrocodeInHex -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1]) ) {
+            $pattern = "Microcode Revision\s+(0x[0-9A-Fa-f]+)"    
+            $script:runningMicrocode = ($script:HardwareInfoText | Select-String -Pattern $pattern | Select-Object -First 1).Matches[0].Groups[1].Value
+                If ( $runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1] ) {
                             $script:Tests.IntelMicrocodeCheck.TestPassed = $true
                             Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedIntelMsg
                             Return
@@ -473,14 +469,8 @@ Function Find-CPUInfo {
                         Return
                         }
                     }
-                Catch { 
-                    Invoke-Expression $script:Tests.IntelMicrocodeCheck.ErrorMsg
-                    $script:Tests.IntelMicrocodeCheck.TestPassed = $false
-                    Return
-                 }
             }
         }
-    }
     $script:Tests.IntelMicrocodeCheck.TestPassed = $true
     Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
     Return
@@ -1609,7 +1599,7 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
-        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!$([Environment]::NewLine)" -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
@@ -1793,7 +1783,6 @@ $Title = @(
             Show-GameLaunchOptions
             Test-PendingReboot
             Reset-HostabilityKey
-            Find-CPUInfo
             Test-Firewall
             Test-CRL
             Test-RequiredURLs
@@ -1809,6 +1798,7 @@ $Title = @(
             Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
+			Find-CPUInfo
             Get-SecureBootStatus
             Test-AVX2
             Test-MemoryChannels
@@ -2013,6 +2003,7 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
 
