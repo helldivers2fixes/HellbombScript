@@ -1741,7 +1741,7 @@ $AdminBanner = If (-not $IsAdmin) {
 }
 $Title = @(
     "-------------------------------------------------------------------------------------------------------",
-    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.5",
+    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 3.6",
     "-------------------------------------------------------------------------------------------------------",
     $AdminBanner
 ) -join "`n"
@@ -1995,3 +1995,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
