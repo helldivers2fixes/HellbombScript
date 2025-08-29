@@ -1211,8 +1211,8 @@ Function Test-Wifi {
     # Ping the default gateway for 30 seconds and collect statistics
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
     If ($null -eq $mainAdapter -or $null -eq $mainAdapter.IPv4DefaultGateway) {
-        Write-Host "No default gateway available." -ForegroundColor Yellow
-        Break
+        Write-Host "No default gateway available... returning to menu" -ForegroundColor Yellow
+        Return
         }
     Write-Host "$([Environment]::NewLine)Testing the connection to the default gateway..." -ForegroundColor Cyan
         $NetworkType = (Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType
@@ -2003,4 +2003,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
