@@ -1603,7 +1603,7 @@ Function Reset-HostabilityKey {
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-        Write-host 'Hostabiltiy key could not be removed.$([Environment]::NewLine)' -ForegroundColor Yellow
+        Write-host "Hostabiltiy key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
     }    
 }
 Function Get-VSyncConfig {
@@ -2003,7 +2003,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
-
-
-
