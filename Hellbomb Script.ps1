@@ -639,7 +639,7 @@ Function Get-MemoryPartNumber {
     $index = 0
 
     ForEach ($line in $Lines) {
-        If ( $index -lt $Lines.Count ) {
+        If ( $index -lt $Lines.Count - 1 ) {
             $index++
             $nextLine = $Lines[$index]
         }
@@ -2011,3 +2011,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
