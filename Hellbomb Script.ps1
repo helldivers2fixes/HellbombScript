@@ -629,83 +629,105 @@ Function Get-MemorySpeed {
     }
 }
 Function Get-MemoryPartNumber {
-    # Load DIMM Data
-    $dimmData = @()
-    $currentDimm = @{}
-    $skipDimm = $False
+    [CmdletBinding()]
+    param (
+        [array]$Lines
+    )
 
-    # Iterate through each line
-    For ($i = 0; $i -Lt $script:HardwareInfoText.Count; $i++) {
-        $line = $script:HardwareInfoText[$i]
-        $nextLine = If ($i + 1 -Lt $script:HardwareInfoText.Count) { $script:HardwareInfoText[$i + 1] } Else { $Null }
+    $dimmData = [System.Collections.Generic.List[PSCustomObject]]::new()
+    $currentDimm = $null
+    $index = 0
 
-        If ($line -Match "^DIMM #\s+(\d+)") {
-            If ($currentDimm.Count -Gt 0 -And -Not $skipDimm) {
-                $dimmData += [PSCustomObject]@{
-                    DIMM       = $currentDimm['DIMM']
-                    Size       = $currentDimm['Size']
-                    PartNumber = $currentDimm['Part Number']
-                }
-            }
-            $currentDimm = @{}
-            $skipDimm = $False
-            $currentDimm['DIMM'] = $Matches[1]
+    ForEach ($line in $Lines) {
+        If ( $index -lt $Lines.Count ) {
+            $index++
+            $nextLine = $Lines[$index]
         }
-        ElseIf ($line -Match "^\s*SPD Registers") {
-            $skipDimm = $True
+        # Check for the start of a new DIMM section
+        If ( $line -match '^\s*DIMM\s*#\s*(\d+)' -and -not ($nextLine -match '^\s*SPD Registers')) {
+            # Add previous DIMM object if it exists
+            If ($currentDimm) {
+                $dimmData.Add($currentDimm)
+            }
+            # Create a new, clean object for the DIMM just found
+            $currentDimm = [PSCustomObject]@{
+                DIMM       = $Matches[1]
+                Size       = 'N/A'
+                PartNumber = 'N/A'
+            }
+            continue
         }
-        ElseIf (-Not $skipDimm) {
-            If ($nextLine -And $nextLine -Match 'Max bandwidth' -And $line -Match "^\s+Size\s+(.+)") {
-                $currentDimm['Size'] = $Matches[1]
+
+        # Check for an empty line to signal the end of a DIMM block
+        ElseIf ($line -match '^\s*$') {
+            If ($currentDimm) {
+                $dimmData.Add($currentDimm)
+                $currentDimm = $null
             }
-            ElseIf ($nextLine -And $nextLine -Match 'Nominal Voltage' -And $line -Match "^\s+Part number\s+(.+)") {
-                $currentDimm['Part Number'] = $Matches[1]
+            continue
+        }
+
+        # If we are not "inside" a DIMM block, ignore the line
+        If (-not $currentDimm) {
+            continue
+        }
+
+        # Capture memory details
+        If ($line -match '^\s*Size\s+(.+)') {
+            # Only grab the first Size entry
+            If ($currentDimm.Size -eq 'N/A') {
+                $currentDimm.Size = $Matches[1].Trim()
             }
+        }
+        ElseIf ($line -match '^\s*Part\s+number\s+(.+)') {
+            $currentDimm.PartNumber = $Matches[1].Trim()
         }
     }
-    If ($currentDimm.Count -Gt 0 -And -Not $skipDimm) {
-        $dimmData += [PSCustomObject]@{
-            DIMM       = $currentDimm['DIMM']
-            Size       = $currentDimm['Size']
-            PartNumber = $currentDimm['Part Number']
-        }
+
+    # Add the very last DIMM that was processed
+    If ($currentDimm) {
+        $dimmData.Add($currentDimm)
     }
-    # Parse DMI-based Memory Devices if it found no normal memory devices
-    $lines = $script:HardwareInfoText
-    If ( $dimmData.count -eq 0 ) {
-        For ($i = 0; $i -lt $script:HardwareInfoText.Count; $i++) {
-            If ($lines[$i] -Match "^DMI Memory Device") {
+
+    # If no DIMMs were found, try parsing DMI data
+    If ($dimmData.Count -eq 0) {
+        For ($i = 0; $i -lt $Lines.Count; $i++) {
+            If ($Lines[$i] -Match "^DMI Memory Device") {
                 $designation = $null
                 $typeFound   = $false
                 $sizeFound   = $null
-                If ($i + 1 -lt $lines.Count) {
-                    $designationLine = $lines[$i + 1]
+
+                # Get the designation from the next line
+                If ($i + 1 -lt $Lines.Count) {
+                    $designationLine = $Lines[$i + 1]
                     If ($designationLine -Match "designation\s+") {
                         $designation = ($designationLine -Split "\s{1,}" | Select-Object -Last 1).Trim()
                     }
                 }
-                For ($j = $i + 1; $j -lt $lines.Count; $j++) {
-                    If ($lines[$j] -Match "^DMI Memory Device") { Break }
-                    If ($lines[$j] -Match "type\s+(DDR4|DDR5)") {
+                
+                # Look for the size and type in the following lines
+                For ($j = $i + 1; $j -lt $Lines.Count; $j++) {
+                    If ($Lines[$j] -Match "^DMI Memory Device") { break }
+                    If ($Lines[$j] -Match "type\s+(DDR4|DDR5)") {
                         $typeFound = $True
                     }
-                    If ( $lines[$j] -Match "size\s" -and $typeFound) {
-                        $sizeFound = (($lines[$j] -split "\s{1,}" | Select-Object -Last 2) -join ' ')
-                        If ( $sizeFound -and $sizeFound -ne "NO DIMM" ) {
-                            $dimmData += [PSCustomObject]@{
+                    If ($Lines[$j] -Match "size\s" -and $typeFound) {
+                        $sizeFound = (($Lines[$j] -split "\s{1,}" | Select-Object -Last 2) -join ' ')
+                        If ($sizeFound -and $sizeFound -ne "NO DIMM") {
+                            $dimmData.Add([PSCustomObject]@{
                                 DIMM       = $designation
                                 Size       = $sizeFound
                                 PartNumber = $null
-                            }
+                            })
                             $typeFound = $false
-                            Break
+                            break
                         }
                     }
                 }
             }
         }
     }
-
+	
     # Validate results
     If ($dimmData) {
         $script:Tests.MatchingMemory.RAMInfo = $dimmData
@@ -1690,7 +1712,7 @@ Function Remove-AllMods {
             }
             Foreach ($matchingFile in Get-ChildItem -Path $dataFolder -File | Where-Object { $_.Name -match "$hex" }) {
                 $matchingFilePath = $dataFolder + $matchingFile.Name
-                if (Test-Path $matchingFilePath) {
+                If (Test-Path $matchingFilePath) {
                     Remove-Item -Path $matchingFilePath -Force
                 }
             }
@@ -1788,7 +1810,7 @@ $Title = @(
             Get-SecureBootStatus
             Test-AVX2
             Test-MemoryChannels
-            Get-MemoryPartNumber
+            Get-MemoryPartNumber -Lines $script:HardwareInfoText
             Get-MemorySpeed
             Find-Mods
             Get-VSyncConfig
