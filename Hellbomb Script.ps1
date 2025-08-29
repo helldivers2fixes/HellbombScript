@@ -758,7 +758,7 @@ $CPUZFile = "cpuz_x64.exe"
                 Return Write-Error "Failed to download cpuz_2.16-en.zip: $_" -ForegroundColor Red
             }
         }
-    If ( (Get-FileHash $CPUZZip) -ne 'E38303E384625866C7C76D91C4CBCDE956C7C14D6CF7251F6C3872A4C8360C07' ) {
+    If ( (Get-FileHash $CPUZZip).Hash -ne 'E38303E384625866C7C76D91C4CBCDE956C7C14D6CF7251F6C3872A4C8360C07' ) {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     }
@@ -2003,5 +2003,6 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
