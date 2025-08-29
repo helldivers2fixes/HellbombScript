@@ -34,7 +34,7 @@ $script:Tests = @{
         Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
         'ErrorMsg' = @'
-        Write-Host "Error occured determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:myCPU "
+        Write-Host "Error occurred determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:myCPU "
 '@
     }
     "PendingReboot" = @{
@@ -755,7 +755,7 @@ $CPUZFile = "cpuz_x64.exe"
             Try {
                 Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
             } Catch {
-                Return Write-Error "Failed to download cpuz_2.16-en.zip: $_" -ForegroundColor Red
+                Return Write-Error "Failed to download cpuz_2.16-en.zip: $_"
             }
         }
     If ( (Get-FileHash $CPUZZip).Hash -ne 'E38303E384625866C7C76D91C4CBCDE956C7C14D6CF7251F6C3872A4C8360C07' ) {
@@ -1091,7 +1091,7 @@ Function Test-CRL {
         Write-Host 'OCSP Connection' -NoNewLine
         Write-Host ' [FAIL]' -ForegroundColor Red
     }
-    Write-Progress -Completed -Activity "make progress bar dissapear"
+    Write-Progress -Completed -Activity "make progress bar disappear"
     Test-ClientDnsConfig
     Return
 }
@@ -1603,7 +1603,7 @@ Function Reset-HostabilityKey {
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-        Write-host "Hostabiltiy key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
+        Write-Host "Hostabiltiy key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
     }    
 }
 Function Get-VSyncConfig {
