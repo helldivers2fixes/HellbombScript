@@ -1711,9 +1711,8 @@ Function Remove-AllMods {
     }
 }
 Function Get-PageFileSize {
-    $pageFileUsage = Get-CimInstance Win32_PageFileUsage
-    $script:Tests.PageFileEnabled.TestPassed = 
-    ( $pageFileUsage -and $pageFileUsage.AllocatedBaseSize -ne 0 )
+     $pageFile = Get-CimInstance Win32_PageFileUsage
+	 ( $pageFile -and ( $pageFile.AllocatedBaseSize -ne 0 ) )
 }
 Function Get-SecureBootStatus {
     Try {
@@ -1788,7 +1787,7 @@ $Title = @(
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
-            Get-PageFileSize
+            $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
 			Find-CPUInfo
