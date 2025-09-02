@@ -1711,8 +1711,7 @@ Function Remove-AllMods {
     }
 }
 Function Get-PageFileSize {
-    $pageFileUsage = Get-CimInstance Win32_PageFileUsage
-    Return ( $pageFileUsage -and ( $pageFileUsage.AllocatedBaseSize -ne 0 ) )
+     ( ( Get-CimInstance Win32_PageFileUsage ) -and ( Get-CimInstance Win32_PageFileUsage.AllocatedBaseSize -ne 0 ) )
 }
 Function Get-SecureBootStatus {
     Try {
