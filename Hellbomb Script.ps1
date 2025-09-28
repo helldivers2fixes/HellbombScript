@@ -393,7 +393,7 @@ Function Install-VCRedist {
     Exit
 }
 Function Disable-GameInput {
-    Write-Host "Disabling game input..." -ForegroundColor Cyan
+    Write-Host "Disabling GameInput..." -ForegroundColor Cyan
     try { 
         $gameInputSvc = Get-Service -Name "GameInputSvc"
         If($gameInputSvc.StartType -eq "Disabled") {
