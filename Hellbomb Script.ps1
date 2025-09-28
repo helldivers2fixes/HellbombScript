@@ -392,29 +392,30 @@ Function Install-VCRedist {
     Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
     Exit
 }
-Function Disable-GameInput {
-    Write-Host "Disabling GameInput..." -ForegroundColor Cyan
+Function Toggle-GameInput {
     Try { 
         	$gameInputSvc = Get-Service -Name "GameInputSvc"
 		}
 	Catch { 
        	Write-Host "GameInput is not installed." -ForegroundColor Green
-     	Break
+		Return
     }
-	If( $gameInputSvc.StartType -eq "Enabled" ) {
+	If ( $gameInputSvc.StartType -ne "Disabled" ) {
 		Write-Host "Disabling GameInput..." -ForegroundColor Cyan
 		Stop-Service "GameInputSvc"
 		Set-Service "GameInputSvc" -StartupType Disabled
 		Write-Host "GameInput now Disabled." -ForegroundColor Green
-		Break
+        Return
 	}
-	If( $gameInputSvc.StartType -eq "Disabled" ) {
+	Else {
+        If( $gameInputSvc.StartType -ne "Enabled" ) {
 		Write-Host "Enabling GameInput..." -ForegroundColor Cyan
 		Set-Service "GameInputSvc" -StartupType Manual
 		Start-Service "GameInputSvc"
 		Write-Host "GameInput now Enabled." -ForegroundColor Yellow
-		Break
-	}
+        Return
+	    }
+    }
 }
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
@@ -1855,7 +1856,7 @@ $Title = @(
             Menu
         }
         6 {
-            Disable-GameInput
+            Toggle-GameInput
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
