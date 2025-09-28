@@ -392,6 +392,24 @@ Function Install-VCRedist {
     Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
     Exit
 }
+Function Disable-GameInput {
+    Write-Host "Disabling game input..." -ForegroundColor Cyan
+    try { 
+        $gameInputSvc = Get-Service -Name "GameInputSvc"
+        If($gameInputSvc.StartType -eq "Disabled") {
+            Write-Host "GameInput is already disabled." -ForegroundColor Green
+            return
+        }
+    }
+    Catch { 
+        Write-Host "GameInput is not installed." -ForegroundColor Yellow
+        return
+    }
+
+    Stop-Service "GameInputSvc"
+    Set-Service "GameInputSvc" -StartupType Disabled
+    Write-Host "GameInput Disabled." -ForegroundColor Green
+}
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
     $FoundBlacklistedDevice = $false
@@ -1754,6 +1772,7 @@ $Title = @(
         [ChoiceDescription]::new("🧹 Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
         [ChoiceDescription]::new("🔁 Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
         [ChoiceDescription]::new("🔁 Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
+        [ChoiceDescription]::new("🗑️ &Disable GameInput$([Environment]::NewLine)", 'Disables Microsoft GameInput service.'),
         [ChoiceDescription]::new("🗑️ &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
         [ChoiceDescription]::new("➕ &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
         [ChoiceDescription]::new("🛠️ Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
@@ -1830,46 +1849,51 @@ $Title = @(
             Menu
         }
         6 {
-            Uninstall-VCRedist
+            Disable-GameInput
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         7 {
-            Install-VCRedist
+            Uninstall-VCRedist
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         8 {
-            Open-AdvancedGraphics
+            Install-VCRedist
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         9 {
-            Switch-FullScreenOptimizations
+            Open-AdvancedGraphics
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         10 {
-            Test-WiFi
+            Switch-FullScreenOptimizations
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         11 {
-            Test-DoubleNat
+            Test-WiFi
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
         12 {
+            Test-DoubleNat
+            Write-Host "$([Environment]::NewLine)"
+            Menu
+        }
+        13 {
             Show-ModRemovalWarning
             Remove-AllMods
             Menu
         }
-        13 {
+        14 {
             Switch-BTAGService
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
-        14 { Return }
+        15 { Return }
     }
 }
 Function Show-TestResults {
