@@ -398,21 +398,23 @@ Function Toggle-GameInput {
 		}
 	Catch { 
        	Write-Host "GameInput is not installed." -ForegroundColor Green
-     	return
+		Return
     }
-	If( $gameInputSvc.StartType -eq "Disabled" ) {
+	If ( $gameInputSvc.StartType -ne "Disabled" ) {
+		Write-Host "Disabling GameInput..." -ForegroundColor Cyan
+		Stop-Service "GameInputSvc"
+		Set-Service "GameInputSvc" -StartupType Disabled
+		Write-Host "GameInput now Disabled." -ForegroundColor Green
+        Return
+	}
+	Else {
+        If( $gameInputSvc.StartType -ne "Enabled" ) {
 		Write-Host "Enabling GameInput..." -ForegroundColor Cyan
 		Set-Service "GameInputSvc" -StartupType Manual
 		Start-Service "GameInputSvc"
 		Write-Host "GameInput now Enabled." -ForegroundColor Yellow
-		return
-	}
-    Else {
-        Write-Host "Disabling GameInput..." -ForegroundColor Cyan
-		Stop-Service "GameInputSvc"
-		Set-Service "GameInputSvc" -StartupType Disabled
-		Write-Host "GameInput now Disabled." -ForegroundColor Green
-		return
+        Return
+	    }
     }
 }
 Function Find-BlacklistedDrivers {
@@ -2024,5 +2026,4 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
-
 Menu
