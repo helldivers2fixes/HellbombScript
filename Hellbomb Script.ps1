@@ -392,29 +392,28 @@ Function Install-VCRedist {
     Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
     Exit
 }
-Function Disable-GameInput {
-    Write-Host "Disabling GameInput..." -ForegroundColor Cyan
+Function Toggle-GameInput {
     Try { 
         	$gameInputSvc = Get-Service -Name "GameInputSvc"
 		}
 	Catch { 
        	Write-Host "GameInput is not installed." -ForegroundColor Green
-     	Break
+     	return
     }
-	If( $gameInputSvc.StartType -eq "Enabled" ) {
-		Write-Host "Disabling GameInput..." -ForegroundColor Cyan
-		Stop-Service "GameInputSvc"
-		Set-Service "GameInputSvc" -StartupType Disabled
-		Write-Host "GameInput now Disabled." -ForegroundColor Green
-		Break
-	}
 	If( $gameInputSvc.StartType -eq "Disabled" ) {
 		Write-Host "Enabling GameInput..." -ForegroundColor Cyan
 		Set-Service "GameInputSvc" -StartupType Manual
 		Start-Service "GameInputSvc"
 		Write-Host "GameInput now Enabled." -ForegroundColor Yellow
-		Break
+		return
 	}
+    Else {
+        Write-Host "Disabling GameInput..." -ForegroundColor Cyan
+		Stop-Service "GameInputSvc"
+		Set-Service "GameInputSvc" -StartupType Disabled
+		Write-Host "GameInput now Disabled." -ForegroundColor Green
+		return
+    }
 }
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
@@ -1855,7 +1854,7 @@ $Title = @(
             Menu
         }
         6 {
-            Disable-GameInput
+            Toggle-GameInput
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
@@ -2025,4 +2024,5 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
+
 Menu
