@@ -55,10 +55,11 @@ jobs:
           Invoke-ps2exe `
           -inputFile "./Hellbomb Script.ps1" `
           -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+          -x64 `
           -requireAdmin `
           -UNICODEEncoding `
           -version "${{ steps.get_filename.outputs.output_version }}" `
-          -fileDescription "Troubleshoots Helldivers 2 Issues" `
+          -description "Troubleshoots Helldivers 2 Issues" `
           -copyright "© 2025" `
           -productName "Hellbomb Script"
 
