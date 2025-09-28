@@ -1,0 +1,72 @@
+name: Create Hellbomb Script EXE
+
+# Trigger the workflow on push events.
+on:
+  push:
+    branches:
+      - main
+
+# Set an environment variable for the short commit SHA.
+env:
+  SHORT_SHA: ${{ github.sha }}
+
+jobs:
+  build-exe:
+    # Use a GitHub-hosted Windows runner.
+    runs-on: windows-latest
+
+    steps:
+      # Check out the repository's code.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install the PS2EXE module.
+      - name: Install PS2EXE module
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PS2EXE -Force
+
+      # Extract version from script and set as a GitHub Actions output variable.
+      - name: Get version and commit hash
+        id: get_filename
+        shell: pwsh
+        run: |
+          $scriptContent = Get-Content -Path "./Hellbomb Script.ps1"
+          
+          # Use a regular expression to find the version number.
+          if ($scriptContent -match '\|\|\s+Version\s+(\d.\d+)') {
+            $version = $matches[1]
+            $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
+            $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
+            
+            # Set the output variable for the next steps.
+            Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
+            Write-Host "Detected version $version. Output file will be named $fileName."
+          } else {
+            Write-Error "Could not find a version number in Hellbomb Script.ps1."
+            exit 1
+          }
+
+      # Compile the PowerShell script to an executable.
+      # Reference the output variable from the previous step.
+      - name: Compile script to EXE
+        shell: pwsh
+        run: |
+          Invoke-ps2exe `
+          -inputFile "./Hellbomb Script.ps1" `
+          -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+          -requireAdmin `
+          -UNICODEEncoding `
+          -version "${{ steps.get_filename.outputs.output_version }}" `
+          -fileDescription "Troubleshoots Helldivers 2 Issues" `
+          -copyright "© 2025" `
+          -productName "Hellbomb Script"
+
+      # Upload the compiled executable as an artifact.
+      # Use the dynamic filename variable here as well.
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-exe
+          path: "${{ steps.get_filename.outputs.output_filename }}"
