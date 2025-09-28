@@ -1,5 +1,8 @@
 name: Create Hellbomb Script EXE
 
+permissions:
+  contents: read
+
 # Trigger the workflow on push events.
 on:
   push:
