@@ -35,7 +35,7 @@ jobs:
           $scriptContent = Get-Content -Path "./Hellbomb Script.ps1"
           
           # Use a regular expression to find the version number.
-          if ($scriptContent -match '\|\|\s+Version\s+(\d.\d+)') {
+          if ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
             $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
