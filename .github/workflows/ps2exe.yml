@@ -32,10 +32,9 @@ jobs:
         id: get_filename
         shell: pwsh
         run: |
-          $scriptContent = Get-Content -Path "./Hellbomb Script.ps1"
-          
+          $scriptContent = Get-Content -Path "./Hellbomb Script.ps1" -Raw
           # Use a regular expression to find the version number.
-          if ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
+          If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
             $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
@@ -43,9 +42,9 @@ jobs:
             # Set the output variable for the next steps.
             Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
             Write-Host "Detected version $version. Output file will be named $fileName."
-          } else {
+          } Else {
             Write-Error "Could not find a version number in Hellbomb Script.ps1."
-            exit 1
+            Exit 1
           }
 
       # Compile the PowerShell script to an executable.
