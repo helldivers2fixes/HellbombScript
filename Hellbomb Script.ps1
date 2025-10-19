@@ -10,6 +10,9 @@ $psWindow.WindowSize = $newWindowSize
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Continue'
 Set-StrictMode -Version Latest
+$script:SystemInfo = @{
+	"GPUInfo" = @()
+}
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
@@ -228,6 +231,25 @@ $script:Tests = @{
     Write-Host "$($script:Tests.RenderResolution.WidthValue) x $($script:Tests.RenderResolution.HeightValue)"
     If ( $($script:Tests.RenderResolution.HeightValue) -le 1080 ) { Write-Host 'Game rendering resolution is low. With a powerful GPU, this may increase CPU usage & hurt performance' -ForegroundColor Yellow }
     If ( $($script:Tests.RenderResolution.HeightValue) -ge 2160 ) { Write-Host 'Game rendering resolution is high. This may hurt FPS if your GPU isn''t powerful enough' -ForegroundColor Yellow }
+'@
+    }
+"NoVegaGPUs" = @{
+    'TestPassed' = $null
+	'PCIDeviceVendor' = '1002'
+    'ApprovedDriverVersion' = '22.11.2'
+	'VegaPCIDevIDs' = @(
+    "6860","6861","6862","6863","6864","6867","6868","6869","686a","686b","686c","686d","686e","687f",
+    "66a0","66a1","66a2","66a3","66a7","66af",
+    "69a0","69a1","69a2","69a3","69af",
+    "15d8","15dd","1636","1638",
+    "aaf8","ab18","ab20"
+)
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host "Your system has a Vega-based AMD GPU & is not using driver version " -ForegroundColor Yellow -NoNewLine
+    Write-Host $($script:Tests.NoVegaGPUs.ApprovedDriverVersion)
+    Write-Host "for HD2 to fully function." -ForegroundColor Yellow
+	Write-Host "$([Environment]::NewLine)Any other driver version will have various issues, from Terminid planets crashing, to the game crashing on the opening screen." -ForegroundColor Cyan
 '@
     }
 }
@@ -529,18 +551,26 @@ Function Show-ISPInfo {
 	}
 }
 Function Show-GPUInfo {
-    $GPUS = Get-CimInstance -ClassName Win32_VideoController
+    $gpus = Get-CimInstance -ClassName Win32_VideoController
     # Print GPU information
     ForEach ($gpu in $gpus) {
-        $OEMDriverVersionNum = $gpu.DriverVersion
+        $vendor = 'Generic'
+        $driverVersion = $gpu.DriverVersion
+        $archCodename = 'Not Identified'
         If ( $gpu.Name.Contains( 'AMD' ) ) {
+            $vendor = 'AMD'
+            $vegaIDs = $script:Tests.NoVegaGPUs.VegaPCIDevIDs
+            If ( [bool]($script:Tests.NoVegaGPUs.VegaPCIDevIDs | Where-Object { $gpu.PNPDeviceID -match "DEV_$_" } | Select-Object -First 1) ) {
+                $archCodename = 'Vega'
+            }
             Try {
-                $OEMDriverVersionNum = (Get-ItemProperty -Path "HKLM:\SOFTWARE\ATI Technologies\Install" -Name RadeonSoftwareVersion).RadeonSoftwareVersion
+                $driverVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\ATI Technologies\Install" -Name RadeonSoftwareVersion).RadeonSoftwareVersion
             } Catch {
-                $OEMDriverVersionNum = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+                $driverVersion = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
             }
         }
-        If ( $gpu.Name.Contains( 'NVIDIA' ) ) {
+        ElseIf ( $gpu.Name.Contains( 'NVIDIA' ) ) {
+            $vendor = 'NVIDIA'
             Try { 
                     $process = New-Object System.Diagnostics.Process
                     $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
@@ -552,24 +582,37 @@ Function Show-GPUInfo {
                     # Start the process
                     $process.Start() | Out-Null
                     # Read the output as a string
-                    $OEMDriverVersionNum = New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)
-                    $OEMDriverVersionNum =  $OEMDriverVersionNum.ReadToEnd().Trim()
+                    $driverVersion = (New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)).ReadToEnd().Trim()
                     $process.WaitForExit()
                 } Catch {
-                    $OEMDriverVersionNum = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+                    $driverVersion = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
                 }
+        }
+        ElseIf ( $gpu.Name.Contains( 'INTEL(R)' ) ) {
+            $vendor = "Intel"
+            Try {
+                $driverVersion = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\igfx\Parameters" -Name "DriverVersion").DriverVersion
+            } Catch {
+                $driverVersion += " (Windows Format)"
+            }
+        }
+        $script:systemInfo["GPUInfo"] += @{
+            vendor = $vendor
+            driverVersion = $driverVersion
+			archCodename = $archCodename
         }
         Write-Host "-------------------------------------"
         Write-Host "  GPU Model: $($gpu.Name)"
-        Write-Host "  Drvr Ver.: $OEMDriverVersionNum"
+        Write-Host "   Codename: $($script:SystemInfo["GPUInfo"][-1].archCodename)"
+        Write-Host "  Drvr Ver.: $($script:SystemInfo["GPUInfo"][-1].DriverVersion)"
         Write-Host "     Status: " -NoNewLine
         If ( $gpu.Status -ne 'OK' ) {
                 Write-Host $gpu.Status -ForegroundColor Red
             }
         Else { Write-Host $gpu.Status -ForegroundColor Green }
         Write-Host "-------------------------------------"
-    }
-} 
+    } 
+}
 Function Show-OSInfo {
     $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
     Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
@@ -1911,6 +1954,7 @@ Function Show-TestResults {
     "VSyncDisabled",
     "IntelMicrocodeCheck",
     "AVX2",
+	"NoVegaGPUs",
     "LongSysUptime",
     "SystemClockAccurate",
     "PendingReboot",
@@ -2027,3 +2071,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
