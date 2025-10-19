@@ -247,8 +247,8 @@ $script:Tests = @{
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host "Your system has a Vega-based AMD GPU & is not using driver version " -ForegroundColor Yellow -NoNewLine
-    Write-Host $($script:Tests.NoVegaGPUs.ApprovedDriverVersion)
-    Write-Host "for HD2 to fully function." -ForegroundColor Yellow
+    Write-Host $($script:Tests.NoVegaGPUs.ApprovedDriverVersion) -NoNewLine
+    Write-Host " for HD2 to fully function." -ForegroundColor Yellow
 	Write-Host "$([Environment]::NewLine)Any other driver version will have various issues, from Terminid planets crashing, to the game crashing on the opening screen." -ForegroundColor Cyan
 '@
     }
