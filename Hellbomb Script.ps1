@@ -253,6 +253,62 @@ $script:Tests = @{
 '@
     }
 }
+$NvidiaCodenames = @{
+    "Turing" = @(
+        "1e03","1e04","1e07","1e2d","1e2e",
+        "1e81","1e82","1e84","1e87","1e89",
+        "1e90","1e91","1e93","1ec2","1ec7",
+        "1ed0","1ed1","1ed3",
+        "1f02","1f03","1f06","1f07","1f08",
+        "1f10","1f11","1f12","1f14","1f15",
+        "1f42","1f47","1f50","1f51","1f54","1f55"
+    )
+    "Ampere" = @(
+        "2203","2204","2205","2206","2207","2208","220a",
+        "2216","222b","222f",
+        "2414","2420","2460",
+        "2482","2484","2486","2487","2488","2489","248c","248d","248e",
+        "249c","249d","24a0","24ac","24ad","24af","24bf","24c7","24c8","24c9",
+        "24dc","24dd","24e0",
+        "2501","2503","2504","2507","2508","2509",
+        "2520","2521","2523","252f","2544",
+        "2560","2561","2563",
+        "2582","2583","2584",
+        "25a0","25a2","25a5","25a9","25ab","25ac","25ad","25af",
+        "25e0","25e2","25e5","25ec","25ed"
+    )
+    "AdaLovelace" = @(
+        "2684","2685","2689",
+        "2702","2703","2704","2705","2709",
+        "2717","2757",
+        "2782","2783","2786","2788",
+        "27a0","27e0",
+        "2803","2805","2808",
+        "2820","2822","2860",
+        "2882",
+        "28a0","28a1","28a3",
+        "28e0","28e1","28e3"
+    )
+    "Blackwell" = @(
+        "2b85","2b87",
+        "2c02","2c05",
+        "2c18","2c19","2c58","2c59",
+        "2d04","2d05",
+        "2d18","2d19","2d58","2d59",
+        "2d83",
+        "2d98","2dd8",
+        "2f04",
+        "2f18","2f58"
+    )
+}
+$NvidiaCodenameLookupTable = @{}
+# Autogenerate LookupTable
+ForEach ($generation in $NvidiaCodenames.Keys) {
+    ForEach ($id in $NvidiaCodenames[$generation]) {
+        $NvidiaCodenameLookupTable[$id] = $generation
+    }
+}
+
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
@@ -571,6 +627,11 @@ Function Show-GPUInfo {
         }
         ElseIf ( $gpu.Name.Contains( 'NVIDIA' ) ) {
             $vendor = 'NVIDIA'
+			$deviceID = ($gpu.PNPDeviceID -match "DEV_([0-9A-Fa-f]{4})") ? $matches[1] : $null
+			Write-Host "$deviceID" ForegroundColor -Red
+			If ($deviceID) {
+			    $archCodename = $NvidiaCodenameLookupTable[$deviceID]
+			}
             Try { 
                     $process = New-Object System.Diagnostics.Process
                     $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
@@ -658,9 +719,8 @@ Function Show-GameLaunchOptions {
 }
 Function Test-VegaGPUDriver {
     [OutputType([bool])]
-    $VegaWrongDriver = $script:SystemInfo.GPUInfo | Where-Object {
-    $_.vendor -eq 'AMD' -and $_.driverVersion -and $_.driverVersion -ne $script:Tests.NoVegaGPUs.ApprovedDriverVersion
-    }
+    $VegaWrongDriver = @($script:SystemInfo.GPUInfo | Where-Object {
+    $_.vendor -eq 'AMD' -and $_.driverVersion -and $_.driverVersion -ne $script:Tests.NoVegaGPUs.ApprovedDriverVersion })
     Return ($VegaWrongDriver.Count -eq 0)
 }
 Function Test-AVX2 {
