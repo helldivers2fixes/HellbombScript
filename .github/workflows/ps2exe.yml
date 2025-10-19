@@ -64,7 +64,8 @@ jobs:
           -version "${{ steps.get_filename.outputs.output_version }}" `
           -description "Troubleshoots Helldivers 2 Issues" `
           -copyright "© 2025" `
-          -title "Hellbomb Script"
+          -title "Hellbomb Script" `
+          -iconFile "./Bomb.ico"
 
       # Upload the compiled executable as an artifact.
       # Use the dynamic filename variable here as well.
