@@ -560,8 +560,8 @@ Function Show-GPUInfo {
         If ( $gpu.Name.Contains( 'AMD' ) ) {
             $vendor = 'AMD'
             $vegaIDs = $script:Tests.NoVegaGPUs.VegaPCIDevIDs
-            If ( [bool]$script:Tests.NoVegaGPUs.VegaPCIDevIDs | Where-Object { $gpu.PNPDeviceID -match "DEV_$_" } | Select-Object -First 1 ) {
-                $script:systemInfo.GPUInfo.archCodename = 'Vega'
+            If ( [bool]($script:Tests.NoVegaGPUs.VegaPCIDevIDs | Where-Object { $gpu.PNPDeviceID -match "DEV_$_" } | Select-Object -First 1) ) {
+                $archCodename = 'Vega'
             }
             Try {
                 $driverVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\ATI Technologies\Install" -Name RadeonSoftwareVersion).RadeonSoftwareVersion
