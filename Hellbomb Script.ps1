@@ -599,6 +599,7 @@ Function Show-GPUInfo {
         $script:systemInfo["GPUInfo"] += @{
             vendor = $vendor
             driverVersion = $driverVersion
+			archCodename = $archCodename
         }
         Write-Host "-------------------------------------"
         Write-Host "  GPU Model: $($gpu.Name)"
