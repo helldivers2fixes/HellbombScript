@@ -656,6 +656,13 @@ Function Show-GameLaunchOptions {
         Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
     }
 }
+Function Test-VegaGPUDriver {
+    [OutputType([bool])]
+    $VegaWrongDriver = $script:SystemInfo.GPUInfo | Where-Object {
+    $_.vendor -eq 'AMD' -and $_.driverVersion -ne $script:Tests.NoVegaGPUs.ApprovedDriverVersion
+    }
+    Return ($VegaWrongDriver.Count -eq 0)
+}
 Function Test-AVX2 {
     # Check for AVX2
     # Define the pattern to match the line
@@ -1857,6 +1864,7 @@ $Title = @(
             Test-BTAGService
             Test-VisualC++Redists
             Test-Programs
+            $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
             $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
             Get-SystemUptime
             Get-HardwareInfo
@@ -2071,4 +2079,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
