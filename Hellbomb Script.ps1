@@ -1877,7 +1877,7 @@ $AdminBanner = If (-not $IsAdmin) {
 }
 $Title = @(
     "-------------------------------------------------------------------------------------------------------",
-    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version: latest git",
+    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version: 4.0",
     "-------------------------------------------------------------------------------------------------------",
     $AdminBanner
 ) -join "`n"
