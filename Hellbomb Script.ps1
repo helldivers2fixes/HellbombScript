@@ -1022,7 +1022,7 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'Avast Free Antivirus'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
     [PSCustomObject]@{ProgramName = 'AVG Antivirus'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
     [PSCustomObject]@{ProgramName = 'Cepstral SwiftTalker'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Known to cause crashes in the past.' }
-    [PSCustomObject]@{ProgramName = 'cFosSpeed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
+    [PSCustomObject]@{ProgramName = 'cFosSpeed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unnecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'Cisco Webex'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'If the process is running, Webex will control certain keyboard shortcuts. Close completely using Task Manager.' }
     [PSCustomObject]@{ProgramName = 'ESET Endpoint'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'ESET File'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
@@ -1032,8 +1032,8 @@ Function Test-Programs {
     [PSCustomObject]@{ProgramName = 'ESET Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause crashes. Please disable/add exclusions for *.des files in tools folder.' }
     [PSCustomObject]@{ProgramName = 'EVGA Precision'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Reported to cause issues. Disabling the OSD may resolve the issue.' }
     [PSCustomObject]@{ProgramName = 'ExpressVPN'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause networking issues. Open Device Manager and disable the adapter there.' }
-    [PSCustomObject]@{ProgramName = 'GameFirst VI'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
-	[PSCustomObject]@{ProgramName = 'Gigabyte Speed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unecessary networking stack that causes network issues.' }
+    [PSCustomObject]@{ProgramName = 'GameFirst VI'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unnecessary networking stack that causes network issues.' }
+	[PSCustomObject]@{ProgramName = 'Gigabyte Speed'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Uninstall. Unnecessary networking stack that causes network issues.' }
     [PSCustomObject]@{ProgramName = 'Hamachi'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Breaks connectivity. Recommend uninstalling or disable IN DEVICE MANAGER.' }
     [PSCustomObject]@{ProgramName = 'iCue'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Outdated versions are known to cause issues.' }
     [PSCustomObject]@{ProgramName = 'Lunar Client'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Exit Lunar Client before launching HD2 to prevent connectivity issues.' }
@@ -1505,7 +1505,7 @@ Function Test-DoubleNAT {
     $ip = Resolve-DnsName -Type A $server |
         Select-Object -Expand IPAddress
     $tracedroute = Test-NetConnection -Hops 10 -TraceRoute $ip[0] -WarningAction:SilentlyContinue
-    Write-Progress -Completed -Activity "make progress bar dissapear"
+    Write-Progress -Completed -Activity "make progress bar disappear"
     $privateIPs = @()
     ForEach ($hop in $tracedroute.TraceRoute) {
         If (Test-PrivateIP $hop) {
@@ -1733,7 +1733,7 @@ Function Reset-HostabilityKey {
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-        Write-Host "Hostabiltiy key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
+        Write-Host "Hostability key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
     }    
 }
 Function Get-VSyncConfig {
@@ -2139,4 +2139,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
