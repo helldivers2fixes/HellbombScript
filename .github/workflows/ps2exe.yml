@@ -1,8 +1,15 @@
+# This workflow compiles the PowerShell script to an EXE,
+# calculates hashes for both the EXE and PS1 files,
+# and then runs a Python script to update the SECURITY.md file.
+# Finally, it creates a pull request with the changes.
 
 name: Create Hellbomb Script EXE and Update Security Info
 
+# Grant write permissions to the 'contents' scope
+# This is necessary for the create-pull-request action
 permissions:
-  contents: write  # Needed for PR creation
+  contents: write
+  pull-requests: write
 
 on:
   push:
@@ -10,14 +17,20 @@ on:
       - main
 
 env:
+  # Store the short SHA for use in filenames
   SHORT_SHA: ${{ github.sha }}
+  # Define the PS1 script name as an env var for consistency
+  PS1_SCRIPT_NAME: "Hellbomb Script.ps1"
 
 jobs:
   build-exe:
     runs-on: windows-latest
+    # Define the outputs for this job
     outputs:
       exe_filename: ${{ steps.get_filename.outputs.output_filename }}
       exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
+      ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }} # Added ps1_hash output
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,16 +45,17 @@ jobs:
         id: get_filename
         shell: pwsh
         run: |
-          $scriptContent = Get-Content -Path "./Hellbomb Script.ps1" -Raw
+          $scriptContent = Get-Content -Path "./${{ env.PS1_SCRIPT_NAME }}" -Raw
           If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
+            # Note: Using underscores as they are generally safer for filenames
             $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
             Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
             Write-Output "output_version=$version" >> $env:GITHUB_OUTPUT
             Write-Host "Detected version $version. Output file will be named $fileName."
           } Else {
-            Write-Error "Could not find a version number in Hellbomb Script.ps1."
+            Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
             Exit 1
           }
 
@@ -49,16 +63,16 @@ jobs:
         shell: pwsh
         run: |
           Invoke-ps2exe `
-          -inputFile "./Hellbomb Script.ps1" `
-          -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
-          -x64 `
-          -requireAdmin `
-          -UNICODEEncoding `
-          -version "${{ steps.get_filename.outputs.output_version }}" `
-          -description "Troubleshoots Helldivers 2 Issues" `
-          -copyright "© 2025" `
-          -title "Hellbomb Script" `
-          -iconFile "./Bomb.ico"
+            -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
+            -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+            -x64 `
+            -requireAdmin `
+            -UNICODEEncoding `
+            -version "${{ steps.get_filename.outputs.output_version }}" `
+            -description "Troubleshoots Helldivers 2 Issues" `
+            -copyright "© 2025" `
+            -title "Hellbomb Script" `
+            -iconFile "./Bomb.ico"
 
       - name: Calculate SHA256 of EXE
         id: hash
@@ -66,12 +80,12 @@ jobs:
         run: |
           $hash = Get-FileHash "${{ steps.get_filename.outputs.output_filename }}" -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
-          
+
       - name: Calculate SHA256 of PS1
         id: ps1_hash
         shell: pwsh
         run: |
-          $hash = Get-FileHash "./Hellbomb Script.ps1" -Algorithm SHA256
+          $hash = Get-FileHash "./${{ env.PS1_SCRIPT_NAME }}" -Algorithm SHA256
           Write-Output "ps1_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
       - name: Upload executable artifact
@@ -81,6 +95,7 @@ jobs:
           path: "${{ steps.get_filename.outputs.output_filename }}"
 
   update-security-info:
+    # This job depends on the build-exe job completing successfully
     needs: build-exe
     runs-on: ubuntu-latest
     steps:
@@ -95,16 +110,24 @@ jobs:
       - name: Update SECURITY.md with new hashes and links
         working-directory: ${{ github.workspace }}
         run: |
-         python .github/scripts/update_security_info.py \
-         "${{ steps.exe_hash.outputs.exe_sha256 }}" \
-         "${{ steps.get_filename.outputs.output_filename }}" \
-         "${{ steps.ps1_hash.outputs.ps1_sha256 }}" \
-         "${{ steps.get_filename.outputs.output_filename }}"
+          python .github/scripts/update_security_info.py \
+          "${{ needs.build-exe.outputs.exe_hash }}" \
+          "${{ needs.build-exe.outputs.exe_filename }}" \
+          "${{ needs.build-exe.outputs.ps1_hash }}" \
+          "${{ env.PS1_SCRIPT_NAME }}"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6 # Updated to v6
         with:
-          commit-message: "Update Security Info section with latest EXE SHA256"
-          title: "Automated update of Security Info section"
-          body: "This PR updates the Security Info section in SECURITY.md with the latest EXE SHA256 hash and links."
+          commit-message: "docs(security): Update SECURITY.md with latest hashes"
+          title: "Automated Security Info Update"
+          body: |
+            This PR automatically updates the `SECURITY.md` file with the latest
+            file hashes and filenames from the build process.
+
+            **EXE File:** `${{ needs.build-exe.outputs.exe_filename }}`
+            **EXE SHA256:** `${{ needs.build-exe.outputs.exe_hash }}`
+            **PS1 SHA256:** `${{ needs.build-exe.outputs.ps1_hash }}`
           branch: "auto/security-info-update"
+          delete-branch: true # Automatically delete the branch after merging
+          base: main # Ensure PR is against main
