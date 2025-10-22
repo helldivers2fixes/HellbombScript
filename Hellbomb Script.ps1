@@ -631,7 +631,7 @@ Function Show-GPUInfo {
             } Else {
                 $deviceID = $null
             }
-			Write-Host "$deviceID" ForegroundColor -Red
+			Write-Host "$deviceID" -ForegroundColor Red
 			If ($deviceID) {
 			    $archCodename = $NvidiaCodenameLookupTable[$deviceID]
 			}
