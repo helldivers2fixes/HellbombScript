@@ -1,6 +1,9 @@
 import sys
 import re
 
+import os
+print("Files in current directory:", os.listdir(".."))
+
 if len(sys.argv) != 5:
     print("Usage: python update_security_info.py <exe_hash> <exe_filename> <ps1_hash> <ps1_filename>")
     sys.exit(1)
