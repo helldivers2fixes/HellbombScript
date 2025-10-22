@@ -66,6 +66,14 @@ jobs:
         run: |
           $hash = Get-FileHash "${{ steps.get_filename.outputs.output_filename }}" -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+          
+      - name: Calculate SHA256 of PS1
+        id: ps1_hash
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash "Hellbomb Script v363.ps1" -Algorithm SHA256
+          Write-Output "ps1_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
