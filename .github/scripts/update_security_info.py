@@ -1,6 +1,10 @@
 import sys
 import re
-
+import os
+for root, dirs, files in os.walk("."):
+    for name in files:
+        if name.lower() == "security.md":
+            print("Found SECURITY.MD at:", os.path.join(root, name))
 if len(sys.argv) != 5:
     print("Usage: python update_security_info.py <exe_hash> <exe_filename> <ps1_hash> <ps1_filename>")
     sys.exit(1)
