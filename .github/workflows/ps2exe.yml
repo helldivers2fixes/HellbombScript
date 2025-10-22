@@ -1,76 +1,138 @@
-name: Create Hellbomb Script EXE
+# This workflow compiles the PowerShell script to an EXE,
+# calculates hashes for both the EXE and PS1 files,
+# and then runs a Python script to update the SECURITY.md file.
+# Finally, it creates a pull request with the changes.
 
+name: Build Hellbomb Script EXE & Update Hashes
+
+# Grant write permissions to the 'contents' scope
+# This is necessary for the create-pull-request action
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
-# Trigger the workflow on push events.
 on:
   push:
     branches:
       - main
 
-# Set an environment variable for the short commit SHA.
 env:
+  # Store the short SHA for use in filenames
   SHORT_SHA: ${{ github.sha }}
+  # Define the PS1 script name as an env var for consistency
+  PS1_SCRIPT_NAME: "Hellbomb Script.ps1"
 
 jobs:
   build-exe:
-    # Use a GitHub-hosted Windows runner.
     runs-on: windows-latest
+    # Define the outputs for this job
+    outputs:
+      exe_filename: ${{ steps.get_filename.outputs.output_filename }}
+      exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
+      ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }} # Added ps1_hash output
 
     steps:
-      # Check out the repository's code.
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Install the PS2EXE module.
       - name: Install PS2EXE module
         shell: pwsh
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name PS2EXE -Force
 
-      # Extract version from script and set as a GitHub Actions output variable.
       - name: Get version and commit hash
         id: get_filename
         shell: pwsh
         run: |
-          $scriptContent = Get-Content -Path "./Hellbomb Script.ps1" -Raw
-          # Use a regular expression to find the version number.
+          $scriptContent = Get-Content -Path "./${{ env.PS1_SCRIPT_NAME }}" -Raw
           If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
+            # Note: Using underscores as they are generally safer for filenames
             $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
-            
-            # Set the output variable for the next steps.
             Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
+            Write-Output "output_version=$version" >> $env:GITHUB_OUTPUT
             Write-Host "Detected version $version. Output file will be named $fileName."
           } Else {
-            Write-Error "Could not find a version number in Hellbomb Script.ps1."
+            Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
             Exit 1
           }
 
-      # Compile the PowerShell script to an executable.
-      # Reference the output variable from the previous step.
       - name: Compile script to EXE
         shell: pwsh
         run: |
           Invoke-ps2exe `
-          -inputFile "./Hellbomb Script.ps1" `
-          -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
-          -x64 `
-          -requireAdmin `
-          -UNICODEEncoding `
-          -version "${{ steps.get_filename.outputs.output_version }}" `
-          -description "Troubleshoots Helldivers 2 Issues" `
-          -copyright "© 2025" `
-          -title "Hellbomb Script" `
-          -iconFile "./Bomb.ico"
-
-      # Upload the compiled executable as an artifact.
-      # Use the dynamic filename variable here as well.
+            -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
+            -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+            -x64 `
+            -requireAdmin `
+            -UNICODEEncoding `
+            -version "${{ steps.get_filename.outputs.output_version }}" `
+            -description "Troubleshoots Helldivers 2 Issues" `
+            -copyright "© 2025" `
+            -title "Hellbomb Script" `
+            -iconFile "./Bomb.ico"
+            
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: compiled-exe
+          name: hellbomb-exe
           path: "${{ steps.get_filename.outputs.output_filename }}"
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hellbomb-exe
+          path: ./artifact
+      
+      - name: Calculate EXE hash  
+        id: hash
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem ./artifact/*.exe | Select-Object -First 1
+          $hash = Get-FileHash $exePath.FullName -Algorithm SHA256
+          Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+
+      - name: Calculate SHA256 of PS1
+        id: ps1_hash
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash "./${{ env.PS1_SCRIPT_NAME }}" -Algorithm SHA256
+          Write-Output "ps1_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+
+  update-security-info:
+    # This job depends on the build-exe job completing successfully
+    needs: build-exe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update SECURITY.MD with new hashes and links
+        working-directory: ${{ github.workspace }}
+        run: |
+          python .github/scripts/update_security_info.py \
+          "${{ needs.build-exe.outputs.exe_hash }}" \
+          "${{ needs.build-exe.outputs.exe_filename }}" \
+          "${{ needs.build-exe.outputs.ps1_hash }}" \
+          "${{ env.PS1_SCRIPT_NAME }}"
+
+          
+      - name: Create and push branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b auto/security-info-update
+          # Stage and commit changes
+          git add SECURITY.MD
+          git commit -m "docs(security): Update SECURITY.md with latest hashes" || echo "No changes to commit"
+          # Push the new branch
+          git push origin auto/security-info-update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

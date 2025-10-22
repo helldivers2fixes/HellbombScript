@@ -6,7 +6,9 @@
   [![GitHub contributors](https://img.shields.io/github/contributors/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/graphs/contributors)
   [![GitHub lastcommit](https://img.shields.io/github/last-commit/helldivers2fixes/HellbombScript)]()
   [![GitHub downloads](https://img.shields.io/github/downloads/helldivers2fixes/HellbombScript/total)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
-
+  
+[![PSScriptAnalyzer](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml)
+[![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## HOW TO USE:
 
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
