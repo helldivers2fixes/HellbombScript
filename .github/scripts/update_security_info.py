@@ -1,9 +1,6 @@
 import sys
 import re
 
-import os
-print("Files in current directory:", os.listdir(".."))
-
 if len(sys.argv) != 5:
     print("Usage: python update_security_info.py <exe_hash> <exe_filename> <ps1_hash> <ps1_filename>")
     sys.exit(1)
@@ -18,7 +15,7 @@ ha_exe = f"https://www.hybrid-analysis.com/sample/{exe_hash}"
 vt_ps1 = f"https://www.virustotal.com/gui/file/{ps1_hash}"
 ha_ps1 = f"https://www.hybrid-analysis.com/sample/{ps1_hash}"
 
-with open("../../SECURITY.MD", "r", encoding="utf-8") as f:
+with open("HellbombScript/SECURITY.MD", "r", encoding="utf-8") as f:
     content = f.read()
 
 # Replace all EXE filenames (dynamic version)
