@@ -92,9 +92,13 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Update SECURITY.md with new hash and links
+      - name: Update SECURITY.md with new hashes and links
         run: |
-          python .github/scripts/update_security_info.py "${{ needs.build-exe.outputs.exe_hash }}" "${{ needs.build-exe.outputs.exe_filename }}"
+         python .github/scripts/update_security_info.py \
+         "${{ steps.exe_hash.outputs.exe_sha256 }}" \
+         "${{ output_filename }}" \
+         "${{ steps.ps1_hash.outputs.ps1_sha256 }}" \
+         "${{ output_filename }}"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
