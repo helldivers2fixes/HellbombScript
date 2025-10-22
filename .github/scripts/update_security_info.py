@@ -15,7 +15,7 @@ ha_exe = f"https://www.hybrid-analysis.com/sample/{exe_hash}"
 vt_ps1 = f"https://www.virustotal.com/gui/file/{ps1_hash}"
 ha_ps1 = f"https://www.hybrid-analysis.com/sample/{ps1_hash}"
 
-with open("../SECURITY.MD", "r", encoding="utf-8") as f:
+with open("../../SECURITY.MD", "r", encoding="utf-8") as f:
     content = f.read()
 
 # Replace all EXE filenames (dynamic version)
