@@ -19,12 +19,12 @@ with open("SECURITY.md", "r", encoding="utf-8") as f:
     content = f.read()
 
 # Replace all EXE filenames (dynamic version)
-content = re.sub(r'"Hellbomb Script v[\\w\\.\\-]+\\.exe"', f'"{exe_filename}"', content)
-content = re.sub(r"Hellbomb Script v[\\w\\.\\-]+\\.exe", exe_filename, content)
+content = re.sub(r'"Hellbomb Script v[\w\.\-]+\.exe"', f'"{exe_filename}"', content)
+content = re.sub(r"Hellbomb Script v[\w\.\-]+\.exe", exe_filename, content)
 
 # Replace all PS1 filenames (dynamic version)
-content = re.sub(r'"Hellbomb Script v[\\w\\.\\-]+\\.ps1"', f'"{ps1_filename}"', content)
-content = re.sub(r"Hellbomb Script v[\\w\\.\\-]+\\.ps1", ps1_filename, content)
+content = re.sub(r'"Hellbomb Script v[\w\.\-]+\.ps1"', f'"{ps1_filename}"', content)
+content = re.sub(r"Hellbomb Script v[\w\.\-]+\.ps1", ps1_filename, content)
 
 # Replace EXE VirusTotal and Hybrid Analysis links (first occurrence)
 content = re.sub(r"https://www\.virustotal\.com/gui/file/[a-fA-F0-9]{64}", vt_exe, content, count=1)
@@ -35,11 +35,10 @@ content = re.sub(r"https://www\.virustotal\.com/gui/file/[a-fA-F0-9]{64}", vt_ps
 content = re.sub(r"https://www\.hybrid-analysis\.com/sample/[a-fA-F0-9]{64}", ha_ps1, content)
 
 # Replace all PS1 SHA256 hashes (64 hex digits) in code blocks and markdown
-content = re.sub(r"`{2}[a-fA-F0-9]{64}`{2}", f"``{ps1_hash}``", content)
+content = re.sub(r"``[a-fA-F0-9]{64}``", f"``{ps1_hash}``", content)
 content = re.sub(r"(?<=-eq )[a-fA-F0-9]{64}", ps1_hash, content)
 
 with open("SECURITY.md", "w", encoding="utf-8") as f:
     f.write(content)
 
 print("SECURITY.md updated with dynamic filenames and hashes.")
-``
