@@ -470,7 +470,7 @@ Function Install-VCRedist {
     Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
     Exit
 }
-Function Toggle-GameInput {
+Function Switch-GameInput {
     Try { 
         	$gameInputSvc = Get-Service -Name "GameInputSvc"
 		}
@@ -615,7 +615,6 @@ Function Show-GPUInfo {
         $archCodename = 'Not Identified'
         If ( $gpu.Name.Contains( 'AMD' ) ) {
             $vendor = 'AMD'
-            $vegaIDs = $script:Tests.NoVegaGPUs.VegaPCIDevIDs
             If ( [bool]($script:Tests.NoVegaGPUs.VegaPCIDevIDs | Where-Object { $gpu.PNPDeviceID -match "DEV_$_" } | Select-Object -First 1) ) {
                 $archCodename = 'Vega'
             }
@@ -1967,7 +1966,7 @@ $Title = @(
             Menu
         }
         6 {
-            Toggle-GameInput
+            Switch-GameInput
             Write-Host "$([Environment]::NewLine)"
             Menu
         }
