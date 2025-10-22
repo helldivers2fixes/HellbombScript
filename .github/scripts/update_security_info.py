@@ -1,9 +1,6 @@
 import sys
 import re
 
-- name: List files
-  run: ls -l
-
 if len(sys.argv) != 5:
     print("Usage: python update_security_info.py <exe_hash> <exe_filename> <ps1_hash> <ps1_filename>")
     sys.exit(1)
