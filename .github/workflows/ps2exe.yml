@@ -1,57 +1,50 @@
-name: Create Hellbomb Script EXE
+
+name: Create Hellbomb Script EXE and Update Security Info
 
 permissions:
-  contents: read
+  contents: write  # Needed for PR creation
 
-# Trigger the workflow on push events.
 on:
   push:
     branches:
       - main
 
-# Set an environment variable for the short commit SHA.
 env:
   SHORT_SHA: ${{ github.sha }}
 
 jobs:
   build-exe:
-    # Use a GitHub-hosted Windows runner.
     runs-on: windows-latest
-
+    outputs:
+      exe_filename: ${{ steps.get_filename.outputs.output_filename }}
+      exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
     steps:
-      # Check out the repository's code.
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Install the PS2EXE module.
       - name: Install PS2EXE module
         shell: pwsh
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name PS2EXE -Force
 
-      # Extract version from script and set as a GitHub Actions output variable.
       - name: Get version and commit hash
         id: get_filename
         shell: pwsh
         run: |
           $scriptContent = Get-Content -Path "./Hellbomb Script.ps1" -Raw
-          # Use a regular expression to find the version number.
           If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
             $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
-            
-            # Set the output variable for the next steps.
             Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
+            Write-Output "output_version=$version" >> $env:GITHUB_OUTPUT
             Write-Host "Detected version $version. Output file will be named $fileName."
           } Else {
             Write-Error "Could not find a version number in Hellbomb Script.ps1."
             Exit 1
           }
 
-      # Compile the PowerShell script to an executable.
-      # Reference the output variable from the previous step.
       - name: Compile script to EXE
         shell: pwsh
         run: |
@@ -67,10 +60,38 @@ jobs:
           -title "Hellbomb Script" `
           -iconFile "./Bomb.ico"
 
-      # Upload the compiled executable as an artifact.
-      # Use the dynamic filename variable here as well.
+      - name: Calculate SHA256 of EXE
+        id: hash
+        shell: pwsh
+        run: |
+          $hash = Get-FileHash "${{ steps.get_filename.outputs.output_filename }}" -Algorithm SHA256
+          Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
       - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: compiled-exe
           path: "${{ steps.get_filename.outputs.output_filename }}"
+
+  update-security-info:
+    needs: build-exe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Update SECURITY.md with new hash and links
+        run: |
+          python .github/scripts/update_security_info.py "${{ needs.build-exe.outputs.exe_hash }}" "${{ needs.build-exe.outputs.exe_filename }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "Update Security Info section with latest EXE SHA256"
+          title: "Automated update of Security Info section"
+          body: "This PR updates the Security Info section in SECURITY.md with the latest EXE SHA256 hash and links."
+          branch: "auto/security-info-update"
