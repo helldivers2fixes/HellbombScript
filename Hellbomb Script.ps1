@@ -626,7 +626,11 @@ Function Show-GPUInfo {
         }
         ElseIf ( $gpu.Name.Contains( 'NVIDIA' ) ) {
             $vendor = 'NVIDIA'
-			$deviceID = ($gpu.PNPDeviceID -match "DEV_([0-9A-Fa-f]{4})") ? $matches[1] : $null
+			If ($gpu.PNPDeviceID -match "DEV_([0-9A-Fa-f]{4})") {
+            $deviceID = $matches[1]
+            } Else {
+                $deviceID = $null
+            }
 			Write-Host "$deviceID" ForegroundColor -Red
 			If ($deviceID) {
 			    $archCodename = $NvidiaCodenameLookupTable[$deviceID]
