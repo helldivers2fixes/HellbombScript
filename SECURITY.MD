@@ -1,6 +1,6 @@
 ## Security Info:
 
-EXE [VirusTotal](https://www.virustotal.com/gui/file/CFDE8DD9AC5731F361686D1D660BB72A3B88CD43C75FF256BD913F29A6F25220) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/CFDE8DD9AC5731F361686D1D660BB72A3B88CD43C75FF256BD913F29A6F25220) link.
+EXE [VirusTotal](https://www.virustotal.com/gui/file/F9A887635796AE93704906EA9621720165634B1ADC7E8F84055A8A713B84D183) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/F9A887635796AE93704906EA9621720165634B1ADC7E8F84055A8A713B84D183) link.
 
 Not sure you trust the EXE? You can run
 ```powershell
@@ -8,11 +8,11 @@ Not sure you trust the EXE? You can run
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
-**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/F210D8CD94A481E0BD3296B1DFDF33569EE666BAA83873F8E4543FC9918264AB)
+**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/1CBC2879BA5896ABBBE88488E196C5749D8C092ACDE603A5EAE3B3A18E29E110)
 
-The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``F210D8CD94A481E0BD3296B1DFDF33569EE666BAA83873F8E4543FC9918264AB``.
+The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``1CBC2879BA5896ABBBE88488E196C5749D8C092ACDE603A5EAE3B3A18E29E110``.
 
-**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/F210D8CD94A481E0BD3296B1DFDF33569EE666BAA83873F8E4543FC9918264AB)
+**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/1CBC2879BA5896ABBBE88488E196C5749D8C092ACDE603A5EAE3B3A18E29E110)
 
 You can compare the file hash to the VirusTotal link to ensure that the VirusTotal results match the file you're attempting to run.
 
@@ -24,7 +24,7 @@ cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self
 ```
 4. Run
 ```powershell
-Get-FileHash 'Hellbomb Script.ps1' -eq F210D8CD94A481E0BD3296B1DFDF33569EE666BAA83873F8E4543FC9918264AB
+Get-FileHash 'Hellbomb Script.ps1' -eq 1CBC2879BA5896ABBBE88488E196C5749D8C092ACDE603A5EAE3B3A18E29E110
 ```
 5. The statement should return/evaluate to ``True``
 
