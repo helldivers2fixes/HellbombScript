@@ -631,7 +631,6 @@ Function Show-GPUInfo {
             } Else {
                 $deviceID = $null
             }
-			Write-Host "$deviceID" -ForegroundColor Red
 			If ($deviceID) {
 			    $archCodename = $NvidiaCodenameLookupTable[$deviceID]
 			}
@@ -2142,3 +2141,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
