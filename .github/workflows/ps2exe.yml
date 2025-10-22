@@ -93,9 +93,9 @@ jobs:
           python-version: '3.x'
 
       - name: Update SECURITY.md with new hashes and links
+        working-directory: ${{ github.workspace }}
         run: |
          python .github/scripts/update_security_info.py \
-         working-directory: ${{ github.workspace }} \
          "${{ steps.exe_hash.outputs.exe_sha256 }}" \
          "${{ steps.get_filename.outputs.output_filename }}" \
          "${{ steps.ps1_hash.outputs.ps1_sha256 }}" \
