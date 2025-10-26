@@ -53,14 +53,11 @@ jobs:
             ps2exe-modules-${{ runner.os }}-
 
       - name: Install PS2EXE module
+        if: steps.ps2exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name PS2EXE -Force
-
-      - name: List installed PowerShell modules
-        shell: pwsh
-        run: Get-Module -ListAvailable
 
       - name: Get version and commit hash
         id: get_filename
