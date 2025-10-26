@@ -722,7 +722,7 @@ Function Show-GameLaunchOptions {
 Function Test-VegaGPUDriver {
     [OutputType([bool])]
     $VegaWrongDriver = @($script:SystemInfo.GPUInfo | Where-Object {
-    $_.vendor -eq 'AMD' -and $_.driverVersion -and $_.driverVersion -ne $script:Tests.NoVegaGPUs.ApprovedDriverVersion })
+    $_.vendor -eq 'AMD' -and $_.archCodename -eq 'Vega' -and $_.driverVersion -and $_.driverVersion -ne $script:Tests.NoVegaGPUs.ApprovedDriverVersion })
     Return ($VegaWrongDriver.Count -eq 0)
 }
 Function Test-AVX2 {
@@ -2141,4 +2141,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
