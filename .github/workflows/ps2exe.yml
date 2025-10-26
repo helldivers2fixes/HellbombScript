@@ -33,7 +33,28 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Cache compiled EXE
+        uses: actions/cache@v4
+        id: exe-cache
+        with:
+          path: ./artifact
+          key: hellbomb-exe-${{ hashFiles(env.PS1_SCRIPT_NAME) }}
+          restore-keys: |
+            hellbomb-exe-
+
+      - name: Check if EXE was restored from cache
+        id: exe-cache-hit
+        run: echo "cache-hit=${{ steps.exe-cache.outputs.cache-hit }}" >> $GITHUB_OUTPUT
+
+      - name: Cache PowerShell modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/powershell/Modules
+          key: ps2exe-modules-${{ runner.os }}-${{ hashFiles('**/*.ps1') }}
+          restore-keys: |
+            ps2exe-modules-${{ runner.os }}-
 
       - name: Install PS2EXE module
         shell: pwsh
@@ -107,10 +128,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@v5
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
