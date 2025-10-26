@@ -694,7 +694,7 @@ Function Show-GameLaunchOptions {
     $allMatches = [regex]::Matches($Content, $pattern)
 
     If ($allMatches.Count -eq 0) {
-        Write-Host "Error: '553850' block or 'LaunchOptions' within it not found in $script:localconfigVDF." -ForegroundColor Red
+        Write-Host "Could not locate launch options in $script:localconfigVDF." -ForegroundColor Yellow
     } Else {
         Foreach ($match in $allMatches) {
             # Check if the "LaunchOptions" capture group actually has a value for this match
@@ -1723,8 +1723,8 @@ Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
     Try { $OriginalHash = Get-FileHash $configPath }
     Catch {
-        Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
-        Write-Host 'User_settings.config is missing.' -ForegroundColor Yellow
+        Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
+        Write-Host 'User_settings.config is missing.' -ForegroundColor Cyan
         Return
     }
     $content = Get-Content $configPath
@@ -2141,3 +2141,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
