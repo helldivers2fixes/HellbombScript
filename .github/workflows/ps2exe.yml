@@ -95,6 +95,7 @@ jobs:
             -iconFile "./Bomb.ico"
             
       - name: Upload executable artifact
+        if: steps.exe-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
