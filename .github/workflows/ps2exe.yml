@@ -41,7 +41,6 @@ jobs:
         with:
           path: ./artifact
           key: hellbomb-exe-${{ hashFiles('Hellbomb Script.ps1') }}
-
           restore-keys: |
             hellbomb-exe-
 
@@ -82,13 +81,15 @@ jobs:
           }
 
       - name: Compile script to EXE
+        # Only compile if the cache misses. If it hits, the file is already on disk.
         if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
+          # Create artifact directory if a cache miss and the folder doesn't exist
+          if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
             -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}"
-
             -x64 `
             -requireAdmin `
             -UNICODEEncoding `
@@ -104,19 +105,17 @@ jobs:
         with:
           name: hellbomb-exe
           path: "./artifact/${{ steps.get_filename.outputs.output_filename }}"
-
-      - name: Download artifact
-        if: steps.exe-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: hellbomb-exe
-          path: ./artifact
-      
-      - name: Calculate EXE hash  
+          
+      - name: Calculate EXE hash    
         id: hash
         shell: pwsh
         run: |
+          # Use Get-ChildItem to safely locate the single EXE file in the artifact folder
           $exePath = Get-ChildItem ./artifact/*.exe | Select-Object -First 1
+          if (-not $exePath) {
+              Write-Error "Could not find an EXE file in the ./artifact directory."
+              Exit 1
+          }
           $hash = Get-FileHash $exePath.FullName -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
@@ -134,27 +133,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
-      - name: Cache SECURITY.md
-        uses: actions/cache@v4
-        id: security-cache
-        with:
-          path: SECURITY.MD
-          key: security-md-${{ hashFiles('SECURITY.MD') }}
-          restore-keys: |
-            security-md-
-
-      - name: Check if SECURITY.md has changed
-        id: security-check
-        run: |
-          echo "hash=${{ hashFiles('SECURITY.MD') }}" >> $GITHUB_OUTPUT
-      
       - name: Update SECURITY.MD with new hashes and links
-        if: steps.security-cache.outputs.cache-hit != 'true'
+        # This step should always run to ensure SECURITY.MD is updated if a new build occurred.
+        # Rely on the git diff command below to prevent commits if the content hasn't changed.
         working-directory: ${{ github.workspace }}
         run: |
           python .github/scripts/update_security_info.py \
@@ -169,6 +156,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b auto/security-info-update
           git add SECURITY.MD
+          # Check if there are any changes staged for commit. If not, gracefully exit.
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "docs(security): Update SECURITY.md with latest hashes"
           git push origin auto/security-info-update
