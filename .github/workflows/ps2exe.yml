@@ -33,9 +33,28 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Cache compiled EXE
+        uses: actions/cache@v4
+        id: exe-cache
+        with:
+          path: ./artifact
+          key: hellbomb-exe-${{ hashFiles('Hellbomb Script.ps1') }}
+          restore-keys: |
+            hellbomb-exe-
+
+      - name: Cache PowerShell modules
+        id: ps2exe-cache
+        uses: actions/cache@v4
+        with:
+          path: C:\Users\runneradmin\Documents\PowerShell\Modules
+          key: ps2exe-modules-${{ runner.os }}-${{ hashFiles('**/*.ps1') }}
+          restore-keys: |
+            ps2exe-modules-${{ runner.os }}-
 
       - name: Install PS2EXE module
+        if: steps.ps2exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
@@ -60,11 +79,15 @@ jobs:
           }
 
       - name: Compile script to EXE
+        # Only compile if the cache misses. If it hits, the file is already on disk.
+        if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
+          # Create artifact directory if a cache miss and the folder doesn't exist
+          if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
-            -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+            -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}"
             -x64 `
             -requireAdmin `
             -UNICODEEncoding `
@@ -75,22 +98,22 @@ jobs:
             -iconFile "./Bomb.ico"
             
       - name: Upload executable artifact
+        if: steps.exe-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
-          path: "${{ steps.get_filename.outputs.output_filename }}"
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: hellbomb-exe
-          path: ./artifact
-      
-      - name: Calculate EXE hash  
+          path: "./artifact/${{ steps.get_filename.outputs.output_filename }}"
+          
+      - name: Calculate EXE hash    
         id: hash
         shell: pwsh
         run: |
+          # Use Get-ChildItem to safely locate the single EXE file in the artifact folder
           $exePath = Get-ChildItem ./artifact/*.exe | Select-Object -First 1
+          if (-not $exePath) {
+              Write-Error "Could not find an EXE file in the ./artifact directory."
+              Exit 1
+          }
           $hash = Get-FileHash $exePath.FullName -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
@@ -107,14 +130,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@v5
+        
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
       - name: Update SECURITY.MD with new hashes and links
+        # This step should always run to ensure SECURITY.MD is updated if a new build occurred.
+        # Rely on the git diff command below to prevent commits if the content hasn't changed.
         working-directory: ${{ github.workspace }}
         run: |
           python .github/scripts/update_security_info.py \
@@ -123,16 +148,15 @@ jobs:
           "${{ needs.build-exe.outputs.ps1_hash }}" \
           "${{ env.PS1_SCRIPT_NAME }}"
 
-          
       - name: Create and push branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b auto/security-info-update
-          # Stage and commit changes
           git add SECURITY.MD
-          git commit -m "docs(security): Update SECURITY.md with latest hashes" || echo "No changes to commit"
-          # Push the new branch
+          # Check if there are any changes staged for commit. If not, gracefully exit.
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "docs(security): Update SECURITY.md with latest hashes"
           git push origin auto/security-info-update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
