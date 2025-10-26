@@ -40,13 +40,10 @@ jobs:
         id: exe-cache
         with:
           path: ./artifact
-          key: hellbomb-exe-${{ hashFiles(env.PS1_SCRIPT_NAME) }}
+          key: hellbomb-exe-${{ hashFiles('Hellbomb Script.ps1') }}
+
           restore-keys: |
             hellbomb-exe-
-
-      - name: Check if EXE was restored from cache
-        id: exe-cache-hit
-        run: echo "cache-hit=${{ steps.exe-cache.outputs.cache-hit }}" >> $GITHUB_OUTPUT
 
       - name: Cache PowerShell modules
         uses: actions/cache@v4
@@ -81,11 +78,13 @@ jobs:
           }
 
       - name: Compile script to EXE
+        if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
-            -outputFile "${{ steps.get_filename.outputs.output_filename }}" `
+            -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}"
+
             -x64 `
             -requireAdmin `
             -UNICODEEncoding `
@@ -99,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
-          path: "${{ steps.get_filename.outputs.output_filename }}"
+          path: "./artifact/${{ steps.get_filename.outputs.output_filename }}"
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -134,7 +133,22 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Cache SECURITY.md
+        uses: actions/cache@v4
+        id: security-cache
+        with:
+          path: SECURITY.MD
+          key: security-md-${{ hashFiles('SECURITY.MD') }}
+          restore-keys: |
+            security-md-
+
+      - name: Check if SECURITY.md has changed
+        id: security-check
+        run: |
+          echo "hash=${{ hashFiles('SECURITY.MD') }}" >> $GITHUB_OUTPUT
+      
       - name: Update SECURITY.MD with new hashes and links
+        if: steps.security-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}
         run: |
           python .github/scripts/update_security_info.py \
@@ -143,16 +157,15 @@ jobs:
           "${{ needs.build-exe.outputs.ps1_hash }}" \
           "${{ env.PS1_SCRIPT_NAME }}"
 
-          
       - name: Create and push branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b auto/security-info-update
-          # Stage and commit changes
           git add SECURITY.MD
-          git commit -m "docs(security): Update SECURITY.md with latest hashes" || echo "No changes to commit"
-          # Push the new branch
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "docs(security): Update SECURITY.md with latest hashes"
           git push origin auto/security-info-update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
