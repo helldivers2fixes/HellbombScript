@@ -59,6 +59,10 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name PS2EXE -Force
 
+      - name: List installed PowerShell modules
+        shell: pwsh
+        run: Get-Module -ListAvailable
+
       - name: Get version and commit hash
         id: get_filename
         shell: pwsh
@@ -170,4 +174,3 @@ jobs:
           git push origin auto/security-info-update
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
