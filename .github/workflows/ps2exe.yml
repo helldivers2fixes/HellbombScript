@@ -48,7 +48,7 @@ jobs:
       - name: Cache PowerShell modules
         uses: actions/cache@v4
         with:
-          path: ~/.local/share/powershell/Modules
+          path: C:\Users\runneradmin\Documents\PowerShell\Modules
           key: ps2exe-modules-${{ runner.os }}-${{ hashFiles('**/*.ps1') }}
           restore-keys: |
             ps2exe-modules-${{ runner.os }}-
