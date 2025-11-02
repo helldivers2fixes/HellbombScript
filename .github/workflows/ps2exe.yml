@@ -87,7 +87,7 @@ jobs:
           if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
-            -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}"
+            -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}" `
             -x64 `
             -requireAdmin `
             -UNICODEEncoding `
