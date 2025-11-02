@@ -1891,7 +1891,7 @@ $Title = @(
         [ChoiceDescription]::new("🧹 Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
         [ChoiceDescription]::new("🔁 Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
         [ChoiceDescription]::new("🔁 Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
-        [ChoiceDescription]::new("🗑️ &Disable GameInput$([Environment]::NewLine)", 'Toggles Microsoft GameInput service. May resolve some stuttering issues.'),
+        [ChoiceDescription]::new("🗑️ Toggle Between Enabled/&Disable of GameInput Service$([Environment]::NewLine)", 'Toggles Microsoft GameInput service. May resolve some stuttering issues.'),
         [ChoiceDescription]::new("🗑️ &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
         [ChoiceDescription]::new("➕ &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
         [ChoiceDescription]::new("🛠️ Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
@@ -2141,4 +2141,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
-
