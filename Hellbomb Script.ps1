@@ -184,7 +184,7 @@ $script:Tests = @{
     If ( $script:Tests.SecureBootEnabled.SecureBootNotSupported -eq $true ) {
     	Write-Host 'Secure Boot is not supported on this platform. If you experience constant GameGuard errors, ensure that no unverified drivers are loaded at boot.'
     }
-    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizeable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
+    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
 '@
     }
 "SystemClockAccurate" = @{
@@ -1467,7 +1467,7 @@ Function Reset-Steam {
 }
 Function Open-AdvancedGraphics {
     Start-Process ms-settings:display-advancedgraphics
-    Write-Host "$([Environment]::NewLine)Verify HellDivers 2 is set to use the correct GPU.",
+    Write-Host "$([Environment]::NewLine)Verify Helldivers 2 is set to use the correct GPU.",
     "$([Environment]::NewLine)If HD2 is not listed, click " -NoNewline -ForegroundColor Cyan
     Write-Host "Add desktop app " -NoNewline -ForegroundColor Yellow
     Write-Host "and browse to:" -ForegroundColor Cyan
