@@ -1971,7 +1971,7 @@ Function Show-ArrowMenu {
     Do {
         Clear-Host
         Write-Host $Title
-        Write-Host "Use ↑ ↓ arrows or press hotkey letter. Enter selects, Esc cancels."
+        Write-Host "Use ↑ ↓ arrows or press hotkey letter. Enter/→ selects, Esc/← cancels."
         Write-Host ""
 
         For ($i = 0; $i -lt $Options.Length; $i++) {
@@ -1985,15 +1985,19 @@ Function Show-ArrowMenu {
 
         $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
-        If ($key.VirtualKeyCode -eq 38) { If ($selectedIndex -gt 0) { $selectedIndex-- } }
-        ElseIf ($key.VirtualKeyCode -eq 40) { If ($selectedIndex -lt ($Options.Length - 1)) { $selectedIndex++ } }
-        ElseIf ($key.VirtualKeyCode -eq 27) { Return $null }
-        ElseIf ($key.VirtualKeyCode -eq 13) { Return $selectedIndex }
-        Else {
-            $char = [string]$key.Character
-            If ($null -ne $char -and -not [string]::IsNullOrEmpty($char)) {
-                $char = $char.ToUpper()
-                If ($Hotkeys.ContainsKey($char)) { Return $Hotkeys[$char] }
+        Switch ($key.VirtualKeyCode) {
+            38 { if ($selectedIndex -gt 0) { $selectedIndex-- } }              # Up
+            40 { if ($selectedIndex -lt ($Options.Length - 1)) { $selectedIndex++ } } # Down
+            27 { return $null }                                               # Esc
+            13 { return $selectedIndex }                                      # Enter
+            39 { return $selectedIndex }                                      # Right Arrow → same as Enter
+            37 { return $Options.Length - 1 }                                 # Left Arrow → Back (last option)
+            Default {
+                $char = [string]$key.Character
+                if ($null -ne $char -and -not [string]::IsNullOrEmpty($char)) {
+                    $char = $char.ToUpper()
+                    if ($Hotkeys.ContainsKey($char)) { return $Hotkeys[$char] }
+                }
             }
         }
     } While ($true)
