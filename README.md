@@ -17,9 +17,12 @@
     ```powershell
     Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0prealpha2/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
+    If you would like to use the latest code, feel free to try it! It will have the latest features, but may not work right, or be incomplete.
+    ```powershell
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
+    ```
     💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
     If you want to verify, paste the URL into the browser and it will reveal the raw script text.
-     This  method has not been tested by the author, so you _may_ encounter weird errors.
 
 ## EXE **(not currently fully supported, may trip Anti-Virus)**
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
