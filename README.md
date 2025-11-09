@@ -70,16 +70,8 @@ Copy and paste the script manually per instructions below.
 <img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="200">
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
-Main Menu in EXE
-![image](https://github.com/user-attachments/assets/782b77c4-127c-4843-9a19-39e69e96055e)
-
-Main Menu in PowerShell 7
-![image](https://github.com/user-attachments/assets/ec3ca366-c717-42a0-98a9-78b60a156c70)
+Main Menu
+<img width="1115" height="324" alt="image" src="https://github.com/user-attachments/assets/cde7b49e-f420-451f-a526-636a4100e593" />
 
 Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 ![Hellbomb Script Animation](https://github.com/user-attachments/assets/8781f62f-3f5b-4530-9085-ea3042833220)
-
-Selecting Help (?) from the menu in PowerShell 7:
-![image](https://github.com/user-attachments/assets/e664df63-d848-4d31-9b34-be8aa05bd13f)
-
-
