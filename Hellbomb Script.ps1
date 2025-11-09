@@ -2142,10 +2142,10 @@ Function ResetToggleComponentsMenu {
         "🔁 S̲team Reset",
         "🗑️ U̲ninstall VC++ Redists",
         "➕ I̲nstall VC++ Redists",
-        "🗑️ G̲ameInput Service Toggle",
+        "🗑️ D̲isable/Enable G̲ameInput Service (Toggle)",
         "⬅️ B̲ack"
     )
-    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "M"=4; "B"=5 }
+    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "D"=4; "B"=5 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys $hotkeys
@@ -2286,4 +2286,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
 
