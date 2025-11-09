@@ -729,13 +729,7 @@ Function Test-AVX2 {
     # Check for AVX2
     # Define the pattern to match the line
     $pattern = "^\tInstructions\ssets\t.*AVX2"
-    # Search for the line that matches the pattern
-    $match = $script:HardwareInfoText | Select-String -Pattern $pattern
-    If ($match) {
-        $script:Tests.AVX2.TestPassed = $true
-    } Else {
-        $script:Tests.AVX2.TestPassed = $false
-    }
+    $script:Tests.AVX2.TestPassed = [bool]($script:HardwareInfoText | Select-String -Pattern $pattern)
 }
 Function Get-MemorySpeed {
     # RAM Speed
@@ -1492,14 +1486,7 @@ Function Test-PrivateIP {
         [string]
         $IP
     )
-    process {
-        If ($IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)') {
-            $true
-        }
-        Else {
-            $false
-        }
-    }
+    $IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)'
 }
 Function Test-DoubleNAT {
     Write-Host "$([Environment]::NewLine)Running Double-NAT test... this will take a minute" -ForegroundColor Cyan
@@ -1590,25 +1577,11 @@ Function Test-MemoryChannels {
     # Dual-Channel RAM test
     # Define single-channel pattern to search for
     $SingleChannelpattern = "^Channels\s*\b((1\s+x\s+\b(32|64)\b-bit)|(Single))$"
-    If ( $script:HardwareInfoText -match $SingleChannelPattern ) {
-        $script:Tests.MultiChannelMemory.TestPassed = $false
-    }
-    Else {
-        $script:Tests.MultiChannelMemory.TestPassed = $true
-    }
+    $script:Tests.MultiChannelMemory.TestPassed = -not ($script:HardwareInfoText -match $SingleChannelPattern)
 }
 Function Test-PendingReboot {
-    ForEach ($key in $script:Tests.PendingReboot.keys) {
-        If (Test-Path $key) {
-            $script:Tests.PendingReboot.RebootRequired = $true
-            Break
-        }
-    }
-    If ($script:Tests.PendingReboot.RebootRequired) {
-        $script:Tests.PendingReboot.TestPassed = $false
-    } Else {
-        $script:Tests.PendingReboot.TestPassed = $true
-    }
+    $script:Tests.PendingReboot.RebootRequired = [bool]($script:Tests.PendingReboot.keys | Where-Object { Test-Path $_ })
+    $script:Tests.PendingReboot.TestPassed = -not $script:Tests.PendingReboot.RebootRequired
 }
 Function Reset-HD2SteamCloud {
     Clear-Host
@@ -1798,14 +1771,8 @@ Function Find-Mods {
         Write-Host 'Helldivers 2 not found. Skipping mod detection.'
         Return
     }    
-    $directoryPath = $script:AppInstallPath + '\data'
-    $patchFiles = Get-ChildItem -Path $directoryPath -File | Where-Object { $_.Name -match "\.patch_" }
-    If ( $null -eq $patchFiles ) {
-        $script:Tests.GameMods.TestPassed = $true
-    } Else {
-        $script:Tests.GameMods.TestPassed = $false
-}
-
+    $modsFound = Test-Path -Path "$script:AppInstallPath\data\*.patch_*" -PathType Leaf
+    $script:Tests.GameMods.TestPassed = -not $modsFound
 }
 Function Show-ModRemovalWarning {  
     Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewline
@@ -1867,154 +1834,284 @@ Function Get-SecureBootStatus {
 Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
-Function Menu {
-$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-$AdminBanner = If (-not $IsAdmin) {
-    @"
+Function Get-MenuTitle {
+    $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator
+    )
+
+    $AdminBanner = If (-Not $IsAdmin) {
+@"
 ⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
         >>> SOME TESTS WILL FAIL OR PRODUCE INCORRECT RESULTS. <<<
 "@
-} Else {
-    ""
+    } Else { "" }
+
+    $Title = @(
+        "-------------------------------------------------------------------------------------------------------",
+        "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.0",
+        "-------------------------------------------------------------------------------------------------------",
+        $AdminBanner
+    ) -join "`n"
+
+    Return $Title
 }
-$Title = @(
-    "-------------------------------------------------------------------------------------------------------",
-    "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.0",
-    "-------------------------------------------------------------------------------------------------------",
-    $AdminBanner
-) -join "`n"
-    $Prompt = "Enter your choice:"
-    $Choices = [ChoiceDescription[]](
-        [ChoiceDescription]::new("🔍 &HD2 Status Checks$([Environment]::NewLine)", 'Provides various status checks, resets the hostability key & flushes the DNS Cache.'),
-        [ChoiceDescription]::new("🧹 &Clear HD2 Settings (AppData)$([Environment]::NewLine)", 'Clears your profile data. Settings will be reset, but progress will not be lost.'),
-        [ChoiceDescription]::new("🧹 Clear HD2 Stea&m Cloud$([Environment]::NewLine)", 'Resets HD2 Steam Cloud. For input issues & game not opening on any device. No progress will be lost.'),
-        [ChoiceDescription]::new("🧹 Clear &Z Hostability Key$([Environment]::NewLine)", 'Fixes some game join issues by removing the current hostability key in user_settings.config'),
-        [ChoiceDescription]::new("🔁 Re-install &GameGuard$([Environment]::NewLine)", 'Performs a full GameGuard re-install. If Windows Ransomware Protection is enabled, may trigger security alert.'),
-        [ChoiceDescription]::new("🔁 Re&set Steam$([Environment]::NewLine)", 'Performs a reset of Steam. This can fix various issues including VRAM memory leaks.'),
-        [ChoiceDescription]::new("🗑️ Toggle Between Enabled/&Disable of GameInput Service$([Environment]::NewLine)", 'Toggles Microsoft GameInput service. May resolve some stuttering issues.'),
-        [ChoiceDescription]::new("🗑️ &Uninstall VC++ Redists$([Environment]::NewLine)", 'Preps for installing VC++ Redists. Restart required.'),
-        [ChoiceDescription]::new("➕ &Install VC++ Redists$([Environment]::NewLine)", 'Installs Microsoft Visual C++ Redistributables required by HD2. Fixes startup issues. Restart required.'),
-        [ChoiceDescription]::new("🛠️ Set HD2 G&PU$([Environment]::NewLine)", 'Brings up the Windows GPU settings.'),
-        [ChoiceDescription]::new("📺 Full-Screen &Optimizations (FSO) Toggle$([Environment]::NewLine)", 'Despite the name, having this off is usually recommended.'),
-        [ChoiceDescription]::new("🛜 &Wi-Fi LAN Test$([Environment]::NewLine)", 'Tests the connection to the default gateway.'),
-        [ChoiceDescription]::new("Double-NAT &Test$([Environment]::NewLine)", 'Tests network for Double NAT.'),
-        [ChoiceDescription]::new("❌ &Quick Mod Removal$([Environment]::NewLine)", 'Will remove ALL mods from the \data\ folder.'),
-        [ChoiceDescription]::new("🔈 Toggle &Bluetooth Telephony Service$([Environment]::NewLine)$([Environment]::NewLine)", 'Toggles the BTAGService on or off. Disabling it fixes Bluetooth Headphones.'),
-        [ChoiceDescription]::new('E&xit', 'Exits the script.')
+
+Function Show-ArrowMenu {
+    Param(
+        [string]$Title,
+        [string[]]$Options,
+        [hashtable]$Hotkeys
     )
-    $DefaultChoice = 0
-    $Choice = $Host.UI.PromptForChoice($Title, $Prompt, $Choices, $DefaultChoice)
-    switch ($Choice) {
-        0 {
-            Show-Variables
-            Show-MotherboardInfo
-            Show-GPUInfo
-            Show-OSInfo
-			Show-ISPInfo
-            Show-GameLaunchOptions
-            Test-PendingReboot
-            Reset-HostabilityKey
-            Test-Firewall
-            Test-CRL
-            Test-RequiredURLs
-            Test-RequiredURLs
-            Test-RequiredURLs
-            Test-RequiredURLs
-            Test-SystemClockAccuracy
-            Find-BlacklistedDrivers
-            Test-BadPrinters
-            Test-BTAGService
-            Test-VisualC++Redists
-            Test-Programs
-            $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
-            $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
-            Get-SystemUptime
-            Get-HardwareInfo
-			Find-CPUInfo
-            Get-SecureBootStatus
-            Test-AVX2
-            Test-MemoryChannels
-            Get-MemoryPartNumber -Lines $script:HardwareInfoText
-            Get-MemorySpeed
-            Find-Mods
-            Get-VSyncConfig
-            Get-GameResolution
-            Show-TestResults
-            Write-Host "$([Environment]::NewLine)"
-            Menu
+
+    $selectedIndex = 0
+    $key = $null
+
+    Do {
+        Clear-Host
+        Write-Host $Title
+        Write-Host "Use ↑ ↓ arrows or press hotkey letter. Enter selects, Esc cancels."
+        Write-Host ""
+
+        For ($i = 0; $i -lt $Options.Length; $i++) {
+            If ($i -eq $selectedIndex) {
+                Write-Host $Options[$i] -ForegroundColor Cyan
+            }
+            Else {
+                Write-Host $Options[$i]
+            }
         }
-        1 {
+
+        $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
+        If ($key.VirtualKeyCode -eq 38) { If ($selectedIndex -gt 0) { $selectedIndex-- } }
+        ElseIf ($key.VirtualKeyCode -eq 40) { If ($selectedIndex -lt ($Options.Length - 1)) { $selectedIndex++ } }
+        ElseIf ($key.VirtualKeyCode -eq 27) { Return $null }
+        ElseIf ($key.VirtualKeyCode -eq 13) { Return $selectedIndex }
+        Else {
+            $char = [string]$key.Character
+            If ($null -ne $char -and -not [string]::IsNullOrEmpty($char)) {
+                $char = $char.ToUpper()
+                If ($Hotkeys.ContainsKey($char)) { Return $Hotkeys[$char] }
+            }
+        }
+    } While ($true)
+}
+
+Function Invoke-HD2StatusChecks {
+    Show-Variables
+    Show-MotherboardInfo
+    Show-GPUInfo
+    Show-OSInfo
+    Show-ISPInfo
+    Show-GameLaunchOptions
+    Test-PendingReboot
+    Reset-HostabilityKey
+    Test-Firewall
+    Test-CRL
+    Test-RequiredURLs
+    Test-SystemClockAccuracy
+    Find-BlacklistedDrivers
+    Test-BadPrinters
+    Test-BTAGService
+    Test-VisualC++Redists
+    Test-Programs
+    $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
+    $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
+    Get-SystemUptime
+    Get-HardwareInfo
+    Find-CPUInfo
+    Get-SecureBootStatus
+    Test-AVX2
+    Test-MemoryChannels
+    Get-MemoryPartNumber -Lines $script:HardwareInfoText
+    Get-MemorySpeed
+    Find-Mods
+    Get-VSyncConfig
+    Get-GameResolution
+    Show-TestResults
+
+    Write-Host "`n--- Paused ---"
+    Write-Host "Copy any results you want to save, then press any key to return to the menu."
+    Pause
+}
+
+Function MainMenu {
+    $options = @(
+        "🔍 H̲D2 Status Checks",
+        "🧹 C̲lear Data Options >",
+        "🛠️ G̲raphics Options >",
+        "🛜 N̲etwork Options >",
+        "🔊 A̲udio Options >",
+        "🔁 R̲eset Components >",
+        "❌ E̲xit"
+    )
+    $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "E"=6 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle) -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 6 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) { Invoke-HD2StatusChecks }
+        ElseIf (1 -eq $choice) { ClearDataMenu }
+        ElseIf (2 -eq $choice) { GraphicsMenu }
+        ElseIf (3 -eq $choice) { NetworkMenu }
+        ElseIf (4 -eq $choice) { AudioMenu }
+        ElseIf (5 -eq $choice) { ResetComponentsMenu }
+    } While ($true)
+}
+
+Function ClearDataMenu {
+    $options = @(
+        "🧹 S̲ettings (AppData)",
+        "🧹 Stea̲m Cloud",
+        "🧹 Hostability Ke̲y",
+        "❌ Q̲uick Mod Removal",
+        "⬅️ B̲ack"
+    )
+    $hotkeys = @{ "S"=0; "M"=1; "K"=2; "Q"=3; "B"=4 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 4 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
             Remove-HD2AppData
-            Write-Host "$([Environment]::NewLine)"
-            Menu
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
         }
-        2 {
+        ElseIf (1 -eq $choice) {
             Reset-HD2SteamCloud
-            Write-Host "$([Environment]::NewLine)"
-            Menu
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
         }
-        3 {
+        ElseIf (2 -eq $choice) {
             Reset-HostabilityKey
-            Write-Host "$([Environment]::NewLine)"
-            Menu
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
         }
-        4 {
-            Reset-GameGuard
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        5 {
-            Reset-Steam
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        6 {
-            Switch-GameInput
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        7 {
-            Uninstall-VCRedist
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        8 {
-            Install-VCRedist
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        9 {
-            Open-AdvancedGraphics
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        10 {
-            Switch-FullScreenOptimizations
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        11 {
-            Test-WiFi
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        12 {
-            Test-DoubleNat
-            Write-Host "$([Environment]::NewLine)"
-            Menu
-        }
-        13 {
+        ElseIf (3 -eq $choice) {
             Show-ModRemovalWarning
             Remove-AllMods
-            Menu
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
         }
-        14 {
+    } While ($true)
+}
+
+Function GraphicsMenu {
+    $options = @(
+        "🗑️ I̲nput Service Toggle",
+        "🛠️ GP̲U Settings",
+        "📺 O̲ptimizations Toggle",
+        "⬅️ B̲ack"
+    )
+    $hotkeys = @{ "I"=0; "P"=1; "O"=2; "B"=3 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛠️ Graphics Options") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 3 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
+            Switch-GameInput
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+        ElseIf (1 -eq $choice) {
+            Open-AdvancedGraphics
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+        ElseIf (2 -eq $choice) {
+            Switch-FullScreenOptimizations
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+    } While ($true)
+}
+
+Function NetworkMenu {
+    $options = @(
+        "🛜 W̲i-Fi LAN Test",
+        "N̲AT Test",
+        "⬅️ B̲ack"
+    )
+    $hotkeys = @{ "W"=0; "N"=1; "B"=2 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛜 Network Options") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 2 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
+            Test-WiFi
+        }
+        ElseIf (1 -eq $choice) {
+            Test-DoubleNat
+        }
+    } While ($true)
+}
+
+Function AudioMenu {
+    $options = @(
+        "🔊 T̲est Audio Devices",
+        "🔊 R̲eset Audio Config",
+        "🔈 B̲luetooth Telephony Service",
+        "⬅️ B̲ack"
+    )
+    $hotkeys = @{ "T"=0; "R"=1; "B"=2; "K"=3 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔊 Audio Options") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 1 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
             Switch-BTAGService
-            Write-Host "$([Environment]::NewLine)"
-            Menu
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
         }
-        15 { Return }
-    }
+    } While ($true)
+}
+
+Function ResetComponentsMenu {
+    $options = @(
+        "🔁 G̲ameGuard Re-install",
+        "🔁 S̲team Reset",
+        "🗑️ U̲ninstall VC++ Redists",
+        "➕ I̲nstall VC++ Redists",
+        "⬅️ B̲ack"
+    )
+    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "B"=4 }
+
+    Do {
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset Components") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 4 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
+            Reset-GameGuard
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+        ElseIf (1 -eq $choice) {
+            Reset-Steam
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+        ElseIf (2 -eq $choice) {
+            Uninstall-VCRedist
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+        ElseIf (3 -eq $choice) {
+            Install-VCRedist
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
+    } While ($true)
 }
 Function Show-TestResults {
     $keyDisplayOrder = @(
@@ -2123,7 +2220,7 @@ ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
         $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
         $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
         # Update the AppInstallPath with the FULL path
-        $script:AppInstallPath = ( $script:AppInstallPath + "\steamapps\common\" + $GameFolderName[1] )
+        $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
         Break
     }
 }
@@ -2140,4 +2237,4 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
-Menu
+MainMenu
