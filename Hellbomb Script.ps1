@@ -2052,7 +2052,7 @@ Function MainMenu {
         "🛠️ G̲raphics Options >",
         "🛜 N̲etwork Options >",
         "🔊 A̲udio Options >",
-        "🔁 R̲eset Components >",
+        "🔁 R̲eset/Toggle Components >",
         "❌ E̲xit"
     )
     $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "E"=6 }
@@ -2065,7 +2065,7 @@ Function MainMenu {
         ElseIf (2 -eq $choice) { GraphicsMenu }
         ElseIf (3 -eq $choice) { NetworkMenu }
         ElseIf (4 -eq $choice) { AudioMenu }
-        ElseIf (5 -eq $choice) { ResetComponentsMenu }
+        ElseIf (5 -eq $choice) { ResetToggleComponentsMenu }
     } While ($true)
 }
 
@@ -2082,64 +2082,26 @@ Function ClearDataMenu {
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 4 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Remove-HD2AppData
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (1 -eq $choice) {
-            Reset-HD2SteamCloud
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (2 -eq $choice) {
-            Reset-HostabilityKey
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (3 -eq $choice) {
-            Show-ModRemovalWarning
-            Remove-AllMods
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
+        ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (2 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (3 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
 
 Function GraphicsMenu {
     $options = @(
-        "🗑️ I̲nput Service Toggle",
         "🛠️ GP̲U Settings",
         "📺 O̲ptimizations Toggle",
         "⬅️ B̲ack"
     )
-    $hotkeys = @{ "I"=0; "P"=1; "O"=2; "B"=3 }
+    $hotkeys = @{ "P"=0; "O"=1; "B"=2 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛠️ Graphics Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 3 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Switch-GameInput
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (1 -eq $choice) {
-            Open-AdvancedGraphics
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (2 -eq $choice) {
-            Switch-FullScreenOptimizations
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
+        If ($null -eq $choice -or 2 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) { Open-AdvancedGraphics; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Switch-FullScreenOptimizations; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
 
@@ -2154,12 +2116,8 @@ Function NetworkMenu {
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛜 Network Options") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 2 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Test-WiFi
-        }
-        ElseIf (1 -eq $choice) {
-            Test-DoubleNat
-        }
+        ElseIf (0 -eq $choice) { Test-WiFi }
+        ElseIf (1 -eq $choice) { Test-DoubleNat }
     } While ($true)
 }
 
@@ -2170,59 +2128,30 @@ Function AudioMenu {
         "🔈 B̲luetooth Telephony Service",
         "⬅️ B̲ack"
     )
-    $hotkeys = @{ "T"=0; "R"=1; "B"=2; "K"=3 }
+    $hotkeys = @{ "T"=0; "R"=1; "L"=2; "B"=3 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔊 Audio Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 1 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Switch-BTAGService
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
+        If ($null -eq $choice -or 3 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) { Test-AudioDevices; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-AudioConfig; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (2 -eq $choice) { Switch-BluetoothTelephony; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
 
-Function ResetComponentsMenu {
+Function ResetToggleComponentsMenu {
     $options = @(
         "🔁 G̲ameGuard Re-install",
         "🔁 S̲team Reset",
         "🗑️ U̲ninstall VC++ Redists",
         "➕ I̲nstall VC++ Redists",
+        "🗑️ G̲ameInput Service Toggle",
         "⬅️ B̲ack"
     )
-    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "B"=4 }
+    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "M"=4; "B"=5 }
 
     Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset Components") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 4 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Reset-GameGuard
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (1 -eq $choice) {
-            Reset-Steam
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (2 -eq $choice) {
-            Uninstall-VCRedist
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-        ElseIf (3 -eq $choice) {
-            Install-VCRedist
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
-            Pause
-        }
-    } While ($true)
-}
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys 
 Function Show-TestResults {
     $keyDisplayOrder = @(
     "GameResolution",
@@ -2352,3 +2281,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
