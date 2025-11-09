@@ -2151,7 +2151,15 @@ Function ResetToggleComponentsMenu {
     $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "M"=4; "B"=5 }
 
     Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys 
+        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys $hotkeys
+        If ($null -eq $choice -or 5 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) { Reset-GameGuard; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-Steam; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (2 -eq $choice) { Uninstall-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (3 -eq $choice) { Install-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (4 -eq $choice) { Switch-GameInput; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+    } While ($true)
+}
 Function Show-TestResults {
     $keyDisplayOrder = @(
     "GameResolution",
@@ -2281,4 +2289,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
-
