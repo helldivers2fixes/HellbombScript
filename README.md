@@ -24,7 +24,7 @@
     💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
     If you want to verify, paste the URL into the browser and it will reveal the raw script text.
 
-## Start by pressing ``Enter`` to run the default choice (``H``) or type ``H`` and press ``Enter``
+## Start by pressing ``Enter`` to run the default choice (``H``) or press ``H``
 ### Read through **all** the output for anything that is a [FAIL] or looks incorrect.
 
 Then you can work through the things below if you have specific issues.
