@@ -2088,7 +2088,6 @@ Function ClearDataMenu {
         ElseIf (3 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
-
 Function GraphicsMenu {
     $options = @(
         "🛠️ GP̲U Settings",
@@ -2104,7 +2103,6 @@ Function GraphicsMenu {
         ElseIf (1 -eq $choice) { Switch-FullScreenOptimizations; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
-
 Function NetworkMenu {
     $options = @(
         "🛜 W̲i-Fi LAN Test",
@@ -2120,25 +2118,24 @@ Function NetworkMenu {
         ElseIf (1 -eq $choice) { Test-DoubleNat }
     } While ($true)
 }
-
 Function AudioMenu {
     $options = @(
-        "🔊 T̲est Audio Devices",
-        "🔊 R̲eset Audio Config",
         "🔈 B̲luetooth Telephony Service",
         "⬅️ B̲ack"
     )
-    $hotkeys = @{ "T"=0; "R"=1; "L"=2; "B"=3 }
+    $hotkeys = @{ "L"=0; "B"=1 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔊 Audio Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 3 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Test-AudioDevices; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-AudioConfig; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (2 -eq $choice) { Switch-BluetoothTelephony; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        If ($null -eq $choice -or 1 -eq $choice) { Return }
+        ElseIf (0 -eq $choice) {
+            Switch-BluetoothTelephony
+            Write-Host "`n--- Paused ---"
+            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Pause
+        }
     } While ($true)
 }
-
 Function ResetToggleComponentsMenu {
     $options = @(
         "🔁 G̲ameGuard Re-install",
@@ -2289,3 +2286,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
