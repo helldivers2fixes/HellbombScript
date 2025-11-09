@@ -252,6 +252,42 @@ $script:Tests = @{
 	Write-Host "$([Environment]::NewLine)Any other driver version will have various issues, from Terminid planets crashing, to the game crashing on the opening screen." -ForegroundColor Cyan
 '@
     }
+"SSDFreeSpace" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    Write-Host "SSD over 75% full - This may cause slow patch speeds on drives without over-provisioning."
+'@
+    }
+"FreeDiskSpace" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host "Drive has less than 150GB of free space. This may cause updates to fail."
+'@
+    }
+"USBGameDrive" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
+    Write-Host "Game is installed on a USB drive. This may cause slow patches and audio stuttering."
+'@
+    }
+"FasterDriveAvailable" = @{
+    'TestPassed' = $null
+    'fasterDrives' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+    Write-Host "There are faster drives available to install the game to:"
+    $columns = @(
+    @{ Name = 'Disk Name'; Expression = { $_.FriendlyName } }
+    @{ Name = 'BusType';   Expression = { $_.BusType } }
+    @{ Name = 'MediaType'; Expression = { $_.MediaType } }
+    @{ Name = 'Size';      Expression = { Convert-Size $_.Size } }
+    )
+    $($script:Tests.FasterDriveAvailable.fasterDrives) | Select-Object $columns | Format-Table -AutoSize
+'@
+    }
 }
 $NvidiaCodenames = @{
     "Turing" = @(
@@ -1583,6 +1619,72 @@ Function Test-PendingReboot {
     $script:Tests.PendingReboot.RebootRequired = [bool]($script:Tests.PendingReboot.keys | Where-Object { Test-Path $_ })
     $script:Tests.PendingReboot.TestPassed = -not $script:Tests.PendingReboot.RebootRequired
 }
+Function Test-SSDFreeSpace
+{
+    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+	$GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
+    $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
+    $script:Tests.SSDFreeSpace.TestPassed = ($GameVolumeFreeSpace -le 25 -and $GamePhysicalDisk.MediaType -ne "SSD")
+}
+Function Test-FreeDiskSpace
+{
+    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+    $script:Tests.FreeDiskSpace.TestPassed = ($GameVolume.SizeRemaining -gt 150GB)
+}
+Function Test-USBGameDrive
+{
+    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+    $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
+    $script:Tests.USBGameDrive.TestPassed = ($GamePhysicalDisk.BusType -ne "USB")
+}
+Function Test-FasterDriveAvailable
+{
+    $script:Tests.FasterDriveAvailable.fasterDrives = @()
+    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+    $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
+    $GameDiskScore = Get-DiskScore $GamePhysicalDisk
+
+    foreach ($systemDisk in Get-PhysicalDisk | Where-Object { $_.UniqueId -ne $GamePhysicalDisk.UniqueId })
+    {
+        $score = Get-DiskScore $systemDisk
+        if ($score -gt $GameDiskScore)
+        {
+            $script:Tests.FasterDriveAvailable.fasterDrives += $systemDisk
+        }
+    }
+
+    if($script:Tests.FasterDriveAvailable.fasterDrives.Count -gt 0)
+    {
+        $script:Tests.FasterDriveAvailable.TestPassed = $false
+    }
+    Else
+    {
+        $script:Tests.FasterDriveAvailable.TestPassed = $true
+    }
+}
+Function Get-DiskScore($disk)
+{
+    $score = 0
+
+    switch ($disk.BusType)
+    {
+        "NVMe"  { $score += 2 }
+        "SATA"  { $score += 1 }
+        default { $score += 0 }
+    }
+
+    if ($disk.MediaType -eq "SSD") { $score += 1 }
+    return $score
+}
+Function Convert-Size($bytes) {
+    $units = "B","KB","MB","GB","TB"
+    $i = 0
+    while ($bytes -ge 1024 -and $i -lt $units.Length - 1) {
+        $bytes /= 1024
+        $i++
+    }
+    return ("{0:N2} {1}" -f $bytes, $units[$i])
+}
 Function Reset-HD2SteamCloud {
     Clear-Host
     Write-Host "$([Environment]::NewLine)This function will reset your HD2 Steam Cloud saved data." -ForegroundColor Cyan
@@ -1928,6 +2030,10 @@ Function Invoke-HD2StatusChecks {
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
+    Test-SSDFreeSpace
+    Test-FreeDiskSpace
+    Test-USBGameDrive
+    Test-FasterDriveAvailable
     Show-TestResults
 
     Write-Host "`n--- Paused ---"
@@ -2132,7 +2238,11 @@ Function Show-TestResults {
     "MatchingMemory",
     "FirewallRules",
     "DomainTest",
-    "GameMods"
+    "GameMods",
+    "SSDFreeSpace",
+    "FreeDiskSpace",
+    "USBGameDrive",
+    "FasterDriveAvailable"
     )
     ForEach ( $key in $keyDisplayOrder ) {
     $test = $script:Tests[$key]
