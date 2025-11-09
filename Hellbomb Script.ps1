@@ -489,7 +489,7 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) ⚠️ Make sure you used option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) ⚠️ Make sure you used Restet/Toggle Components option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
     Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
@@ -1459,7 +1459,7 @@ Function Test-BTAGService {
         Write-Host "$([Environment]::NewLine)⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
         Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
         Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
-        Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B)" -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B under Audio Options)" -ForegroundColor Cyan
     }
     Else {
         Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway (BTAG) Service: DISABLED",
@@ -1602,7 +1602,7 @@ Function Test-VisualC++Redists {
         }
         Write-Host "$([Environment]::NewLine)Please install them using the [" -ForegroundColor Yellow -NoNewline
         Write-Host 'I' -NoNewLine
-        Write-Host '] option on the menu.' -ForegroundColor Yellow
+        Write-Host '] option on the Reset/Toggle Components menu.' -ForegroundColor Yellow
     }
     Else {
         Write-Host 'All required Visual C++ Redists found!' -ForegroundColor Green
