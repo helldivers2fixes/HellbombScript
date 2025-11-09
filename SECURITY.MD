@@ -28,8 +28,6 @@ Get-FileHash 'Hellbomb Script.ps1' -eq 6F8EE7B41C4706CDA04F6FDB03A1EDC955358F369
 ```
 5. The statement should return/evaluate to ``True``
 
-No security software should detect the script as malicious.
-
 ## Why does it need Admin Privileges?
 - Reads firewall rules
 - Installs Microsoft Visual C++ redistributables
