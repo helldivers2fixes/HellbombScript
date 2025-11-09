@@ -2090,7 +2090,7 @@ Function ClearDataMenu {
 }
 Function GraphicsMenu {
     $options = @(
-        "🛠️ GP̲U Settings",
+        "🛠️ Select Correct GP̲U",
         "📺 O̲ptimizations Toggle",
         "⬅️ B̲ack"
     )
@@ -2286,5 +2286,6 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
 
 
