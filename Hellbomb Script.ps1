@@ -166,7 +166,7 @@ $script:Tests = @{
     Write-Host 'Mods were detected!' -ForegroundColor Yellow
     Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
     Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
-    Write-Host ' to attempt removal.' -ForegroundColor Cyan
+    Write-Host ' under the Clear Data menu to attempt removal.' -ForegroundColor Cyan
 '@
     }
 "PageFileEnabled" = @{
@@ -266,7 +266,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
-    Write-Host "SSD over 75% full - This may cause slow patch speeds on drives without over-provisioning."
+    Write-Host "SSD over 75% full - This may slow patching speed on drives without over-provisioning."
 '@
     }
 "FreeDiskSpace" = @{
@@ -280,7 +280,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-    Write-Host "Game is installed on a USB drive. This may cause slow patches and audio stuttering."
+    Write-Host "Game is installed on a USB drive. This may slow game patching & cause audio stuttering."
 '@
     }
 "FasterDriveAvailable" = @{
