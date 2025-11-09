@@ -252,7 +252,7 @@ $script:Tests = @{
 	Write-Host "$([Environment]::NewLine)Any other driver version will have various issues, from Terminid planets crashing, to the game crashing on the opening screen." -ForegroundColor Cyan
 '@
     }
-"SSDOverfill" = @{
+"SSDFreeSpace" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
@@ -1646,43 +1646,22 @@ Function Test-PendingReboot {
         $script:Tests.PendingReboot.TestPassed = $true
     }
 }
-Function Test-SSDOverfill
+Function Test-SSDFreeSpace
 {
     $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
     $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
-    if($GameVolumeFreeSpace -ge 75 -and $GameDrivePhysicalDisk.MediaType -eq "SSD")
-    {
-        $script:Tests.SSDOverfill.TestPassed = $false
-    }
-    Else
-    {
-        $script:Tests.SSDOverfill.TestPassed = $true
-    }
+    $script:Tests.SSDFreeSpace.TestPassed = ($GameVolumeFreeSpace -le 75 -and $GameDrivePhysicalDisk.MediaType -ne "SSD")
 }
 Function Test-FreeDiskSpace
 {
     $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
-    if($GameVolume.SizeRemaining -lt 150GB)
-    {
-        $script:Tests.FreeDiskSpace.TestPassed = $false
-    }
-    Else
-    {
-        $script:Tests.FreeDiskSpace.TestPassed = $true
-    }
+    $script:Tests.FreeDiskSpace.TestPassed = ($GameVolume.SizeRemaining -gt 150GB)
 }
 Function Test-USBGameDrive
 {
     $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
     $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
-    if($GamePhysicalDisk.BusType -eq "USB")
-    {
-        $script:Tests.USBGameDrive.TestPassed = $false
-    }
-    Else
-    {
-        $script:Tests.USBGameDrive.TestPassed = $true
-    }
+    $script:Tests.USBGameDrive.TestPassed = ($GamePhysicalDisk.BusType -ne "USB")
 }
 Function Test-FasterDriveAvailable
 {
@@ -2061,7 +2040,7 @@ $Title = @(
             Find-Mods
             Get-VSyncConfig
             Get-GameResolution
-            Test-SSDOverfill
+            Test-SSDFreeSpace
             Test-FreeDiskSpace
             Test-USBGameDrive
             Test-FasterDriveAvailable
@@ -2162,7 +2141,7 @@ Function Show-TestResults {
     "FirewallRules",
     "DomainTest",
     "GameMods",
-    "SSDOverfill",
+    "SSDFreeSpace",
     "FreeDiskSpace",
     "USBGameDrive",
     "FasterDriveAvailable"
