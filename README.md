@@ -11,6 +11,17 @@
 [![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## HOW TO USE:
 
+## Copy and Paste using Terminal Console (Semi-Automated)
+ 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
+ 2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
+    ```powershell
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0prealpha2/Hellbomb%20Script.ps1 | Invoke-Expression
+    ```
+    💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
+    If you want to verify, paste the URL into the browser and it will reveal the raw script text.
+     This  method has not been tested by the author, so you _may_ encounter weird errors.
+
+## EXE **(not currently fully supported, may trip Anti-Virus)**
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
 
 Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
@@ -36,16 +47,6 @@ Then you can work through the things below if you have specific issues.
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 | WinLicense Error: An error has occurred while loading imports. Wrong DLL present. | Option ``S`` then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB)    |
-
-## Copy and Paste using Terminal Console (Semi-Automated)
- 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
- 2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
-    ```powershell
-    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
-    ```
-    💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
-    If you want to verify, paste the URL into the browser and it will reveal the raw script text.
-     This  method has not been tested by the author, so you _may_ encounter weird errors.
 
 ## Copy and Paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
