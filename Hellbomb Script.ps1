@@ -252,6 +252,16 @@ $script:Tests = @{
 	Write-Host "$([Environment]::NewLine)Any other driver version will have various issues, from Terminid planets crashing, to the game crashing on the opening screen." -ForegroundColor Cyan
 '@
     }
+"BTAGSDisabled" = @{
+    'TestPassed' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+    Write-Host 'Bluetooth Audio Gateway (BTAG) Service is running.' -ForegroundColor Cyan
+    Write-Host '       This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
+    Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
+    Write-Host "$([Environment]::NewLine)       Toggle this service ON or OFF from the menu (Select Audio Options > option B)" -ForegroundColor Cyan
+'@
+    }
 "SSDFreeSpace" = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
@@ -534,20 +544,20 @@ Function Switch-GameInput {
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
     $FoundBlacklistedDevice = $false
-    Write-Host "$([Environment]::NewLine)Checking for devices that are known to cause issues..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for devices that are known to cause issues..." -ForegroundColor Cyan -NoNewline
     $DeviceDatabase = Get-PnpDevice
     # Check for blacklisted devices
     ForEach ($device in $DeviceDatabase) {
         ForEach ($badDevice in $BadDeviceList) {
             If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
-                Write-Host ("⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red
+                Write-Host ("$([Environment]::NewLine)⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red -NoNewline
                 $FoundBlacklistedDevice = $true
                 Break # Exit the inner loop if a bad device is found
             }
         }
     }
     If (-not $FoundBlacklistedDevice) {
-        Write-Host "No problematic devices found." -ForegroundColor Green
+        Write-Host " no problematic devices found." -ForegroundColor Green
     }
     # Check for missing critical drivers (AMD and Intel only)
     $MissingDriverPresentCounter = ($DeviceDatabase | Where-Object {
@@ -1047,7 +1057,7 @@ Function Get-InstalledPrograms {
     Return $installedPrograms | Where-Object { $_.DisplayName } | Sort-Object DisplayName
 }
 Function Test-Programs {
-    Write-Host "$([Environment]::NewLine)Checking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for programs that interfere with Helldivers 2..." -ForegroundColor Cyan -NoNewline
     $ProblematicPrograms = @(
     [PSCustomObject]@{ProgramName = 'AMD Chipset Software'; RecommendedVersion = '6.05.28.016'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Your ver. may be SLIGHTLY older. Latest @ https://www.amd.com/en/support/download/drivers.html.' }
     [PSCustomObject]@{ProgramName = 'Avast Internet Security'; RecommendedVersion = '100.100'; Installed = $false; InstalledVersion = '0.0.0'; Notes = 'Can cause performance issues. Recommend uninstalling. Disabling when playing MAY resolve issues.' }
@@ -1122,7 +1132,7 @@ Function Test-Programs {
     $result = $null
     $result = $ProblematicPrograms | Where-Object { $_.Installed -eq $true }
     If ($null -ne $result) {
-        Write-Host "$([Environment]::NewLine)Found the following programs that are known to cause issues:$([Environment]::NewLine)" -ForegroundColor Yellow
+        Write-Host " found the following programs that are known to cause issues:$([Environment]::NewLine)" -ForegroundColor Yellow
         Write-Host ("{0,-33} {1,-20} {2,-35}" -f "Program Name", "Installed Version", "Notes") -ForegroundColor Cyan
         Write-Host ("{0,-33} {1,-20} {2,-35}" -f '--------------------------------',
         '-----------------',
@@ -1176,7 +1186,6 @@ Function Test-SystemClockAccuracy {
     }
 }
 Function Test-Firewall {
-    Write-Host (("$([Environment]::NewLine)Checking for two Inbound Firewall rules named Helldivers") + [char]0x2122 + " 2 or Helldivers 2...") -ForegroundColor Cyan -NoNewline
     # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
     [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
     If ($null -eq $HD2FirewallRules) {
@@ -1197,10 +1206,8 @@ Function Test-Firewall {
             $script:Tests.FirewallRules.TestPassed = $true
         }
     }
-    Write-Host ' complete!'
 }
 Function Test-CRL {
-    Write-Host "$([Environment]::NewLine)Testing Certificate Revocation List (CRL) connections..." -ForegroundColor Cyan
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
     # This overly-complicated mess with curl is used to ensure that an HTTP and an HTTPS request are used. Invoke-WebRequest
     # will return false positives when it's actually broken.
@@ -1244,15 +1251,12 @@ Function Test-CRL {
         Write-Host 'Anti-Virus WebShields can cause this issue. Please whitelist microsoft.com or disable them.' -ForegroundColor Yellow
         Write-Host 'Pi-Holes/DNS-blocking software can also cause this issue. Whitelist oneocsp.microsoft.com.' -ForegroundColor Yellow
     }
-
-    Write-Host "$([Environment]::NewLine)Testing OCSP connection to oneocsp.microsoft.com..." -ForegroundColor Cyan
+    Write-Host "OCSP Connection " -NoNewLine
     If ( Test-NetConnection 'oneocsp.microsoft.com' -ErrorAction SilentlyContinue -InformationLevel Quiet )
     {
-        Write-Host "OCSP Connection " -NoNewLine
         Write-Host ' [OK]' -ForegroundColor Green
     }
     Else {
-        Write-Host 'OCSP Connection' -NoNewLine
         Write-Host ' [FAIL]' -ForegroundColor Red
     }
     Write-Progress -Completed -Activity "make progress bar disappear"
@@ -1454,18 +1458,7 @@ Function Test-Wifi {
     }
 }
 Function Test-BTAGService {
-    If ((Get-Service -Name BTAGService).Status -eq 'Running')
-    {
-        Write-Host "$([Environment]::NewLine)⚠️ Bluetooth Audio Gateway (BTAG) Service is running." -ForegroundColor Yellow
-        Write-Host 'This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
-        Write-Host 'Bluetooth Headphones.' -NoNewline -ForegroundColor Yellow 
-        Write-Host "$([Environment]::NewLine)Toggle this service ON or OFF from the menu (Select option B under Audio Options)" -ForegroundColor Cyan
-    }
-    Else {
-        Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway (BTAG) Service: DISABLED",
-        "$([Environment]::NewLine)If using a Bluetooth Headset, this is the correct configuration." -ForegroundColor Cyan
-    }
-    Return
+    $script:Tests.BTAGSDisabled.TestPassed = ((Get-Service -Name BTAGService).Status -ne 'Running')
 }
 Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
@@ -1582,7 +1575,7 @@ Function Test-VisualC++Redists {
     [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2015-2022 Redistributable (x64)'; Installed = $false}
     )
     
-    Write-Host "$([Environment]::NewLine)Checking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Checking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan -NoNewline
      # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
     $filteredApps = $script:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
     
@@ -1605,7 +1598,7 @@ Function Test-VisualC++Redists {
         Write-Host '] option on the Reset/Toggle Components menu.' -ForegroundColor Yellow
     }
     Else {
-        Write-Host 'All required Visual C++ Redists found!' -ForegroundColor Green
+        Write-Host ' all required Visual C++ Redists found!' -ForegroundColor Green
     }
     Return
 }
@@ -2053,9 +2046,9 @@ Function MainMenu {
         "🛜 N̲etwork Options >",
         "🔊 A̲udio Options >",
         "🔁 R̲eset/Toggle Components >",
-        "❌ E̲xit"
+        "❌ Ex̲it"
     )
-    $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "E"=6 }
+    $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "X"=6 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle) -Options $options -Hotkeys $hotkeys
@@ -2177,6 +2170,7 @@ Function Show-TestResults {
     "FirewallRules",
     "DomainTest",
     "GameMods",
+    "BTAGSDisabled"
     "SSDFreeSpace",
     "FreeDiskSpace",
     "USBGameDrive",
