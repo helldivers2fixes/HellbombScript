@@ -1651,7 +1651,7 @@ Function Test-SSDFreeSpace
     $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
 	$GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
     $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
-    $script:Tests.SSDFreeSpace.TestPassed = ($GameVolumeFreeSpace -le 75 -and $GamePhysicalDisk.MediaType -ne "SSD")
+    $script:Tests.SSDFreeSpace.TestPassed = ($GameVolumeFreeSpace -le 25 -and $GamePhysicalDisk.MediaType -ne "SSD")
 }
 Function Test-FreeDiskSpace
 {
@@ -2251,5 +2251,6 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Menu
+
 
 
