@@ -458,7 +458,7 @@ Function Remove-HD2AppData {
         Write-Host 'Verify Integrity of Game Files ' -NoNewLine
         Write-Host 'function.' -ForegroundColor Cyan
     }
-    Menu
+    MainMenu
 }
 Function Get-IsProcessRunning {
     [CmdletBinding()]
@@ -1914,6 +1914,60 @@ Function Remove-AllMods {
         Write-Host 'Removed all .patch_ files and sibling files sharing the same IDs. Please verify game integrity before launching.' -ForegroundColor Cyan
     }
 }
+Function Reset-ShaderCaches {
+    # Clear HD2 shader cache
+    Remove-Item (Join-Path (Join-Path $env:APPDATA 'Arrowhead\Helldivers2\shader_cache') '*') -Recurse -ErrorAction SilentlyContinue
+    Write-Host "HD2 shader cache cleared successfully!" -ForegroundColor Green
+    Write-Host 'Would you like to clear the Windows DX Shader Cache? (Y/N)' -ForegroundColor Yellow
+    $response = Read-Host
+    If ($response -match '^[Yy]$') {
+        Remove-Item (Join-Path (Join-Path $env:LOCALAPPDATA 'D3DSCache') '*') -Recurse -ErrorAction SilentlyContinue
+        Write-Host "Windows DX Shader Cache cleared." -ForegroundColor Green
+    } Else {
+        Write-Host "Skipped clearing Windows DX Shader Cache." -ForegroundColor DarkYellow
+    }
+    # Detect user's GPU vendors
+    $vendors = $script:SystemInfo.GPUInfo | ForEach-Object { $_.Vendor.ToUpper() } | Sort-Object -Unique
+    If (-not $vendors) {
+        Write-Host 'Please run option H from the main menu first to gather GPU information.' -ForegroundColor Yellow
+        Return
+    }
+    If ($vendors -contains 'NVIDIA') {
+        Write-Host "NVIDIA GPU detected. Clearing the NVIDIA shader cache will clear the cache for all games." -ForegroundColor Yellow
+        Write-Host "Do you want to continue? (Y/N)" -ForegroundColor Yellow
+        $response = Read-Host
+        If ($response -match '^[Yy]$') {
+            Remove-Item (Join-Path (Join-Path $env:LOCALAPPDATA 'NVIDIA\DXCache') '*') -Recurse -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path (Join-Path $env:USERPROFILE 'AppData\LocalLow\NVIDIA\DXCache') '*') -Recurse -ErrorAction SilentlyContinue
+            Write-Host "NVIDIA shader cache cleared." -ForegroundColor Green
+        } Else {
+            Write-Host "Skipped clearing NVIDIA shader cache." -ForegroundColor DarkYellow
+        }
+    }
+    If ($vendors -contains 'AMD') {
+        Write-Host "AMD GPU detected. Clearing AMD shader cache will clear the cache for all games." -ForegroundColor Yellow
+        Write-Host "Do you want to continue? (Y/N)" -ForegroundColor Yellow
+        $response = Read-Host
+        If ($response -match '^[Yy]$') {
+            Remove-Item (Join-Path (Join-Path $env:LOCALAPPDATA 'AMD\DxCache') '*') -Recurse -ErrorAction SilentlyContinue
+            Write-Host "AMD shader cache cleared." -ForegroundColor Green
+        } Else {
+            Write-Host "Skipped clearing the AMD shader cache." -ForegroundColor DarkYellow
+        }
+    }
+    If ($vendors -contains 'Intel') {
+        Write-Host "Intel GPU detected. Clearing Intel shader cache will clear the cache for all games." -ForegroundColor Yellow
+        Write-Host "Do you want to continue? (Y/N)" -ForegroundColor Yellow
+        $response = Read-Host
+        If ($response -match '^[Yy]$') {
+            Remove-Item (Join-Path (Join-Path $env:LOCALAPPDATA 'Intel\DxCache') '*') -Recurse -ErrorAction SilentlyContinue
+            Remove-Item (Join-Path (Join-Path $env:LOCALAPPDATA 'Intel\ShaderCache') '*') -Recurse -ErrorAction SilentlyContinue
+            Write-Host "Intel shader cache cleared." -ForegroundColor Green
+        } Else {
+            Write-Host "Skipped clearing the Intel shader cache." -ForegroundColor DarkYellow
+        }
+    }
+}
 Function Get-PageFileSize {
      $pageFile = Get-CimInstance Win32_PageFileUsage
 	 ( $pageFile -and ( $pageFile.AllocatedBaseSize -ne 0 ) )
@@ -2036,7 +2090,6 @@ Function Invoke-HD2StatusChecks {
     Test-USBGameDrive
     Test-FasterDriveAvailable
     Show-TestResults
-
     Write-Host "`n--- Paused ---"
     Write-Host "Copy any results you want to save, then press any key to return to the menu."
     Pause
@@ -2069,6 +2122,7 @@ Function MainMenu {
 Function ClearDataMenu {
     $options = @(
         "🧹 S̲ettings (AppData)",
+        "🧹 Clear Shader Caches",
         "🧹 Stea̲m Cloud",
         "🧹 Hostability Ke̲y",
         "❌ Q̲uick Mod Removal",
@@ -2080,9 +2134,10 @@ Function ClearDataMenu {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 4 -eq $choice) { Return }
         ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (2 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (3 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-ShaderCaches; Pause 'Press any key to continue...'}
+        ElseIf (2 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (3 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (4 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
     } While ($true)
 }
 Function GraphicsMenu {
@@ -2284,7 +2339,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
-
-
-
-
