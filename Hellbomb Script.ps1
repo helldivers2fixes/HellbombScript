@@ -737,7 +737,11 @@ Function Show-GameLaunchOptions {
 
     $Content = Get-Content -Path $script:localconfigVDF -Raw
     $pattern = '(?sm)"553850"\s*\{(?:[^{}]|(?<open>\{)|(?<-open>\}))*(?(open)(?!))[^}]*?"LaunchOptions"\s*"([^"]*)"[^}]*?\}'
-    $allMatches = [regex]::Matches($Content, $pattern)
+    Try {
+        $allMatches = [regex]::Matches($Content, $pattern)
+    } Catch {
+        # Supresses uncessary error if the HD2 and Launch options blocks are not found. This just means the user has never used launch options
+    }
 
     If ($allMatches.Count -eq 0) {
         Write-Host "Could not locate launch options in $script:localconfigVDF." -ForegroundColor Yellow
