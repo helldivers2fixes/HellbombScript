@@ -628,6 +628,8 @@ Function Show-MotherboardInfo {
     'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
     [pscustomobject]@{ 'Motherboard Info' = '';
     'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
+    [pscustomobject]@{ 'Motherboard Info' = '';
+    'UEFI Info' = 'BIOS Release Date: '+(Get-CimInstance -ClassName Win32_BIOS).ReleaseDate.ToString("yyyy-MM-dd") }
     )
     $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
 }
@@ -2338,4 +2340,5 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
+
 MainMenu
