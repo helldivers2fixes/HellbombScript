@@ -771,6 +771,11 @@ Function Show-GameLaunchOptions {
         Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
     }
 }
+Function Show-PowerPlan {
+    $script:PowerPlan = (Get-CimInstance -Namespace root\cimv2\power -ClassName Win32_PowerPlan -Filter "IsActive = True").ElementName
+    Write-Host 'Active Windows Power Plan: ' -NoNewLine -ForegroundColor Cyan
+    Write-Host $script:PowerPlan
+}
 Function Test-VegaGPUDriver {
     [OutputType([bool])]
     $VegaWrongDriver = @($script:SystemInfo.GPUInfo | Where-Object {
@@ -2061,6 +2066,7 @@ Function Invoke-HD2StatusChecks {
     Show-MotherboardInfo
     Show-GPUInfo
     Show-OSInfo
+    Show-PowerPlan
     Show-ISPInfo
     Show-GameLaunchOptions
     Test-PendingReboot
