@@ -2105,13 +2105,13 @@ Function Invoke-HD2StatusChecks {
 
 Function MainMenu {
     $options = @(
-        "🔍 H̲D2 Status Checks",
-        "🧹 C̲lear Data Options >",
-        "🛠️ G̲raphics Options >",
-        "🛜 N̲etwork Options >",
-        "🔊 A̲udio Options >",
-        "🔁 R̲eset/Toggle Components >",
-        "❌ Ex̲it"
+        "🔍 |H|D2 Status Checks",
+        "🧹 |C|lear Data Options >",
+        "🛠️ |G|raphics Options >",
+        "🛜 |N|etwork Options >",
+        "🔊 |A|udio Options >",
+        "🔁 |R|eset/Toggle Components >",
+        "❌ E|x|it"
     )
     $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "X"=6 }
 
@@ -2129,14 +2129,14 @@ Function MainMenu {
 
 Function ClearDataMenu {
     $options = @(
-        "🧹 S̲ettings (AppData)",
-        "🧹 Clear Shader Caches",
-        "🧹 Stea̲m Cloud",
-        "🧹 Hostability Ke̲y",
-        "❌ Q̲uick Mod Removal",
-        "⬅️ B̲ack"
+        "🧹 |C|lear Settings (AppData)",
+        "🧹 Clear Only Shader Caches",
+        "🧹 Stea|m| Cloud",
+        "🧹 Hostability Key |Z|",
+        "❌ |Q|uick Mod Removal",
+        "⬅️ |B|ack"
     )
-    $hotkeys = @{ "S"=0; "M"=1; "K"=2; "Q"=3; "B"=4 }
+    $hotkeys = @{ "C"=0; "M"=2; "Z"=3; "Q"=4; "B"=5 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
@@ -2150,9 +2150,9 @@ Function ClearDataMenu {
 }
 Function GraphicsMenu {
     $options = @(
-        "🛠️ Select Correct GP̲U",
-        "📺 O̲ptimizations Toggle",
-        "⬅️ B̲ack"
+        "🛠️ Select Correct G|P|U",
+        "📺 |O|ptimizations Toggle",
+        "⬅️ |B|ack"
     )
     $hotkeys = @{ "P"=0; "O"=1; "B"=2 }
 
@@ -2165,9 +2165,9 @@ Function GraphicsMenu {
 }
 Function NetworkMenu {
     $options = @(
-        "🛜 W̲i-Fi LAN Test",
-        "N̲AT Test",
-        "⬅️ B̲ack"
+        "🛜 |W|i-Fi LAN Test",
+        "|N|AT Test",
+        "⬅️ |B|ack"
     )
     $hotkeys = @{ "W"=0; "N"=1; "B"=2 }
 
@@ -2180,10 +2180,10 @@ Function NetworkMenu {
 }
 Function AudioMenu {
     $options = @(
-        "🔈 B̲luetooth Telephony Service",
-        "⬅️ B̲ack"
+        "🔈 |B|luetooth Telephony Service",
+        "⬅️ Back"
     )
-    $hotkeys = @{ "L"=0; "B"=1 }
+    $hotkeys = @{ "B"=0 }
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔊 Audio Options") -Options $options -Hotkeys $hotkeys
@@ -2198,12 +2198,12 @@ Function AudioMenu {
 }
 Function ResetToggleComponentsMenu {
     $options = @(
-        "🔁 G̲ameGuard Re-install",
-        "🔁 S̲team Reset",
-        "🗑️ U̲ninstall VC++ Redists",
-        "➕ I̲nstall VC++ Redists",
-        "🗑️ D̲isable/Enable G̲ameInput Service (Toggle)",
-        "⬅️ B̲ack"
+        "🔁 |G|ameGuard Re-install",
+        "🔁 |S|team Reset",
+        "🗑️ |U|ninstall VC++ Redists",
+        "➕ |I|nstall VC++ Redists",
+        "🗑️ |D|isable/Enable GameInput Service (Toggle)",
+        "⬅️ |B|ack"
     )
     $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "D"=4; "B"=5 }
 
@@ -2348,3 +2348,4 @@ $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 
 MainMenu
+
