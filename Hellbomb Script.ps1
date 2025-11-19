@@ -1637,9 +1637,9 @@ Function Test-FreeDiskSpace
 }
 Function Test-USBGameDrive
 {
-    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
-    $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
-    $script:Tests.USBGameDrive.TestPassed = ($GamePhysicalDisk.BusType -ne "USB")
+    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
+    $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
+    $script:Tests.USBGameDrive.TestPassed = ($GamePhysicalDisk -eq $null -or $GamePhysicalDisk.BusType -ne "USB")
 }
 Function Test-FasterDriveAvailable
 {
