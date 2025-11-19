@@ -2140,7 +2140,7 @@ Function ClearDataMenu {
 
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 4 -eq $choice) { Return }
+        If ($null -eq $choice -or 5 -eq $choice) { Return }
         ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
         ElseIf (1 -eq $choice) { Reset-ShaderCaches; Pause 'Press any key to continue...'}
         ElseIf (2 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
@@ -2347,3 +2347,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
