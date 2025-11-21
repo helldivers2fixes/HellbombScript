@@ -2302,8 +2302,8 @@ Function AudioMenu
         }
 
         @{
-            Label  = "⬅️ |B|ack"
-            Hotkey = "B"
+            Label  = "⬅️ Back"
+            Hotkey = ""
             Action = $null
         }
     )
@@ -2484,4 +2484,5 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
 
