@@ -2025,7 +2025,8 @@ Function Get-MenuTitle {
     Return $Title
 }
 
-Function Show-ArrowMenu {
+Function Show-ArrowMenu
+{
     Param(
         [string]$Title,
         [string[]]$Options,
@@ -2033,32 +2034,43 @@ Function Show-ArrowMenu {
     )
 
     $selectedIndex = 0
+    $oldIndex = 0
     $key = $null
 
-    Do {
-        Clear-Host
-        Write-Host $Title
-        Write-Host "Use ↑ ↓ arrows or press hotkey letter. Enter/→ selects, Esc/← cancels."
-        Write-Host ""
+    Clear-Host
+    Write-Host "$(Get-MenuTitle)`n$($Title)"
+    Write-Host "Use ↑ ↓ arrows or press hotkey letter. Enter/→ selects, Esc/← cancels."
+    Write-Host ""
 
-        For ($i = 0; $i -lt $Options.Length; $i++) {
-            If ($i -eq $selectedIndex) {
-                Write-Host $Options[$i] -ForegroundColor Cyan
-            }
-            Else {
-                Write-Host $Options[$i]
-            }
+    $menuStartPosition = [System.Management.Automation.Host.Coordinates]::new(
+    $Host.UI.RawUI.CursorPosition.X,
+    $Host.UI.RawUI.CursorPosition.Y
+    )
+
+    For ($i = 0; $i -lt $Options.Length; $i++)
+    {
+        If ($i -eq $selectedIndex) {
+            Write-Host $Options[$i] -ForegroundColor Cyan
         }
+        Else {
+            Write-Host $Options[$i]
+        }
+    }
 
+    $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $selectedIndex)
+
+    Do {
+        $oldIndex = $selectedIndex
         $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
-        Switch ($key.VirtualKeyCode) {
-            38 { if ($selectedIndex -gt 0) { $selectedIndex-- } }              # Up
-            40 { if ($selectedIndex -lt ($Options.Length - 1)) { $selectedIndex++ } } # Down
-            27 { return $null }                                               # Esc
-            13 { return $selectedIndex }                                      # Enter
-            39 { return $selectedIndex }                                      # Right Arrow → same as Enter
-            37 { return $Options.Length - 1 }                                 # Left Arrow → Back (last option)
+        Switch ($key.VirtualKeyCode)
+        {
+            38 { if ($selectedIndex -gt 0) { $selectedIndex-- } }                       # Up
+            40 { if ($selectedIndex -lt ($Options.Length - 1)) { $selectedIndex++ } }   # Down
+            27 { return $null }                                                         # Esc
+            13 { return $selectedIndex }                                                # Enter
+            39 { return $selectedIndex }                                                # Right Arrow → same as Enter
+            37 { return $Options.Length - 1 }                                           # Left Arrow → Back (last option)
             Default {
                 $char = [string]$key.Character
                 if ($null -ne $char -and -not [string]::IsNullOrEmpty($char)) {
@@ -2067,7 +2079,29 @@ Function Show-ArrowMenu {
                 }
             }
         }
+
+        #Clear previous highlight
+        $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $oldIndex)
+        Write-Host $Options[$oldIndex] -NoNewLine
+
+        #Set new highlight
+        $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $selectedIndex)
+        Write-Host $Options[$selectedIndex] -ForegroundColor Cyan -NoNewLine
+        $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $selectedIndex)
+
     } While ($true)
+}
+
+Function RunAndPause
+{
+    Param(
+        [scriptblock]$ScriptBlock
+    )
+
+    & $ScriptBlock
+    Write-Host "`n--- Paused ---"
+    Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
+    Pause
 }
 
 Function Invoke-HD2StatusChecks {
@@ -2112,120 +2146,214 @@ Function Invoke-HD2StatusChecks {
     Pause
 }
 
-Function MainMenu {
-    $options = @(
-        "🔍 |H|D2 Status Checks",
-        "🧹 |C|lear Data Options >",
-        "🛠️ |G|raphics Options >",
-        "🛜 |N|etwork Options >",
-        "🔊 |A|udio Options >",
-        "🔁 |R|eset/Toggle Components >",
-        "❌ E|x|it"
+Function Create-Menu 
+{
+    Param(
+        [string]$Title,
+
+        [Parameter(Mandatory)]
+        [array]$MenuItems
     )
-    $hotkeys = @{ "H"=0; "C"=1; "G"=2; "N"=3; "A"=4; "R"=5; "X"=6 }
 
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle) -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 6 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Invoke-HD2StatusChecks }
-        ElseIf (1 -eq $choice) { ClearDataMenu }
-        ElseIf (2 -eq $choice) { GraphicsMenu }
-        ElseIf (3 -eq $choice) { NetworkMenu }
-        ElseIf (4 -eq $choice) { AudioMenu }
-        ElseIf (5 -eq $choice) { ResetToggleComponentsMenu }
-    } While ($true)
-}
+    $options = $MenuItems.Label
+    $actions = @{}
+    $hotkeys = @{}
 
-Function ClearDataMenu {
-    $options = @(
-        "🧹 |C|lear Settings (AppData)",
-        "🧹 Clear Only Shader Caches",
-        "🧹 Stea|m| Cloud",
-        "🧹 Hostability Key |Z|",
-        "❌ |Q|uick Mod Removal",
-        "⬅️ |B|ack"
-    )
-    $hotkeys = @{ "C"=0; "M"=2; "Z"=3; "Q"=4; "B"=5 }
-
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 5 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-ShaderCaches; Pause 'Press [SPACEBAR] to continue...'}
-        ElseIf (2 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (3 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (4 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-    } While ($true)
-}
-Function GraphicsMenu {
-    $options = @(
-        "🛠️ Select Correct G|P|U",
-        "📺 |O|ptimizations Toggle",
-        "⬅️ |B|ack"
-    )
-    $hotkeys = @{ "P"=0; "O"=1; "B"=2 }
-
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛠️ Graphics Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 2 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Open-AdvancedGraphics; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Switch-FullScreenOptimizations; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-    } While ($true)
-}
-Function NetworkMenu {
-    $options = @(
-        "🛜 |W|i-Fi LAN Test",
-        "|N|AT Test",
-        "⬅️ |B|ack"
-    )
-    $hotkeys = @{ "W"=0; "N"=1; "B"=2 }
-
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛜 Network Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 2 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Test-WiFi }
-        ElseIf (1 -eq $choice) { Test-DoubleNat }
-    } While ($true)
-}
-Function AudioMenu {
-    $options = @(
-        "🔈 |B|luetooth Telephony Service",
-        "⬅️ Back"
-    )
-    $hotkeys = @{ "B"=0 }
-
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔊 Audio Options") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 1 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) {
-            Switch-BluetoothTelephony
-            Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
-            Pause
+    for ($i = 0; $i -lt $MenuItems.Count; $i++) {
+        if ($MenuItems[$i].Hotkey) {
+            $hotkeys[$MenuItems[$i].Hotkey.ToUpper()] = $i
         }
-    } While ($true)
-}
-Function ResetToggleComponentsMenu {
-    $options = @(
-        "🔁 |G|ameGuard Re-install",
-        "🔁 |S|team Reset",
-        "🗑️ |U|ninstall VC++ Redists",
-        "➕ |I|nstall VC++ Redists",
-        "🗑️ |D|isable/Enable GameInput Service (Toggle)",
-        "⬅️ |B|ack"
-    )
-    $hotkeys = @{ "G"=0; "S"=1; "U"=2; "I"=3; "D"=4; "B"=5 }
+        $actions[$i] = $MenuItems[$i].Action
+    }
 
-    Do {
-        $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys $hotkeys
-        If ($null -eq $choice -or 5 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Reset-GameGuard; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-Steam; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (2 -eq $choice) { Uninstall-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (3 -eq $choice) { Install-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-        ElseIf (4 -eq $choice) { Switch-GameInput; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
-    } While ($true)
+    do {
+        $choice = Show-ArrowMenu -Title $Title -Options $options -Hotkeys $hotkeys
+
+        if ($null -eq $choice) { return }
+
+        $action = $actions[$choice]
+        if ($null -eq $action) { return }
+
+        Clear-Host
+        & $action
+    } while ($true)
 }
+
+Function MainMenu 
+{
+
+    $menu = @(
+        @{ Label="🔍 |H|D2 Status Checks";      Hotkey="H"; Action={ Invoke-HD2StatusChecks } }
+        @{ Label="🧹 |C|lear Data Options >";   Hotkey="C"; Action={ ClearDataMenu } }
+        @{ Label="🛠️ |G|raphics Options >";     Hotkey="G"; Action={ GraphicsMenu } }
+        @{ Label="🛜 |N|etwork Options >";       Hotkey="N"; Action={ NetworkMenu } }
+        @{ Label="🔊 |A|udio Options >";        Hotkey="A"; Action={ AudioMenu } }
+        @{ Label="🔁 |R|eset/Toggle… >";        Hotkey="R"; Action={ ResetToggleComponentsMenu } }
+        @{ Label="❌ E|x|it";                   Hotkey="X"; Action = $null }
+    )
+
+    Create-Menu -Title "" -MenuItems $menu
+}
+
+Function ClearDataMenu 
+{
+
+    $menu = @(
+        @{
+            Label  = "🧹 |C|lear Settings (AppData)"
+            Hotkey = "C"
+            Action = { RunAndPause { Remove-HD2AppData } }
+        }
+
+        @{
+            Label  = "🧹 Clear Only Shader Caches"
+            Hotkey = $null
+            Action = { RunAndPause { Reset-ShaderCaches } }
+        }
+
+        @{
+            Label  = "🧹 Stea|m| Cloud"
+            Hotkey = "M"
+            Action = { RunAndPause { Reset-HD2SteamCloud } }
+        }
+
+        @{
+            Label  = "🧹 Hostability Key |Z|"
+            Hotkey = "Z"
+            Action = { RunAndPause { Reset-HostabilityKey } } 
+        }
+
+        @{
+            Label  = "❌ |Q|uick Mod Removal"
+            Hotkey = "Q"
+            Action = { RunAndPause { Show-ModRemovalWarning; Remove-AllMods} }
+        }
+
+        @{
+            Label  = "⬅️ |B|ack"
+            Hotkey = "B"
+            Action = $null
+        }
+    )
+
+    Create-Menu -Title "🧹 Clear Data Options" -MenuItems $menu
+}
+
+Function GraphicsMenu 
+{
+
+    $menu = @(
+        @{
+            Label  = "🛠️ Select Correct G|P|U"
+            Hotkey = "P"
+            Action = { RunAndPause { Open-AdvancedGraphics } }
+        }
+
+        @{
+            Label  = "📺 |O|ptimizations Toggle"
+            Hotkey = "O"
+            Action = { RunAndPause { Reset-ShaderCaches } }
+        }
+
+        @{
+            Label  = "⬅️ |B|ack"
+            Hotkey = "B"
+            Action = $null
+        }
+    )
+
+    Create-Menu -Title "🛠️ Graphics Options" -MenuItems $menu
+}
+
+Function NetworkMenu 
+{
+
+    $menu = @(
+        @{
+            Label  = "🛜 |W|i-Fi LAN Test"
+            Hotkey = "W"
+            Action = { Test-Wifi }
+        }
+
+        @{
+            Label  = "|N|AT Test"
+            Hotkey = "T"
+            Action = { Test-DoubleNAT }
+        }
+
+        @{
+            Label  = "⬅️ |B|ack"
+            Hotkey = "B"
+            Action = $null
+        }
+    )
+
+    Create-Menu -Title "🛜 Network Options" -MenuItems $menu
+}
+
+Function AudioMenu 
+{
+
+    $menu = @(
+        @{
+            Label  = "🔈 |B|luetooth Telephony Service"
+            Hotkey = $null
+            Action = { RunAndPause { Switch-BluetoothTelephony } }
+        }
+
+        @{
+            Label  = "⬅️ |B|ack"
+            Hotkey = "B"
+            Action = $null
+        }
+    )
+
+    Create-Menu -Title "🔊 Audio Options" -MenuItems $menu
+}
+
+Function ResetToggleComponentsMenu
+{
+    $menu = @(
+        @{
+            Label  = "🔁 |G|ameGuard Re-install"
+            Hotkey = "G"
+            Action = { RunAndPause { Reset-GameGuard } }
+        }
+
+        @{
+            Label  = "🔁 |S|team Reset"
+            Hotkey = "S"
+            Action = { RunAndPause { Reset-Steam } }
+        }
+
+        @{
+            Label  = "🗑️ |U|ninstall VC++ Redists"
+            Hotkey = "U"
+            Action = { RunAndPause { Uninstall-VCRedist } }
+        }
+
+        @{
+            Label  = "➕ |I|nstall VC++ Redists"
+            Hotkey = "I"
+            Action = { RunAndPause { Install-VCRedist } }
+        }
+
+        @{
+            Label  = "🗑️ |D|isable/Enable GameInput Service (Toggle)"
+            Hotkey = "D"
+            Action = { RunAndPause { Switch-gameInput } }
+        }
+
+        @{
+            Label  = "⬅️ |B|ack"
+            Hotkey = "B"
+            Action = $null
+        }
+    )
+
+    Create-Menu -Title "🔊 Audio Options" -MenuItems $menu
+}
+
 Function Show-TestResults {
     $keyDisplayOrder = @(
     "GameResolution",
@@ -2356,3 +2484,4 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
+
