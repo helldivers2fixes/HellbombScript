@@ -937,8 +937,8 @@ Function Get-MemoryPartNumber {
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
     # Define URLs and paths
-$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.16-en.zip"
-$CPUZZip = Join-Path -Path $workingDirectory -ChildPath "cpu-z_2.16-en.zip"
+$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip"
+$CPUZZip = Join-Path -Path $workingDirectory -ChildPath "cpu-z_2.17-en.zip"
 $CPUZExe = Join-Path -Path $workingDirectory -ChildPath "cpuz_x64.exe"
 $CPUZFile = "cpuz_x64.exe"
     # Download and extract CPU-Z if it does not exist
@@ -947,10 +947,10 @@ $CPUZFile = "cpuz_x64.exe"
             Try {
                 Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
             } Catch {
-                Return Write-Error "Failed to download cpuz_2.16-en.zip: $_"
+                Return Write-Error "Failed to download cpuz_2.17-en.zip: $_"
             }
         }
-    If ( (Get-FileHash $CPUZZip).Hash -ne 'E38303E384625866C7C76D91C4CBCDE956C7C14D6CF7251F6C3872A4C8360C07' ) {
+    If ( (Get-FileHash $CPUZZip).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215' ) {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     }
@@ -958,11 +958,11 @@ $CPUZFile = "cpuz_x64.exe"
             Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
         }
         Catch {
-            Return Write-Error 'CPU-Z extraction failed. Download cpuz_2.16-en.zip from https://download.cpuid.com/cpu-z/cpu-z_2.16-en.zip and place in your Downloads folder.'
+            Return Write-Error 'CPU-Z extraction failed. Download cpuz_2.17-en.zip from https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip and place in your Downloads folder.'
         }
     }
     $CPUZSHA256 = (Get-FileHash $workingDirectory\cpuz_x64.exe).Hash
-    If ( $CPUZSHA256 -ne '247EE3FC939DEF4350C9DA4F9BCC4CF9AC0E27A416C6C0433F5AD0F78BE7C95E' ) {
+    If ( $CPUZSHA256 -ne 'E1F8752E8D50CB75B0CD1656C58BD3D2672791CA0A2875DA2209AF6AE17D62D3' ) {
         Return Write-Error 'cpuz_x64.exe failed hash verification... cannot scan hardware.'
     }
     
