@@ -13,6 +13,7 @@
 
 ## EXE
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
+Make sure old versions of ``cpuz_x64.exe`` that are saved in your Downloads folder are deleted.
 
 Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
 
