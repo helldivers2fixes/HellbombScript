@@ -24,7 +24,7 @@ $script:Tests = @{
         Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
-        Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
+        Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press [SPACEBAR] to continue..." -ForegroundColor Yellow
 '@
         'TestPassedIntelMsg' = @'
         Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
@@ -376,7 +376,16 @@ Function pause ($message) {
     }
     Else {
         Write-Host "$message"$([Environment]::NewLine) -ForegroundColor Yellow
-        $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        
+        # Loop until the space bar is pressed
+        Do {
+            # Read a key press, suppress key display, and include key down events
+            $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            
+            # Check if the Character property of the key press object is a space ' '
+        } While ($x.Character -ne ' ') 
+        
+        Write-Host "" # Print a newline after the pause
     }
 }
 Function Install-EXE {
@@ -468,7 +477,7 @@ Function Get-IsProcessRunning {
     )
     If (Get-Process -ProcessName $InputObject.ProcessName -ErrorAction SilentlyContinue) {
         Write-Host $InputObject.ErrorMsg -ForegroundColor Red
-        Pause 'Press any key to Exit...'
+        Pause 'Press [SPACEBAR] to Exit...'
         Exit
     }
 }
@@ -1480,7 +1489,7 @@ Function Reset-Steam {
         '
     }
     Get-IsProcessRunning $SteamProcess
-    Pause "You will need to sign into Steam after this process completes.$([Environment]::NewLine)Press any key to continue..." -ForegroundColor Yellow
+    Pause "You will need to sign into Steam after this process completes.$([Environment]::NewLine)Press [SPACEBAR] to continue..." -ForegroundColor Yellow
     # Remove CEF Cache
     Write-Host "$([Environment]::NewLine)Clearing contents of $env:LOCALAPPDATA\Steam\" -ForegroundColor Cyan
     Remove-Item -Path $env:LOCALAPPDATA\Steam\* -Recurse -ErrorAction Continue
@@ -1550,7 +1559,7 @@ Function Test-DoubleNAT {
     Else {
         Write-Host "$([Environment]::NewLine)No Double-NAT connection detected." -ForegroundColor Green
     }
-    Pause "$([Environment]::NewLine)Press any key to continue..."
+    Pause "$([Environment]::NewLine)Press [SPACEBAR] to continue..."
 }
 Function Switch-BTAGService {
     If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -1703,7 +1712,7 @@ Function Reset-HD2SteamCloud {
     Write-Host "1.) Script will close Steam if it is running$([Environment]::NewLine)2.) Script will temporarily disable Steam Cloud saves for HD2$([Environment]::NewLine)3.) Script will delete your HD2 Steam Cloud data$([Environment]::NewLine)4.) Script will pause$([Environment]::NewLine)5.) Script will request for you to run Helldivers 2$([Environment]::NewLine)    and load into the ship to generate new Steam Cloud files."
     Write-Host "6.) You will close the game, and continue the script."
     Write-Host "7.) Script will re-enable Steam Cloud saves for HD2. $([Environment]::NewLine)    The new files to be synced to Steam Cloud next time Steam is launched."
-    Pause 'Press any key to continue.'
+    Pause 'Press [SPACEBAR] to continue.'
     # Shutdown Steam and disable SteamCloud
     # Get the Steam process
     $steamProcess = Get-Process -Name "Steam" -ErrorAction SilentlyContinue
@@ -1747,7 +1756,7 @@ Function Reset-HD2SteamCloud {
     Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -ForegroundColor Cyan
     
     Write-Host "STOP! Please open Helldivers 2 and skip intro/wait until it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
-    pause 'Press any key to continue...'
+    pause 'Press [SPACEBAR] to continue...'
 
     Write-Host 'Re-enabling Cloud Save for HD2...' -ForegroundColor Cyan
     $configContent = Get-Content -Path $sharedConfigPath
@@ -1889,7 +1898,7 @@ Function Show-ModRemovalWarning {
     Write-Host '+ ' -ForegroundColor Yellow -NoNewline
     Write-Host 'C ' -NoNewLine
     Write-Host 'now to exit.' -ForegroundColor Yellow
-    Pause "$([Environment]::NewLine) Press any key to continue"
+    Pause "$([Environment]::NewLine) Press [SPACEBAR] to continue"
 }
 Function Remove-AllMods {
         If (-not $script:AppInstallPath)
@@ -2099,7 +2108,7 @@ Function Invoke-HD2StatusChecks {
     Test-FasterDriveAvailable
     Show-TestResults
     Write-Host "`n--- Paused ---"
-    Write-Host "Copy any results you want to save, then press any key to return to the menu."
+    Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
     Pause
 }
 
@@ -2141,11 +2150,11 @@ Function ClearDataMenu {
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🧹 Clear Data Options") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 5 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-ShaderCaches; Pause 'Press any key to continue...'}
-        ElseIf (2 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (3 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (4 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (0 -eq $choice) { Remove-HD2AppData; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-ShaderCaches; Pause 'Press [SPACEBAR] to continue...'}
+        ElseIf (2 -eq $choice) { Reset-HD2SteamCloud; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (3 -eq $choice) { Reset-HostabilityKey; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (4 -eq $choice) { Show-ModRemovalWarning; Remove-AllMods; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
     } While ($true)
 }
 Function GraphicsMenu {
@@ -2159,8 +2168,8 @@ Function GraphicsMenu {
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🛠️ Graphics Options") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 2 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Open-AdvancedGraphics; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Switch-FullScreenOptimizations; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (0 -eq $choice) { Open-AdvancedGraphics; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Switch-FullScreenOptimizations; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
     } While ($true)
 }
 Function NetworkMenu {
@@ -2191,7 +2200,7 @@ Function AudioMenu {
         ElseIf (0 -eq $choice) {
             Switch-BluetoothTelephony
             Write-Host "`n--- Paused ---"
-            Write-Host "Copy any results you want to save, then press any key to return to the menu."
+            Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
             Pause
         }
     } While ($true)
@@ -2210,11 +2219,11 @@ Function ResetToggleComponentsMenu {
     Do {
         $choice = Show-ArrowMenu -Title (Get-MenuTitle + "`n🔁 Reset/Toggle Components") -Options $options -Hotkeys $hotkeys
         If ($null -eq $choice -or 5 -eq $choice) { Return }
-        ElseIf (0 -eq $choice) { Reset-GameGuard; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (1 -eq $choice) { Reset-Steam; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (2 -eq $choice) { Uninstall-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (3 -eq $choice) { Install-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
-        ElseIf (4 -eq $choice) { Switch-GameInput; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press any key to return to the menu."; Pause }
+        ElseIf (0 -eq $choice) { Reset-GameGuard; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (1 -eq $choice) { Reset-Steam; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (2 -eq $choice) { Uninstall-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (3 -eq $choice) { Install-VCRedist; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
+        ElseIf (4 -eq $choice) { Switch-GameInput; Write-Host "`n--- Paused ---"; Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."; Pause }
     } While ($true)
 }
 Function Show-TestResults {
@@ -2347,4 +2356,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
-
