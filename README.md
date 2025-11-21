@@ -1,5 +1,5 @@
 # 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)   
-  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v4.0prealpha4/Hellbomb_Script_v4.0-5abbf43.exe)
+  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v4.0prealpha5/Hellbomb_Script_v4.0-5abbf43.exe)
   [![GitHub release](https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
   [![GitHub liscense](https://img.shields.io/github/license/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/tree/main?tab=MIT-1-ov-file)
   [![GitHub forks](https://img.shields.io/github/forks/helldivers2fixes/HellbombScript)]()
@@ -11,11 +11,20 @@
 [![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## HOW TO USE:
 
+## EXE
+1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
+
+Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
+
+2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
+
+3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+
 ## Copy and Paste using Terminal Console (Semi-Automated)
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
  2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
     ```powershell
-    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0prealpha4/Hellbomb%20Script.ps1 | Invoke-Expression
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0prealpha5/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
     If you would like to use the latest code, feel free to try it! It will have the latest features, but may not work right, or be incomplete.
     ```powershell
@@ -41,15 +50,6 @@ Then you can work through the things below if you have specific issues.
 | Out of Disk Space | Option ``S`` (Caused by memory leak overflowing to the page file)       |
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 | WinLicense Error: An error has occurred while loading imports. Wrong DLL present. | Option ``S`` then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB)    |
-
-## EXE **(not currently fully supported, may trip Anti-Virus)**
-1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
-
-Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
-
-2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
-
-3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
 ## Copy and Paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
