@@ -2276,7 +2276,7 @@ Function NetworkMenu
         }
 
         @{
-            Label  = "🌐 NA|T| Test"
+            Label  = "🌐  NA|T| Test"
             Hotkey = "T"
             Action = { Test-DoubleNAT }
         }
@@ -2339,7 +2339,7 @@ Function ResetToggleComponentsMenu
         }
 
         @{
-            Label  = "🗑️ |D|isable/Enable GameInput Service (Toggle)"
+            Label  = "🎮 |D|isable/Enable GameInput Service (Toggle)"
             Hotkey = "D"
             Action = { RunAndPause { Switch-gameInput } }
         }
@@ -2351,7 +2351,7 @@ Function ResetToggleComponentsMenu
         }
     )
 
-    Create-Menu -Title "🔊 Audio Options" -MenuItems $menu
+    Create-Menu -Title "🔊 Reset/Toggle Components" -MenuItems $menu
 }
 
 Function Show-TestResults {
