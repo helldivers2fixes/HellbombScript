@@ -2188,8 +2188,8 @@ Function MainMenu
         @{ Label="🛠️ |G|raphics Options >";     Hotkey="G"; Action={ GraphicsMenu } }
         @{ Label="🛜 |N|etwork Options >";       Hotkey="N"; Action={ NetworkMenu } }
         @{ Label="🔊 |A|udio Options >";        Hotkey="A"; Action={ AudioMenu } }
-        @{ Label="🔁 |R|eset/Toggle… >";        Hotkey="R"; Action={ ResetToggleComponentsMenu } }
-        @{ Label="❌ E|x|it";                   Hotkey="X"; Action = $null }
+        @{ Label="🔁 |R|eset/Toggle >";        Hotkey="R"; Action={ ResetToggleComponentsMenu } }
+        @{ Label="❌  E|x|it";                   Hotkey="X"; Action = $null }
     )
 
     Create-Menu -Title "" -MenuItems $menu
@@ -2206,19 +2206,19 @@ Function ClearDataMenu
         }
 
         @{
-            Label  = "🧹 Clear Only Shader Caches"
+            Label  = "🧹  Clear Only Shader Caches"
             Hotkey = $null
             Action = { RunAndPause { Reset-ShaderCaches } }
         }
 
         @{
-            Label  = "🧹 Stea|m| Cloud"
+            Label  = "🧹  Stea|m| Cloud"
             Hotkey = "M"
             Action = { RunAndPause { Reset-HD2SteamCloud } }
         }
 
         @{
-            Label  = "🧹 Hostability Key |Z|"
+            Label  = "🧹  Hostability Key |Z|"
             Hotkey = "Z"
             Action = { RunAndPause { Reset-HostabilityKey } } 
         }
@@ -2244,7 +2244,7 @@ Function GraphicsMenu
 
     $menu = @(
         @{
-            Label  = "🛠️ Select Correct G|P|U"
+            Label  = "🛠️  Select Correct G|P|U"
             Hotkey = "P"
             Action = { RunAndPause { Open-AdvancedGraphics } }
         }
@@ -2276,7 +2276,7 @@ Function NetworkMenu
         }
 
         @{
-            Label  = "|N|AT Test"
+            Label  = "🌐 NA|T| Test"
             Hotkey = "T"
             Action = { Test-DoubleNAT }
         }
@@ -2484,5 +2484,3 @@ Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 MainMenu
-
-
