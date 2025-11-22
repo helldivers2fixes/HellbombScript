@@ -8,11 +8,11 @@ Not sure you trust the EXE? You can run
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
-**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/D9B0AE75A538B4B9FB37C8BC54C42DD4A3D23D1B0B761D03D2CDA4EA75E3C8E9)
+**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/6E3B2A1E66D7C4F8646A607B2CD455A07D155BBDC455E5077351F2C1D01A8B69)
 
-The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``D9B0AE75A538B4B9FB37C8BC54C42DD4A3D23D1B0B761D03D2CDA4EA75E3C8E9``.
+The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``6E3B2A1E66D7C4F8646A607B2CD455A07D155BBDC455E5077351F2C1D01A8B69``.
 
-**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/D9B0AE75A538B4B9FB37C8BC54C42DD4A3D23D1B0B761D03D2CDA4EA75E3C8E9)
+**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/6E3B2A1E66D7C4F8646A607B2CD455A07D155BBDC455E5077351F2C1D01A8B69)
 
 You can compare the file hash to the VirusTotal link to ensure that the VirusTotal results match the file you're attempting to run.
 
@@ -24,7 +24,7 @@ cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self
 ```
 4. Run
 ```powershell
-Get-FileHash 'Hellbomb Script.ps1' -eq D9B0AE75A538B4B9FB37C8BC54C42DD4A3D23D1B0B761D03D2CDA4EA75E3C8E9
+Get-FileHash 'Hellbomb Script.ps1' -eq 6E3B2A1E66D7C4F8646A607B2CD455A07D155BBDC455E5077351F2C1D01A8B69
 ```
 5. The statement should return/evaluate to ``True``
 
