@@ -741,7 +741,7 @@ Function Show-OSInfo {
 Function Show-GameLaunchOptions {
     $script:localconfigVDF = Join-Path -Path $script:mostRecentSteamUserProfilePath -ChildPath 'config\localconfig.vdf'
 
-    If (-Not (Test-Path $script:localconfigVDF)) {
+    If (-not (Test-Path $script:localconfigVDF)) {
         Write-Host "Error: File not found at $script:localconfigVDF" -ForegroundColor Red
         Return
     }
@@ -938,7 +938,7 @@ Function Get-HardwareInfo {
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
 	$HellbombScriptDirectory = "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
 	$TargetPath = Join-Path -Path $workingDirectory -ChildPath $HellbombScriptDirectory
-	If (-Not (Test-Path $TargetPath)) {
+	If (-not (Test-Path $TargetPath)) {
 		New-Item -Path $TargetPath -ItemType Directory -Force | Out-Null
 	}
     # Define URLs and paths
@@ -947,20 +947,20 @@ Function Get-HardwareInfo {
 	$CPUZZip = Join-Path -Path $TargetPath -ChildPath "cpu-z_2.17-en.zip"
 	$CPUZExe = Join-Path -Path $TargetPath -ChildPath "cpuz_x64.exe"
 	$CPUZFile = "cpuz_x64.exe"
-	$HelbombScriptReportName = "CPUZHellbombReport-$timestamp.txt"
+	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp.txt"
     # Download and extract CPU-Z if it does not exist
-    If (-Not (Test-Path $CPUZExe)) {
+    If (-not (Test-Path $CPUZExe)) {
         If (-Not (Test-Path $CPUZZip)) {
             Try {
                 Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
             } Catch {
-                Return Write-Error "Failed to download $CPUZZip: $_"
+                Return Write-Error "Failed to download ${CPUZZip}: $_"
             }
         }
     If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215') {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
-    }
+    	}
         Try {
             Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
         }
@@ -1017,7 +1017,7 @@ Function Get-CPUZ {
             Write-Error "$targetFile not found in the zip file."
         }
     } Catch {
-        Write-Error "Failed to extract $targetFile: $_"
+        Write-Error "Failed to extract ${targetFile}: $_"
         Throw
     } Finally {
         If ($null -ne $zip) {
