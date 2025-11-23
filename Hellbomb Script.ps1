@@ -410,7 +410,7 @@ Function Install-EXE {
     $ProgressPreference = 'SilentlyContinue'
     Write-Host "$([Environment]::NewLine)Downloading $CommonName..." -ForegroundColor Cyan
     Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
-    If ( (Get-FileHash ($DownloadPath + $FileName)).Hash -eq $SHA256Hash) {
+    If ( (Get-FileHash -Path ($DownloadPath + $FileName) -Algorithm SHA256).Hash -eq $SHA256Hash) {
         Write-Host 'Installing... look for UAC prompts' -ForegroundColor Cyan
         $Error.Clear()
         Try {
@@ -741,7 +741,7 @@ Function Show-OSInfo {
 Function Show-GameLaunchOptions {
     $script:localconfigVDF = Join-Path -Path $script:mostRecentSteamUserProfilePath -ChildPath 'config\localconfig.vdf'
 
-    If (-Not (Test-Path $script:localconfigVDF)) {
+    If (-not (Test-Path $script:localconfigVDF)) {
         Write-Host "Error: File not found at $script:localconfigVDF" -ForegroundColor Red
         Return
     }
@@ -936,54 +936,63 @@ Function Get-MemoryPartNumber {
 }
 Function Get-HardwareInfo { 
     $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
+	$HellbombScriptDirectory = "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
+	$TargetPath = Join-Path -Path $workingDirectory -ChildPath $HellbombScriptDirectory
+	If (-not (Test-Path $TargetPath)) {
+		New-Item -Path $TargetPath -ItemType Directory -Force | Out-Null
+	}
     # Define URLs and paths
-$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip"
-$CPUZZip = Join-Path -Path $workingDirectory -ChildPath "cpu-z_2.17-en.zip"
-$CPUZExe = Join-Path -Path $workingDirectory -ChildPath "cpuz_x64.exe"
-$CPUZFile = "cpuz_x64.exe"
+	$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+	$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip"
+	$CPUZZip = Join-Path -Path $TargetPath -ChildPath "cpu-z_2.17-en.zip"
+	$CPUZExe = Join-Path -Path $TargetPath -ChildPath "cpuz_x64.exe"
+	$CPUZFile = "cpuz_x64.exe"
+	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp"
     # Download and extract CPU-Z if it does not exist
-    If (-Not (Test-Path $CPUZExe)) {
+    If (-not (Test-Path $CPUZExe)) {
         If (-Not (Test-Path $CPUZZip)) {
             Try {
                 Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
             } Catch {
-                Return Write-Error "Failed to download cpuz_2.17-en.zip: $_"
+                Return Write-Error "Failed to download ${CPUZZip}: $_"
             }
-        }
-    If ( (Get-FileHash $CPUZZip).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215' ) {
+    	}
+    	If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215') {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
-    }
+    	}
         Try {
-            Get-CPUZ -zipPath $CPUZZip -extractTo $workingDirectory -targetFile $CPUZFile
+            Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
         }
         Catch {
-            Return Write-Error 'CPU-Z extraction failed. Download cpuz_2.17-en.zip from https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip and place in your Downloads folder.'
+            Return Write-Error "CPU-Z extraction failed. Download $CPUZZip from https://download.cpuid.com/cpu-z/$CPUZFile and place in your Downloads folder."
         }
     }
-    $CPUZSHA256 = (Get-FileHash $workingDirectory\cpuz_x64.exe).Hash
+    $CPUZSHA256 = (Get-FileHash -Path (Join-Path -Path $TargetPath -ChildPath $CPUZFile) -Algorithm SHA256).Hash
     If ( $CPUZSHA256 -ne 'E1F8752E8D50CB75B0CD1656C58BD3D2672791CA0A2875DA2209AF6AE17D62D3' ) {
-        Return Write-Error 'cpuz_x64.exe failed hash verification... cannot scan hardware.'
+        Remove-Item $CPUZZip
+		Remove-Item $CPUZFile
+		Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
+    	Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
     }
-    
-    # Run CPU-Z and dump report to file
+        # Run CPU-Z and dump report to file
     Write-Host "$([Environment]::NewLine)Scanning hardware using CPU-Z. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.FileName = "$workingDirectory\cpuz_x64.exe"
-    $psi.Arguments = @('-accepteula -txt=CPUZHellbombReport')
+    $psi.FileName = (Join-Path -Path $TargetPath -ChildPath $CPUZFile)
+    $psi.Arguments = @("-accepteula -txt=$HellbombScriptReportName")
     # Set encoding to UTF8 so that Unicode compilation doesn't break CPU-Z console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
     $process.WaitForExit()
-    $script:HardwareInfoText = Get-Content "$workingDirectory\CPUZHellbombReport.txt"
+    $script:HardwareInfoText = Get-Content (Join-Path -Path $TargetPath -ChildPath ($HellbombScriptReportName + ".txt"))
     Write-Host ' complete!'
- }
+ 	}
 Function Get-CPUZ {
     param ($zipPath, $extractTo, $targetFile)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -1004,26 +1013,16 @@ Function Get-CPUZ {
             $fileStream.Close()
             $entryStream.Close()
         } Else {
-            Write-Error "cpuz_x64.exe not found in the zip file." -ForegroundColor Yellow
+            Write-Error "$targetFile not found in the zip file."
         }
     } Catch {
-        Write-Error "Failed to extract cpuz_x64.exe: $_"
+        Write-Error "Failed to extract ${targetFile}: $_"
         Throw
     } Finally {
         If ($null -ne $zip) {
             Try {
                 $zip.Dispose()
             } Catch {}
-        }
-    }
-}
-Function Remove-File {
-    Param ($filePath)
-    If (Test-Path $filePath) {
-        Try {
-            Remove-Item -Path $filePath -Force
-        } Catch {
-            Write-Warning "Failed to delete $filePath $_" -ForegroundColor Red
         }
     }
 }
@@ -1809,7 +1808,7 @@ Function Switch-FullScreenOptimizations
 }
 Function Reset-HostabilityKey {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
-    Try { $OriginalHash = Get-FileHash $configPath }
+    Try { $OriginalHash = Get-FileHash -Path $configPath -Algorithm SHA256}
     Catch {
         Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
         Write-Host 'User_settings.config is missing.' -ForegroundColor Cyan
@@ -1818,7 +1817,7 @@ Function Reset-HostabilityKey {
     $content = Get-Content $configPath
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
-    If ( $OriginalHash -ne (Get-FileHash $configPath) ) {
+    If ( $OriginalHash -ne (Get-FileHash -Path $configPath -Algorithm SHA256) ) {
         Write-Host "$([Environment]::NewLine)Hostability key removed successfully!" -ForegroundColor Green
     }
     Else {
