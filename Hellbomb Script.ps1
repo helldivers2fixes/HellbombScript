@@ -947,7 +947,7 @@ Function Get-HardwareInfo {
 	$CPUZZip = Join-Path -Path $TargetPath -ChildPath "cpu-z_2.17-en.zip"
 	$CPUZExe = Join-Path -Path $TargetPath -ChildPath "cpuz_x64.exe"
 	$CPUZFile = "cpuz_x64.exe"
-	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp.txt"
+	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp"
     # Download and extract CPU-Z if it does not exist
     If (-not (Test-Path $CPUZExe)) {
         If (-Not (Test-Path $CPUZZip)) {
@@ -956,8 +956,8 @@ Function Get-HardwareInfo {
             } Catch {
                 Return Write-Error "Failed to download ${CPUZZip}: $_"
             }
-        }
-    If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215') {
+    	}
+    	If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215') {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     	}
@@ -975,8 +975,7 @@ Function Get-HardwareInfo {
 		Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
     	Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
     }
-    
-    # Run CPU-Z and dump report to file
+        # Run CPU-Z and dump report to file
     Write-Host "$([Environment]::NewLine)Scanning hardware using CPU-Z. Please wait..." -ForegroundColor Cyan -NoNewline
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.CreateNoWindow = $true
@@ -984,16 +983,16 @@ Function Get-HardwareInfo {
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
     $psi.FileName = (Join-Path -Path $TargetPath -ChildPath $CPUZFile)
-    $psi.Arguments = @('-accepteula -txt=CPUZHellbombReport')
+    $psi.Arguments = @("-accepteula -txt=$HellbombScriptReportName")
     # Set encoding to UTF8 so that Unicode compilation doesn't break CPU-Z console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
     [void]$process.Start()
     $process.WaitForExit()
-    $script:HardwareInfoText = Get-Content (Join-Path -Path $TargetPath -ChildPath $HellbombScriptReportName)
+    $script:HardwareInfoText = Get-Content (Join-Path -Path $TargetPath -ChildPath ($HellbombScriptReportName + ".txt"))
     Write-Host ' complete!'
- }
+ 	}
 Function Get-CPUZ {
     param ($zipPath, $extractTo, $targetFile)
     Add-Type -AssemblyName System.IO.Compression.FileSystem
