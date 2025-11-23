@@ -2047,6 +2047,11 @@ Function Show-ArrowMenu
     $Host.UI.RawUI.CursorPosition.Y
     )
 
+    $script:menuEnd = [System.Management.Automation.Host.Coordinates]::new(
+    $Host.UI.RawUI.CursorPosition.X,
+    $Host.UI.RawUI.CursorPosition.Y + $Options.Length
+    )
+
     For ($i = 0; $i -lt $Options.Length; $i++)
     {
         If ($i -eq $selectedIndex) {
@@ -2483,4 +2488,12 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
-MainMenu
+
+Try
+{
+    MainMenu
+}
+Finally
+{
+    $Host.UI.RawUI.CursorPosition = $script:menuEnd
+}
