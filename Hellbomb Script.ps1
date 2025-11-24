@@ -2302,7 +2302,7 @@ Function AudioMenu
         @{
             Label  = "🔈 |B|luetooth Telephony Service"
             Hotkey = $null
-            Action = { RunAndPause { Switch-BluetoothTelephony } }
+            Action = { RunAndPause { Switch-BTAGService } }
         }
 
         @{
@@ -2496,3 +2496,4 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
+
