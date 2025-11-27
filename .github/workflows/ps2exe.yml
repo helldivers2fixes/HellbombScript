@@ -1,9 +1,3 @@
-# This workflow compiles the PowerShell script to an EXE,
-# signs it to produce a -signed.exe binary,
-# calculates hashes for both the signed EXE and PS1 files,
-# and then runs a Python script to update the SECURITY.md file.
-# Finally, it creates a pull request with the changes.
-
 name: Build Hellbomb Script EXE & Update Hashes
 
 permissions:
@@ -12,8 +6,7 @@ permissions:
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 env:
   SHORT_SHA: ${{ github.sha }}
@@ -61,26 +54,26 @@ jobs:
         shell: pwsh
         run: |
           $scriptContent = Get-Content -Path "./${{ env.PS1_SCRIPT_NAME }}" -Raw
-          If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
-            $version = $matches[1]
+          if ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
+            $version     = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
-            $unsigned = "Hellbomb_Script_v${version}-${shortCommit}.exe"
-            $signed   = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
-            Write-Output "output_filename=$unsigned" >> $env:GITHUB_OUTPUT
-            Write-Output "output_signed_filename=$signed" >> $env:GITHUB_OUTPUT
-            Write-Output "output_version=$version" >> $env:GITHUB_OUTPUT
+            $unsigned    = "Hellbomb_Script_v${version}-${shortCommit}.exe"
+            $signed      = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
+            Write-Output "output_filename=$unsigned"              >> $env:GITHUB_OUTPUT
+            Write-Output "output_signed_filename=$signed"         >> $env:GITHUB_OUTPUT
+            Write-Output "output_version=$version"                >> $env:GITHUB_OUTPUT
             Write-Host "Unsigned: $unsigned"
             Write-Host "Signed:   $signed"
-          } Else {
+          } else {
             Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
             Exit 1
           }
 
-      - name: Compile script to EXE
+      - name: Compile script to EXE (on cache miss)
         if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory }
+          if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory | Out-Null }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
             -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}" `
@@ -93,37 +86,43 @@ jobs:
             -title "Hellbomb Script" `
             -iconFile "./Bomb.ico"
 
-      - name: Sign EXE
-        id: sign_exe
-        if: steps.exe-cache.outputs.cache-hit != 'true'
+      - name: Sign EXE or verify signed file
         shell: pwsh
         run: |
           $unsignedPath = "./artifact/${{ steps.get_filename.outputs.output_filename }}"
           $signedPath   = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
-          if (-not (Test-Path $unsignedPath)) { Write-Error "Unsigned EXE not found"; Exit 1 }
-          Install-Module -Name SignPath -Force
-          Submit-SigningRequest `
-            -InputArtifactPath $unsignedPath `
-            -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
-            -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
-            -ProjectSlug "HellbombScript" `
-            -SigningPolicySlug "test-signing" `
-            -OutputArtifactPath $signedPath `
-            -WaitForCompletion
-          Remove-Item $unsignedPath -Force
 
-      - name: Upload executable artifact
+          if (Test-Path $signedPath) {
+            Write-Host "Signed EXE already present: $signedPath"
+          } elseif (Test-Path $unsignedPath) {
+            Write-Host "Signing unsigned EXE: $unsignedPath -> $signedPath"
+            Install-Module -Name SignPath -Force
+            Submit-SigningRequest `
+              -InputArtifactPath $unsignedPath `
+              -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
+              -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
+              -ProjectSlug "HellbombScript" `
+              -SigningPolicySlug "test-signing" `
+              -OutputArtifactPath $signedPath `
+              -WaitForCompletion
+            Remove-Item $unsignedPath -Force
+          } else {
+            Write-Error "Neither unsigned nor signed EXE found in ./artifact."
+            Exit 1
+          }
+
+      - name: Upload signed executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
           path: "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
 
-      - name: Calculate EXE hash
+      - name: Calculate EXE hash (signed)
         id: hash
         shell: pwsh
         run: |
           $exeFile = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
-          if (-not (Test-Path $exeFile)) { Write-Error "Signed EXE not found"; Exit 1 }
+          if (-not (Test-Path $exeFile)) { Write-Error "Signed EXE not found: $exeFile"; Exit 1 }
           $hash = Get-FileHash $exeFile -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
