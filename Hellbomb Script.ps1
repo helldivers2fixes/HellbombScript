@@ -747,37 +747,26 @@ Function Show-GameLaunchOptions {
     }
 
     $Content = Get-Content -Path $script:localconfigVDF -Raw
-    $pattern = '(?sm)"553850"\s*\{(?:[^{}]|(?<open>\{)|(?<-open>\}))*(?(open)(?!))[^}]*?"LaunchOptions"\s*"([^"]*)"[^}]*?\}'
-    Try {
-        $allMatches = [regex]::Matches($Content, $pattern)
-    } Catch {
-        # Supresses uncessary error if the HD2 and Launch options blocks are not found. This just means the user has never used launch options
+    $ParsedConfig = Parse-VDF $Content
+
+    $HD2ConfigData = $ParsedConfig["UserLocalConfigStore"]["Software"]["Valve"]["Steam"]["apps"][$script:AppID.ToString()]
+    if($HD2ConfigData -eq $null)
+    {
+        Write-Host "Could not locate Helldivers 2 data in $script:localconfigVDF." -ForegroundColor Yellow
     }
-
-    If ($allMatches.Count -eq 0) {
-        Write-Host "Could not locate launch options in $script:localconfigVDF." -ForegroundColor Yellow
-    } Else {
-        Foreach ($match in $allMatches) {
-            # Check if the "LaunchOptions" capture group actually has a value for this match
-            If ($match.Groups[1].Success) {
-                $LaunchOptions = $match.Groups[1].Value
-
-                Write-Host 'HD2 Launch Optns: ' -NoNewline -ForegroundColor Cyan
-                If ( $LaunchOptions -match '--use-d3d11' ) {
-                    Write-Host " $LaunchOptions" -ForegroundColor Yellow
-                }
-                ElseIf ( -not [string]::IsNullOrWhiteSpace($LaunchOptions) ) {
-      			Write-Host $LaunchOptions
-      		}
-	 	Else {
-       			Write-Host 'No launch options currently in use.'
-	  	}
-            } Else {
-                # This case means a "553850" block was found, but "LaunchOptions" wasn't inside it
-                Write-Host 'No launch options currently in use.'
-            }
+    Else
+    {
+        $HD2LaunchOptions = $HD2ConfigData["LaunchOptions"]
+        if([string]::IsNullOrWhiteSpace($HD2LaunchOptions))
+        {
+            Write-Host 'No launch options currently in use.'
         }
-        Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
+        Else
+        {
+            Write-Host 'HD2 Launch Options: ' -NoNewline -ForegroundColor Cyan
+            Write-Host " $HD2LaunchOptions" -ForegroundColor $(If ($HD2LaunchOptions -match '--use-d3d11') { 'Yellow' } Else { 'White' })
+        }
+        Write-Host 'Launch options retrieved from LAST USED Steam Profile'
     }
 }
 Function Show-PowerPlan {
@@ -2554,3 +2543,4 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
+
