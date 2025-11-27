@@ -32,7 +32,7 @@ jobs:
           # Cache key depends ONLY on the script content
           key: hellbomb-exe-${{ hashFiles('Hellbomb Script.ps1') }}
           restore-keys: |
-            hellbomb-exe-
+            hellbomb-exe-v2
 
       - name: Cache PowerShell modules
         id: ps2exe-cache
