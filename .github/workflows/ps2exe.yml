@@ -119,7 +119,7 @@ jobs:
               -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
               -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
               -ProjectSlug "HellbombScript" `
-              -SigningPolicySlug "test-signing" `
+              -SigningPolicySlug "release-signing" `
               -OutputArtifactPath $signedPath `
               -WaitForCompletion
             Remove-Item $unsignedPath -Force
