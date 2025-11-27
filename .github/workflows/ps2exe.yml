@@ -98,34 +98,26 @@ jobs:
             -iconFile "./Bomb.ico"
 
       - name: Sign EXE
+        id: sign_exe
         if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          # Use Get-ChildItem to safely locate the single EXE file in the artifact folder
           $exePath = Get-ChildItem ./artifact/*.exe | Select-Object -First 1
-          if (-not $exePath) {
-              Write-Error "Could not find an EXE file in the ./artifact directory."
-              Exit 1
-          }
-          # Build new filename with '-signed' suffix
+          if (-not $exePath) { Write-Error "Could not find an EXE file"; Exit 1 }
           $signedName = [System.IO.Path]::GetFileNameWithoutExtension($exePath.Name) + "-signed.exe"
           $signedPath = Join-Path $exePath.DirectoryName $signedName
           Install-Module -Name SignPath -Force
-          # The user must be a submitter for the given signing policy!
-            Submit-SigningRequest `
-              -InputArtifactPath "$exePath.FullName" `
-              -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
-              -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
-              -ProjectSlug "HellbombScript" `
-              -SigningPolicySlug "test-signing" `
-              -OutputArtifactPath "$signedPath" `
-              -WaitForCompletion
-          # Update workflow output so later steps use the signed filename
+          Submit-SigningRequest `
+            -InputArtifactPath $exePath.FullName `
+            -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
+            -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
+            -ProjectSlug "HellbombScript" `
+            -SigningPolicySlug "test-signing" `
+            -OutputArtifactPath $signedPath `
+            -WaitForCompletion
           Write-Output "output_filename=$signedName" >> $env:GITHUB_OUTPUT
-          # After signing
           Remove-Item $exePath.FullName -Force
 
-              
       - name: Upload executable artifact
         if: steps.exe-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
@@ -137,7 +129,7 @@ jobs:
         id: hash
         shell: pwsh
         run: |
-          $exeFile = "./artifact/${{ steps.get_filename.outputs.output_filename }}"
+          $exeFile = "./artifact/${{ steps.sign_exe.outputs.output_filename }}"
           if (-not (Test-Path $exeFile)) {
               Write-Error "Could not find signed EXE file: $exeFile"
               Exit 1
