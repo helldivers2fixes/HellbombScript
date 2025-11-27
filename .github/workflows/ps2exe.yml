@@ -1,12 +1,11 @@
 # This workflow compiles the PowerShell script to an EXE,
-# calculates hashes for both the EXE and PS1 files,
+# signs it to produce a -signed.exe binary,
+# calculates hashes for both the signed EXE and PS1 files,
 # and then runs a Python script to update the SECURITY.md file.
 # Finally, it creates a pull request with the changes.
 
 name: Build Hellbomb Script EXE & Update Hashes
 
-# Grant write permissions to the 'contents' scope
-# This is necessary for the create-pull-request action
 permissions:
   contents: write
   pull-requests: write
@@ -17,19 +16,16 @@ on:
       - main
 
 env:
-  # Store the short SHA for use in filenames
   SHORT_SHA: ${{ github.sha }}
-  # Define the PS1 script name as an env var for consistency
   PS1_SCRIPT_NAME: "Hellbomb Script.ps1"
 
 jobs:
   build-exe:
     runs-on: windows-latest
-    # Define the outputs for this job
     outputs:
-      exe_filename: ${{ steps.get_filename.outputs.output_filename }}
+      exe_filename: ${{ steps.get_filename.outputs.output_signed_filename }}
       exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
-      ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }} # Added ps1_hash output
+      ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }}
 
     steps:
       - name: Checkout code
@@ -68,22 +64,22 @@ jobs:
           If ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
             $version = $matches[1]
             $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
-            # Note: Using underscores as they are generally safer for filenames
-            $fileName = "Hellbomb_Script_v${version}-${shortCommit}.exe"
-            Write-Output "output_filename=$fileName" >> $env:GITHUB_OUTPUT
+            $unsigned = "Hellbomb_Script_v${version}-${shortCommit}.exe"
+            $signed   = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
+            Write-Output "output_filename=$unsigned" >> $env:GITHUB_OUTPUT
+            Write-Output "output_signed_filename=$signed" >> $env:GITHUB_OUTPUT
             Write-Output "output_version=$version" >> $env:GITHUB_OUTPUT
-            Write-Host "Detected version $version. Output file will be named $fileName."
+            Write-Host "Unsigned: $unsigned"
+            Write-Host "Signed:   $signed"
           } Else {
             Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
             Exit 1
           }
 
       - name: Compile script to EXE
-        # Only compile if the cache misses. If it hits, the file is already on disk.
         if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          # Create artifact directory if a cache miss and the folder doesn't exist
           if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
@@ -102,38 +98,32 @@ jobs:
         if: steps.exe-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          $exePath = Get-ChildItem ./artifact/*.exe | Select-Object -First 1
-          if (-not $exePath) { Write-Error "Could not find an EXE file"; Exit 1 }
-          $signedName = [System.IO.Path]::GetFileNameWithoutExtension($exePath.Name) + "-signed.exe"
-          $signedPath = Join-Path $exePath.DirectoryName $signedName
+          $unsignedPath = "./artifact/${{ steps.get_filename.outputs.output_filename }}"
+          $signedPath   = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+          if (-not (Test-Path $unsignedPath)) { Write-Error "Unsigned EXE not found"; Exit 1 }
           Install-Module -Name SignPath -Force
           Submit-SigningRequest `
-            -InputArtifactPath $exePath.FullName `
+            -InputArtifactPath $unsignedPath `
             -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
             -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
             -ProjectSlug "HellbombScript" `
             -SigningPolicySlug "test-signing" `
             -OutputArtifactPath $signedPath `
             -WaitForCompletion
-          Write-Output "output_filename=$signedName" >> $env:GITHUB_OUTPUT
-          Remove-Item $exePath.FullName -Force
+          Remove-Item $unsignedPath -Force
 
       - name: Upload executable artifact
-        if: steps.exe-cache.outputs.cache-hit != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
-          path: "./artifact/${{ steps.get_filename.outputs.output_filename }}"
-          
-      - name: Calculate EXE hash    
+          path: "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+
+      - name: Calculate EXE hash
         id: hash
         shell: pwsh
         run: |
-          $exeFile = "./artifact/${{ steps.sign_exe.outputs.output_filename }}"
-          if (-not (Test-Path $exeFile)) {
-              Write-Error "Could not find signed EXE file: $exeFile"
-              Exit 1
-          }
+          $exeFile = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+          if (-not (Test-Path $exeFile)) { Write-Error "Signed EXE not found"; Exit 1 }
           $hash = Get-FileHash $exeFile -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
@@ -145,21 +135,18 @@ jobs:
           Write-Output "ps1_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
   update-security-info:
-    # This job depends on the build-exe job completing successfully
     needs: build-exe
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-        
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
       - name: Update SECURITY.MD with new hashes and links
-        # This step should always run to ensure SECURITY.MD is updated if a new build occurred.
-        # Rely on the git diff command below to prevent commits if the content hasn't changed.
         working-directory: ${{ github.workspace }}
         run: |
           python .github/scripts/update_security_info.py \
@@ -174,7 +161,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b auto/security-info-update
           git add SECURITY.MD
-          # Check if there are any changes staged for commit. If not, gracefully exit.
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "docs(security): Update SECURITY.md with latest hashes"
           git push origin auto/security-info-update
