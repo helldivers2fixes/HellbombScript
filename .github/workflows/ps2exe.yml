@@ -137,7 +137,7 @@ jobs:
         id: hash
         shell: pwsh
         run: |
-          $exeFile = "./artifact/$env:output_filename"
+          $exeFile = "./artifact/${{ steps.get_filename.outputs.output_filename }}"
           if (-not (Test-Path $exeFile)) {
               Write-Error "Could not find signed EXE file: $exeFile"
               Exit 1
