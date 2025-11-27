@@ -1,3 +1,10 @@
+# Code signing policy:
+“Free code signing provided by SignPath.io, certificate by SignPath Foundation”
+
+Committers and reviewers: helldivers2fixes
+
+Approvers: helldivers2fixes
+
 ## Security Info:
 
 EXE [VirusTotal](https://www.virustotal.com/gui/file/74B28D0B56CE873CB01C6E006E0042395CB12CC8AB092BDD74F8C5A0A2100DDB) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/74B28D0B56CE873CB01C6E006E0042395CB12CC8AB092BDD74F8C5A0A2100DDB) link.
