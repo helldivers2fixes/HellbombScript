@@ -137,13 +137,12 @@ jobs:
         id: hash
         shell: pwsh
         run: |
-          # Use Get-ChildItem to safely locate the single EXE file in the artifact folder
-          $exePath = Get-ChildItem ./artifact/${{ steps.get_filename.outputs.output_filename }} | Select-Object -First 1
-          if (-not $exePath) {
-              Write-Error "Could not find an EXE file in the ./artifact directory."
+          $exeFile = "./artifact/$env:output_filename"
+          if (-not (Test-Path $exeFile)) {
+              Write-Error "Could not find signed EXE file: $exeFile"
               Exit 1
           }
-          $hash = Get-FileHash $exePath.FullName -Algorithm SHA256
+          $hash = Get-FileHash $exeFile -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
 
       - name: Calculate SHA256 of PS1
