@@ -16,19 +16,20 @@ jobs:
   build-exe:
     runs-on: windows-latest
     outputs:
-      exe_filename: ${{ steps.get_filename.outputs.output_signed_filename }}
+      exe_filename: ${{ steps.get_filename.outputs.final_filename }}
       exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
       ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Cache compiled EXE
         uses: actions/cache@v4
         id: exe-cache
         with:
           path: ./artifact
+          # Cache key depends ONLY on the script content
           key: hellbomb-exe-${{ hashFiles('Hellbomb Script.ps1') }}
           restore-keys: |
             hellbomb-exe-
@@ -49,21 +50,30 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name PS2EXE -Force
 
-      - name: Get version and commit hash
+      - name: Get version and configure filenames
         id: get_filename
         shell: pwsh
         run: |
           $scriptContent = Get-Content -Path "./${{ env.PS1_SCRIPT_NAME }}" -Raw
           if ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
-            $version     = $matches[1]
-            $shortCommit = "${{ env.SHORT_SHA }}".Substring(0, 7)
-            $unsigned    = "Hellbomb_Script_v${version}-${shortCommit}.exe"
-            $signed      = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
-            Write-Output "output_filename=$unsigned"              >> $env:GITHUB_OUTPUT
-            Write-Output "output_signed_filename=$signed"         >> $env:GITHUB_OUTPUT
-            Write-Output "output_version=$version"                >> $env:GITHUB_OUTPUT
-            Write-Host "Unsigned: $unsigned"
-            Write-Host "Signed:   $signed"
+            $version      = $matches[1]
+            $shortCommit  = "${{ env.SHORT_SHA }}".Substring(0, 7)
+            
+            # STABLE NAMES (For Caching): No Commit SHA here!
+            # If the PS1 version is 4.0, these names remain constant across commits
+            $unsigned     = "Hellbomb_Script_v${version}_build.exe"
+            $signed       = "Hellbomb_Script_v${version}_build-signed.exe"
+            
+            # FINAL NAME (For Upload): Includes Commit SHA
+            $final        = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
+
+            Write-Output "build_unsigned=$unsigned"       >> $env:GITHUB_OUTPUT
+            Write-Output "build_signed=$signed"           >> $env:GITHUB_OUTPUT
+            Write-Output "final_filename=$final"          >> $env:GITHUB_OUTPUT
+            Write-Output "output_version=$version"        >> $env:GITHUB_OUTPUT
+            
+            Write-Host "Build Target: $signed"
+            Write-Host "Final Target: $final"
           } else {
             Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
             Exit 1
@@ -76,7 +86,7 @@ jobs:
           if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory | Out-Null }
           Invoke-ps2exe `
             -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
-            -outputFile "./artifact/${{ steps.get_filename.outputs.output_filename }}" `
+            -outputFile "./artifact/${{ steps.get_filename.outputs.build_unsigned }}" `
             -x64 `
             -requireAdmin `
             -UNICODEEncoding `
@@ -89,11 +99,12 @@ jobs:
       - name: Sign EXE or verify signed file
         shell: pwsh
         run: |
-          $unsignedPath = "./artifact/${{ steps.get_filename.outputs.output_filename }}"
-          $signedPath   = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+          # We check for the STABLE filenames here
+          $unsignedPath = "./artifact/${{ steps.get_filename.outputs.build_unsigned }}"
+          $signedPath   = "./artifact/${{ steps.get_filename.outputs.build_signed }}"
 
           if (Test-Path $signedPath) {
-            Write-Host "Signed EXE already present: $signedPath"
+            Write-Host "Signed EXE already present (Cached): $signedPath"
           } elseif (Test-Path $unsignedPath) {
             Write-Host "Signing unsigned EXE: $unsignedPath -> $signedPath"
             Install-Module -Name SignPath -Force
@@ -111,17 +122,28 @@ jobs:
             Exit 1
           }
 
+      - name: Rename to Final Filename (with SHA)
+        id: rename
+        shell: pwsh
+        run: |
+          $cachedFile = "./artifact/${{ steps.get_filename.outputs.build_signed }}"
+          $finalFile  = "./artifact/${{ steps.get_filename.outputs.final_filename }}"
+          
+          # Copy the cached file to the new name so we don't break the cache for the next run
+          Copy-Item -Path $cachedFile -Destination $finalFile -Force
+          Write-Host "Prepared artifact: $finalFile"
+
       - name: Upload signed executable artifact
         uses: actions/upload-artifact@v4
         with:
           name: hellbomb-exe
-          path: "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+          path: "./artifact/${{ steps.get_filename.outputs.final_filename }}"
 
       - name: Calculate EXE hash (signed)
         id: hash
         shell: pwsh
         run: |
-          $exeFile = "./artifact/${{ steps.get_filename.outputs.output_signed_filename }}"
+          $exeFile = "./artifact/${{ steps.get_filename.outputs.final_filename }}"
           if (-not (Test-Path $exeFile)) { Write-Error "Signed EXE not found: $exeFile"; Exit 1 }
           $hash = Get-FileHash $exeFile -Algorithm SHA256
           Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
@@ -138,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -162,6 +184,6 @@ jobs:
           git add SECURITY.MD
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "docs(security): Update SECURITY.md with latest hashes"
-          git push origin auto/security-info-update
+          git push origin auto/security-info-update --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
