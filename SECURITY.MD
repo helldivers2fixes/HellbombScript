@@ -1,4 +1,4 @@
-# Code signing policy:
+## Code signing policy:
 “Free code signing provided by SignPath.io, certificate by SignPath Foundation”
 
 Committers and reviewers: helldivers2fixes
