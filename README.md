@@ -76,3 +76,10 @@ Main Menu
 
 Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 ![Hellbomb Script Animation](https://github.com/user-attachments/assets/8781f62f-3f5b-4530-9085-ea3042833220)
+
+# Code signing policy:
+“Free code signing provided by SignPath.io, certificate by SignPath Foundation”
+Team roles and their members (see above, may include references to the project’s permission groups). Example (markdown syntax):
+Committers and reviewers: [Members team](https://github.com/orgs/…/teams/members)
+Approvers: [Owners](https://github.com/orgs/…/people?query=role%3Aowner)
+
