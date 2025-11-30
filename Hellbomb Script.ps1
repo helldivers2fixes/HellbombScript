@@ -2256,7 +2256,7 @@ Function GraphicsMenu
         @{
             Label  = "📺 |O|ptimizations Toggle"
             Hotkey = "O"
-            Action = { RunAndPause { Reset-ShaderCaches } }
+            Action = { RunAndPause { Switch-FullScreenOptimizations } }
         }
 
         @{
@@ -2496,3 +2496,4 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
+
