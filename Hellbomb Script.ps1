@@ -2422,6 +2422,61 @@ Function Get-MostRecentlyUsedSteamProfilePath {
         }
     }
 }
+Function Parse-VDF {
+    param(
+        [string]$Content
+    )
+
+    $root  = @{}
+    $stack = New-Object System.Collections.Stack
+    $stack.Push($root)
+    $pendingKey = $null
+
+    $regex = [regex] '\"((?:\\.|[^""\\])*)\"|[{}]'
+    $matches = $regex.Matches($Content)
+
+    foreach ($m in $matches) {
+        $token = $m.Groups[0].Value
+
+        switch ($token) {
+            '{' {
+                if ($pendingKey) {
+                    $child = @{}
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $child
+                    $stack.Push($child)
+                    $pendingKey = $null
+                }
+                else {
+                    throw "Unexpected '{' at position $($m.Index)"
+                }
+            }
+
+            '}' {
+                if ($stack.Count -gt 1) {
+                    $stack.Pop() | Out-Null
+                }
+                $pendingKey = $null
+            }
+
+            default {
+                $raw = $m.Groups[1].Value
+                $unescaped = [regex]::Unescape($raw)
+
+                if ($pendingKey) {
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $unescaped
+                    $pendingKey = $null
+                }
+                else {
+                    $pendingKey = $unescaped
+                }
+            }
+        }
+    }
+
+    return $root
+}
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
@@ -2443,35 +2498,38 @@ Catch {
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
-$LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
-# Read each line of the Steam library.vdf file
-# Save a library path, then scan that library for $AppID
-# If AppID is found, return current library path
-ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
-    If ($line -like '*path*') {
-        $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-        Write-Host $script:AppInstallPath
-        $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
-    }
-    If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
+$LibraryData = Get-Content -Path ([System.IO.Path]::Combine($SteamPath, "steamapps", "libraryfolders.vdf")) -Raw
+$ParsedLibraryData = Parse-VDF $LibraryData
+
+ForEach($libraryEntry in $ParsedLibraryData["libraryfolders"].GetEnumerator())
+{
+    $library = $libraryEntry.Value
+    if($library["apps"].ContainsKey($script:AppID))
+    {
+        $script:AppInstallPath = $library["path"]
         $script:AppIDFound = $true
-        # Since we found the App location, let's get some data about it
-        Try {
-                $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
-                }
-        Catch {
-                Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
+
+        $GameDataPath = [System.IO.Path]::Combine($script:AppInstallPath, "steamapps", "appmanifest_$AppID.acf")
+        $GameDataContent = $null
+        Try
+        {
+            $GameDataContent = Get-Content -Path $GameDataPath -Raw
+        }
+        Catch
+        {
+                Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
                 Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
                 Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
                 Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
                 $script:AppInstallPath = $false
                 Break
-            }
-        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
-        $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
-        # Update the AppInstallPath with the FULL path
-        $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
-        Break
+        }
+
+        $ParsedGameData = Parse-VDF $GameDataContent
+        $script:BuildID = $ParsedGameData["AppState"]["buildid"]
+        Write-Host "Parsed BuildID: $script:BuildID"
+        $script:AppInstallPath = [System.IO.Path]::Combine($script:AppInstallPath, "steamapps", "common", $ParsedGameData["AppState"]["installdir"])
+        break
     }
 }
 Get-MostRecentlyUsedSteamProfilePath
