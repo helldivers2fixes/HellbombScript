@@ -747,37 +747,26 @@ Function Show-GameLaunchOptions {
     }
 
     $Content = Get-Content -Path $script:localconfigVDF -Raw
-    $pattern = '(?sm)"553850"\s*\{(?:[^{}]|(?<open>\{)|(?<-open>\}))*(?(open)(?!))[^}]*?"LaunchOptions"\s*"([^"]*)"[^}]*?\}'
-    Try {
-        $allMatches = [regex]::Matches($Content, $pattern)
-    } Catch {
-        # Supresses uncessary error if the HD2 and Launch options blocks are not found. This just means the user has never used launch options
+    $ParsedConfig = Parse-VDF $Content
+
+    $HD2ConfigData = $ParsedConfig["UserLocalConfigStore"]["Software"]["Valve"]["Steam"]["apps"][$script:AppID.ToString()]
+    if($HD2ConfigData -eq $null)
+    {
+        Write-Host "Could not locate Helldivers 2 data in $script:localconfigVDF." -ForegroundColor Yellow
     }
-
-    If ($allMatches.Count -eq 0) {
-        Write-Host "Could not locate launch options in $script:localconfigVDF." -ForegroundColor Yellow
-    } Else {
-        Foreach ($match in $allMatches) {
-            # Check if the "LaunchOptions" capture group actually has a value for this match
-            If ($match.Groups[1].Success) {
-                $LaunchOptions = $match.Groups[1].Value
-
-                Write-Host 'HD2 Launch Optns: ' -NoNewline -ForegroundColor Cyan
-                If ( $LaunchOptions -match '--use-d3d11' ) {
-                    Write-Host " $LaunchOptions" -ForegroundColor Yellow
-                }
-                ElseIf ( -not [string]::IsNullOrWhiteSpace($LaunchOptions) ) {
-      			Write-Host $LaunchOptions
-      		}
-	 	Else {
-       			Write-Host 'No launch options currently in use.'
-	  	}
-            } Else {
-                # This case means a "553850" block was found, but "LaunchOptions" wasn't inside it
-                Write-Host 'No launch options currently in use.'
-            }
+    Else
+    {
+        $HD2LaunchOptions = $HD2ConfigData["LaunchOptions"]
+        if([string]::IsNullOrWhiteSpace($HD2LaunchOptions))
+        {
+            Write-Host 'No launch options currently in use.'
         }
-        Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
+        Else
+        {
+            Write-Host 'HD2 Launch Options: ' -NoNewline -ForegroundColor Cyan
+            Write-Host " $HD2LaunchOptions" -ForegroundColor $(If ($HD2LaunchOptions -match '--use-d3d11') { 'Yellow' } Else { 'White' })
+        }
+        Write-Host 'Launch options retrieved from LAST USED Steam Profile'
     }
 }
 Function Show-PowerPlan {
@@ -2422,6 +2411,61 @@ Function Get-MostRecentlyUsedSteamProfilePath {
         }
     }
 }
+Function Parse-VDF {
+    param(
+        [string]$Content
+    )
+
+    $root  = @{}
+    $stack = New-Object System.Collections.Stack
+    $stack.Push($root)
+    $pendingKey = $null
+
+    $regex = [regex] '\"((?:\\.|[^""\\])*)\"|[{}]'
+    $matches = $regex.Matches($Content)
+
+    foreach ($m in $matches) {
+        $token = $m.Groups[0].Value
+
+        switch ($token) {
+            '{' {
+                if ($pendingKey) {
+                    $child = @{}
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $child
+                    $stack.Push($child)
+                    $pendingKey = $null
+                }
+                else {
+                    throw "Unexpected '{' at position $($m.Index)"
+                }
+            }
+
+            '}' {
+                if ($stack.Count -gt 1) {
+                    $stack.Pop() | Out-Null
+                }
+                $pendingKey = $null
+            }
+
+            default {
+                $raw = $m.Groups[1].Value
+                $unescaped = [regex]::Unescape($raw)
+
+                if ($pendingKey) {
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $unescaped
+                    $pendingKey = $null
+                }
+                else {
+                    $pendingKey = $unescaped
+                }
+            }
+        }
+    }
+
+    return $root
+}
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
@@ -2443,35 +2487,38 @@ Catch {
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
-$LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
-# Read each line of the Steam library.vdf file
-# Save a library path, then scan that library for $AppID
-# If AppID is found, return current library path
-ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
-    If ($line -like '*path*') {
-        $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-        Write-Host $script:AppInstallPath
-        $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
-    }
-    If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
+$LibraryData = Get-Content -Path ([System.IO.Path]::Combine($SteamPath, "steamapps", "libraryfolders.vdf")) -Raw
+$ParsedLibraryData = Parse-VDF $LibraryData
+
+ForEach($libraryEntry in $ParsedLibraryData["libraryfolders"].GetEnumerator())
+{
+    $library = $libraryEntry.Value
+    if($library["apps"].ContainsKey($script:AppID))
+    {
+        $script:AppInstallPath = $library["path"]
         $script:AppIDFound = $true
-        # Since we found the App location, let's get some data about it
-        Try {
-                $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
-                }
-        Catch {
-                Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
+
+        $GameDataPath = [System.IO.Path]::Combine($script:AppInstallPath, "steamapps", "appmanifest_$AppID.acf")
+        $GameDataContent = $null
+        Try
+        {
+            $GameDataContent = Get-Content -Path $GameDataPath -Raw
+        }
+        Catch
+        {
+                Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
                 Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
                 Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
                 Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
                 $script:AppInstallPath = $false
                 Break
-            }
-        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
-        $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
-        # Update the AppInstallPath with the FULL path
-        $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
-        Break
+        }
+
+        $ParsedGameData = Parse-VDF $GameDataContent
+        $script:BuildID = $ParsedGameData["AppState"]["buildid"]
+        Write-Host "Parsed BuildID: $script:BuildID"
+        $script:AppInstallPath = [System.IO.Path]::Combine($script:AppInstallPath, "steamapps", "common", $ParsedGameData["AppState"]["installdir"])
+        break
     }
 }
 Get-MostRecentlyUsedSteamProfilePath
