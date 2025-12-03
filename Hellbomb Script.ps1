@@ -2167,7 +2167,7 @@ Function Invoke-HD2StatusChecks {
     $content | Set-Content $hbsReportPath
     #End
     Write-Host "`n--- Paused ---"
-    Write-Host "Output log saved to hbs_report.txt"
+    Write-Host "Output log saved to $($hbsReportPath)"
     Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
     Pause
 }
