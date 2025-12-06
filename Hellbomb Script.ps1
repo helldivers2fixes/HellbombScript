@@ -1,4 +1,4 @@
-using namespace System.Management.Automation.Host
+﻿using namespace System.Management.Automation.Host
 # Get the current host UI RawUI object
 $pshost = Get-Host
 $psWindow = $pshost.UI.RawUI
@@ -2128,6 +2128,8 @@ Function RunAndPause
 }
 
 Function Invoke-HD2StatusChecks {
+    $hbsReportPath = Join-Path ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -ChildPath "hbs_report.txt"
+    Start-Transcript -Path $hbsReportPath
     Show-Variables
     Show-MotherboardInfo
     Show-GPUInfo
@@ -2165,7 +2167,27 @@ Function Invoke-HD2StatusChecks {
     Test-FasterDriveAvailable
     Test-BetaBranch
     Show-TestResults
+    #Transcript cleaning
+    Stop-Transcript | Out-Null
+
+    $content = Get-Content $hbsReportPath
+
+    # Remove header
+    $startIndex = ($content | Select-String "Transcript started").LineNumber
+    if ($startIndex) {
+        $content = $content[$startIndex..($content.Length - 1)]
+    }
+
+    # Remove footer
+    $endIndex = ($content | Select-String "Windows PowerShell transcript end").LineNumber
+    if ($endIndex) {
+        $content = $content[0..($endIndex - 3)]
+    }
+
+    $content | Set-Content $hbsReportPath
+    #End
     Write-Host "`n--- Paused ---"
+    Write-Host "Output log saved to $($hbsReportPath)"
     Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
     Pause
 }
