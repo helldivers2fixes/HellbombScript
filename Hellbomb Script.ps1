@@ -442,7 +442,7 @@ Function Install-EXE {
     Else {
         Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
     }
-    Remove-Item -Path $DownloadPath$FileName
+    Remove-Item -Path (Join-Path $DownloadPath $FileName)
     # Re-enable Progress Bar
     $ProgressPreference = 'Continue'
 }
@@ -518,7 +518,7 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) ⚠️ Make sure you used Restet/Toggle Components option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) ⚠️ Make sure you used Reset/Toggle Components >> Option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
     Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
