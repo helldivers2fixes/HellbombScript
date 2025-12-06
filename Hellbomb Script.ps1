@@ -303,7 +303,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'selectedBranch' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[Info] " -NoNewLine
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
     Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active."
 '@
     }
@@ -2520,5 +2520,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
-
