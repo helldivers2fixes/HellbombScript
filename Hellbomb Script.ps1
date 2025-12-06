@@ -298,6 +298,15 @@ $script:Tests = @{
     $($script:Tests.FasterDriveAvailable.fasterDrives) | Select-Object $columns | Format-Table -AutoSize
 '@
     }
+
+"BetaBranchActive" = @{
+    'TestPassed' = $null
+    'selectedBranch' = $null
+    'TestFailMsg' = @'
+    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
+    Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active."
+'@
+    }
 }
 $NvidiaCodenames = @{
     "Turing" = @(
@@ -1674,6 +1683,18 @@ Function Test-FasterDriveAvailable
         $script:Tests.FasterDriveAvailable.TestPassed = $true
     }
 }
+Function Test-BetaBranch
+{
+    $pattern = '(?s)"UserConfig"\s*\{.*?"BetaKey"\s*"([^"]+)"'
+    $GameData = Get-Content -Path $script:AppManifestPath -Raw
+
+    $script:Tests.BetaBranchActive.TestPassed = $true
+    if($GameData -match $pattern)
+    {
+        $script:Tests.BetaBranchActive.TestPassed = $false
+        $script:Tests.BetaBranchActive.selectedBranch = $Matches[1]
+    }
+}
 Function Get-DiskScore($disk)
 {
     $score = 0
@@ -2144,6 +2165,7 @@ Function Invoke-HD2StatusChecks {
     Test-FreeDiskSpace
     Test-USBGameDrive
     Test-FasterDriveAvailable
+    Test-BetaBranch
     Show-TestResults
     Write-Host "`n--- Paused ---"
     Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
@@ -2378,6 +2400,7 @@ Function Show-TestResults {
     "FirewallRules",
     "DomainTest",
     "GameMods",
+    "BetaBranchActive",
     "BTAGSDisabled"
     "SSDFreeSpace",
     "FreeDiskSpace",
@@ -2457,7 +2480,8 @@ ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
         $script:AppIDFound = $true
         # Since we found the App location, let's get some data about it
         Try {
-                $GameData = Get-Content -Path $script:AppInstallPath\steamapps\appmanifest_$AppID.acf
+                $script:AppManifestPath = "$script:AppInstallPath\steamapps\appmanifest_$AppID.acf"
+                $GameData = Get-Content -Path $script:AppManifestPath
                 }
         Catch {
                 Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
@@ -2496,4 +2520,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
