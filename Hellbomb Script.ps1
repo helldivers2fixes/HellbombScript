@@ -13,6 +13,7 @@ Set-StrictMode -Version Latest
 $script:SystemInfo = @{
 	"GPUInfo" = @()
 }
+$script:HellbombScriptDirectory = Join-Path ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -ChildPath "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
@@ -944,17 +945,14 @@ Function Get-MemoryPartNumber {
     }
 }
 Function Get-HardwareInfo { 
-    $workingDirectory = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
-	$HellbombScriptDirectory = "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
-	$TargetPath = Join-Path -Path $workingDirectory -ChildPath $HellbombScriptDirectory
-	If (-not (Test-Path $TargetPath)) {
-		New-Item -Path $TargetPath -ItemType Directory -Force | Out-Null
+	If (-not (Test-Path $script:HellbombScriptDirectory)) {
+		New-Item -Path $script:HellbombScriptDirectory -ItemType Directory -Force | Out-Null
 	}
     # Define URLs and paths
 	$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 	$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip"
-	$CPUZZip = Join-Path -Path $TargetPath -ChildPath "cpu-z_2.17-en.zip"
-	$CPUZExe = Join-Path -Path $TargetPath -ChildPath "cpuz_x64.exe"
+	$CPUZZip = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "cpu-z_2.17-en.zip"
+	$CPUZExe = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "cpuz_x64.exe"
 	$CPUZFile = "cpuz_x64.exe"
 	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp"
     # Download and extract CPU-Z if it does not exist
@@ -971,18 +969,18 @@ Function Get-HardwareInfo {
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     	}
         Try {
-            Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
+            Get-CPUZ -zipPath $CPUZZip -extractTo $script:HellbombScriptDirectory -targetFile $CPUZFile
         }
         Catch {
             Return Write-Error "CPU-Z extraction failed. Download $CPUZZip from https://download.cpuid.com/cpu-z/$CPUZFile and place in your Downloads folder."
         }
     }
-    $CPUZSHA256 = (Get-FileHash -Path (Join-Path -Path $TargetPath -ChildPath $CPUZFile) -Algorithm SHA256).Hash
+    $CPUZSHA256 = (Get-FileHash -Path (Join-Path -Path $script:HellbombScriptDirectory -ChildPath $CPUZFile) -Algorithm SHA256).Hash
     If ( $CPUZSHA256 -ne 'E1F8752E8D50CB75B0CD1656C58BD3D2672791CA0A2875DA2209AF6AE17D62D3' ) {
         Remove-Item $CPUZZip
 		Remove-Item $CPUZFile
 		Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
-    	Get-CPUZ -zipPath $CPUZZip -extractTo $TargetPath -targetFile $CPUZFile
+    	Get-CPUZ -zipPath $CPUZZip -extractTo $script:HellbombScriptDirectory -targetFile $CPUZFile
     }
         # Run CPU-Z and dump report to file
     Write-Host "$([Environment]::NewLine)Scanning hardware using CPU-Z. Please wait..." -ForegroundColor Cyan -NoNewLine
@@ -991,7 +989,7 @@ Function Get-HardwareInfo {
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.FileName = (Join-Path -Path $TargetPath -ChildPath $CPUZFile)
+    $psi.FileName = (Join-Path -Path $script:HellbombScriptDirectory -ChildPath $CPUZFile)
     $psi.Arguments = @("-accepteula -txt=$HellbombScriptReportName")
     # Set encoding to UTF8 so that Unicode compilation doesn't break CPU-Z console output
     $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
@@ -999,7 +997,7 @@ Function Get-HardwareInfo {
     $process.StartInfo = $psi
     [void]$process.Start()
     $process.WaitForExit()
-    $script:HardwareInfoText = Get-Content (Join-Path -Path $TargetPath -ChildPath ($HellbombScriptReportName + ".txt"))
+    $script:HardwareInfoText = Get-Content (Join-Path -Path $script:HellbombScriptDirectory -ChildPath ($HellbombScriptReportName + ".txt"))
     Write-Host ' complete!'
  	}
 Function Get-CPUZ {
@@ -1012,11 +1010,11 @@ Function Get-CPUZ {
         $entry = $zip.Entries | Where-Object { $_.FullName -eq $targetFile }
         If ($entry) {
             # Extract the file manually using streams
-            $targetPath = Join-Path -Path $extractTo -ChildPath $targetFile
-            If (Test-Path $targetPath) {
-    			Remove-Item $targetPath -Force
+            $script:HellbombScriptDirectory = Join-Path -Path $extractTo -ChildPath $targetFile
+            If (Test-Path $script:HellbombScriptDirectory) {
+    			Remove-Item $script:HellbombScriptDirectory -Force
 			}
-			$fileStream = [System.IO.File]::Create($targetPath)
+			$fileStream = [System.IO.File]::Create($script:HellbombScriptDirectory)
             $entryStream = $entry.Open()
             $entryStream.CopyTo($fileStream)
             $fileStream.Close()
@@ -2520,4 +2518,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
