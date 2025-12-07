@@ -29,8 +29,6 @@ jobs:
         with:
           path: ./artifact
           key: hellbomb-exe-v3-${{ hashFiles('Hellbomb Script.ps1') }}
-          restore-keys: |
-            hellbomb-exe-v3-
 
       - name: Cache PowerShell modules
         id: ps2exe-cache
