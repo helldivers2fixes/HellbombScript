@@ -15,11 +15,11 @@ Not sure you trust the EXE? You can run
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
-**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/670A6C3A47248A7058F9DE8C438C283538E092D28FABF9A08EA29AE00D70D108)
+**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/91AD37DE0CBC505CAA30B7A5CE5B362EB0E98FE2CFAF47944F5506FA1CE84B50)
 
-The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``670A6C3A47248A7058F9DE8C438C283538E092D28FABF9A08EA29AE00D70D108``.
+The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``91AD37DE0CBC505CAA30B7A5CE5B362EB0E98FE2CFAF47944F5506FA1CE84B50``.
 
-**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/670A6C3A47248A7058F9DE8C438C283538E092D28FABF9A08EA29AE00D70D108)
+**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/91AD37DE0CBC505CAA30B7A5CE5B362EB0E98FE2CFAF47944F5506FA1CE84B50)
 
 You can compare the file hash to the VirusTotal link to ensure that the VirusTotal results match the file you're attempting to run.
 
@@ -31,7 +31,7 @@ cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self
 ```
 4. Run
 ```powershell
-Get-FileHash 'Hellbomb Script.ps1' -eq 670A6C3A47248A7058F9DE8C438C283538E092D28FABF9A08EA29AE00D70D108
+Get-FileHash 'Hellbomb Script.ps1' -eq 91AD37DE0CBC505CAA30B7A5CE5B362EB0E98FE2CFAF47944F5506FA1CE84B50
 ```
 5. The statement should return/evaluate to ``True``
 
