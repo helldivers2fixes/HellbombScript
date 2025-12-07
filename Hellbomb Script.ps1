@@ -2170,9 +2170,6 @@ Function Invoke-HD2StatusChecks {
     #Transcript cleaning
     Stop-Transcript | Out-Null
 
-    Write-Host "Press [SPACEBAR] once finished inspecting..."
-    Pause
-
     $content = Get-Content $hbsReportPath
 
     # Remove header
