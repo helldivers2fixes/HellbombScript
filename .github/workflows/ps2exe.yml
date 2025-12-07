@@ -108,10 +108,12 @@ jobs:
           $signedPath   = "./artifact/${{ steps.get_filename.outputs.build_signed }}"
 
           if (Test-Path $signedPath) {
-            Write-Host "Signed EXE already present: $signedPath"
+            Write-Host "Signed EXE already present (from cache): $signedPath"
           } elseif (Test-Path $unsignedPath) {
             Write-Host "Signing unsigned EXE: $unsignedPath -> $signedPath"
-            Install-Module -Name SignPath -Force
+            Set-PSRepository PSGallery -InstallationPolicy Trusted
+            Install-Module -Name SignPath -Force -SkipPublisherCheck
+            
             Submit-SigningRequest `
               -InputArtifactPath $unsignedPath `
               -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
@@ -120,12 +122,13 @@ jobs:
               -SigningPolicySlug "release-signing" `
               -OutputArtifactPath $signedPath `
               -WaitForCompletion
+            
             Remove-Item $unsignedPath -Force
           } else {
             Write-Error "CRITICAL: Expected files not found."
             Write-Error "Expected Unsigned: $unsignedPath"
             Write-Error "Expected Signed:   $signedPath"
-            Write-Error "This usually means the cache restored files with the WRONG filenames."
+            Write-Error "This usually means the cache restored files with the WRONG filenames or directory structure."
             Exit 1
           }
 
