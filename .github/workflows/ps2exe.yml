@@ -9,164 +9,112 @@ on:
     branches: [ main ]
 
 env:
-  SHORT_SHA: ${{ github.sha }}
   PS1_SCRIPT_NAME: "Hellbomb Script.ps1"
 
 jobs:
   build-exe:
     runs-on: windows-latest
     outputs:
-      exe_filename: ${{ steps.get_filename.outputs.final_filename }}
+      exe_filename: ${{ steps.vars.outputs.filename }}
       exe_hash: ${{ steps.hash.outputs.exe_sha256 }}
-      ps1_hash: ${{ steps.ps1_hash.outputs.ps1_sha256 }}
+      ps1_hash: ${{ steps.hash.outputs.ps1_sha256 }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Cache compiled EXE
-        uses: actions/cache@v4
-        id: exe-cache
-        with:
-          path: ./artifact
-          key: hellbomb-exe-v3-${{ hashFiles('Hellbomb Script.ps1') }}
 
-      - name: Cache PowerShell modules
-        id: ps2exe-cache
-        uses: actions/cache@v4
-        with:
-          path: C:\Users\runneradmin\Documents\PowerShell\Modules
-          key: ps2exe-modules-${{ runner.os }}-${{ hashFiles('**/*.ps1') }}
-          restore-keys: |
-            ps2exe-modules-${{ runner.os }}-
-
-      - name: Install PS2EXE module
-        if: steps.ps2exe-cache.outputs.cache-hit != 'true'
+      - name: Calculate Version & Filenames
+        id: vars
         shell: pwsh
         run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module -Name PS2EXE -Force
-
-      - name: Get version and configure filenames
-        id: get_filename
-        shell: pwsh
-        run: |
-          $scriptContent = Get-Content -Path "./${{ env.PS1_SCRIPT_NAME }}" -Raw
-          if ($scriptContent -match '\|\|\s+Version\s+(\d\.\d+)') {
-            $version      = $matches[1]
-            $shortCommit  = "${{ env.SHORT_SHA }}".Substring(0, 7)
-            
-            # STABLE NAMES (used for internal caching and signing)
-            $unsigned     = "Hellbomb_Script_v${version}_build.exe"
-            $signed       = "Hellbomb_Script_v${version}_build-signed.exe"
-            
-            # FINAL NAME (used for upload/release)
-            $final        = "Hellbomb_Script_v${version}-${shortCommit}-signed.exe"
-
-            Write-Output "build_unsigned=$unsigned"       >> $env:GITHUB_OUTPUT
-            Write-Output "build_signed=$signed"           >> $env:GITHUB_OUTPUT
-            Write-Output "final_filename=$final"          >> $env:GITHUB_OUTPUT
-            Write-Output "output_version=$version"        >> $env:GITHUB_OUTPUT
-            
-            Write-Host "Internal Target: $signed"
-            Write-Host "Final Target:    $final"
+          # 1. Get Version from Script Content
+          $content = Get-Content -Path $env:PS1_SCRIPT_NAME -Raw
+          if ($content -match '\|\|\s+Version\s+(\d\.\d+)') {
+            $version = $matches[1]
           } else {
-            Write-Error "Could not find a version number in ${{ env.PS1_SCRIPT_NAME }}."
-            Exit 1
+            Throw "Could not find version number in script."
           }
 
-      - name: Compile script to EXE (on cache miss)
-        if: steps.exe-cache.outputs.cache-hit != 'true'
+          # 2. Construct Filenames
+          $shortSha = "${{ github.sha }}".Substring(0, 7)
+          $finalName = "Hellbomb_Script_v${version}-${shortSha}-signed.exe"
+          
+          # 3. Output to GitHub Actions
+          Write-Output "filename=$finalName" >> $env:GITHUB_OUTPUT
+          Write-Output "version=$version"    >> $env:GITHUB_OUTPUT
+          
+          Write-Host "Target Filename: $finalName"
+
+      - name: Cache Final EXE
+        id: cache-exe
+        uses: actions/cache@v4
+        with:
+          path: ./output
+          # Cache key is based on the content of the PS1 script. 
+          # If script changes -> Hash changes -> Cache Miss -> Rebuild.
+          key: hellbomb-signed-v1-${{ hashFiles('Hellbomb Script.ps1') }}
+
+      - name: Build & Sign (Only on Cache Miss)
+        if: steps.cache-exe.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          if (-not (Test-Path -Path ./artifact)) { New-Item -Path ./artifact -ItemType Directory | Out-Null }
-          Invoke-ps2exe `
-            -inputFile "./${{ env.PS1_SCRIPT_NAME }}" `
-            -outputFile "./artifact/${{ steps.get_filename.outputs.build_unsigned }}" `
-            -x64 `
-            -requireAdmin `
-            -UNICODEEncoding `
-            -version "${{ steps.get_filename.outputs.output_version }}" `
+          # A. Setup Environment
+          Write-Host "Cache Miss. Starting Build Process..."
+          New-Item -Path "./output" -ItemType Directory -Force | Out-Null
+          
+          # Trust Gallery & Install Modules
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PS2EXE, SignPath -Force -SkipPublisherCheck -Scope CurrentUser
+
+          # B. Compile (Unsigned)
+          $unsignedPath = ".\temp_unsigned.exe"
+          $finalPath    = ".\output\${{ steps.vars.outputs.filename }}"
+          
+          Invoke-PS2EXE `
+            -inputFile $env:PS1_SCRIPT_NAME `
+            -outputFile $unsignedPath `
+            -x64 -requireAdmin -UNICODEEncoding `
+            -version "${{ steps.vars.outputs.version }}" `
             -description "Troubleshoots Helldivers 2 Issues" `
             -copyright "© 2025" `
             -title "Hellbomb Script" `
             -iconFile "./Bomb.ico"
 
-      - name: List Artifact Contents
-        shell: pwsh
-        run: |
-          Write-Host "Checking ./artifact folder contents..."
-          if (Test-Path ./artifact) {
-            Get-ChildItem -Path ./artifact | Select-Object Name, Length, LastWriteTime | Format-Table -AutoSize
-          } else {
-            Write-Warning "./artifact folder does not exist!"
-          }
+          # C. Sign (SignPath)
+          Write-Host "Submitting to SignPath..."
+          Submit-SigningRequest `
+            -InputArtifactPath $unsignedPath `
+            -OutputArtifactPath $finalPath `
+            -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
+            -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
+            -ProjectSlug "HellbombScript" `
+            -SigningPolicySlug "release-signing" `
+            -WaitForCompletion
 
-      - name: Sign EXE or verify signed file
-        shell: pwsh
-        run: |
-          $unsignedPath = "./artifact/${{ steps.get_filename.outputs.build_unsigned }}"
-          $signedPath   = "./artifact/${{ steps.get_filename.outputs.build_signed }}"
+          # D. Cleanup
+          Remove-Item $unsignedPath -Force
+          Write-Host "Build and Sign Complete: $finalPath"
 
-          if (Test-Path $signedPath) {
-            Write-Host "Signed EXE already present (from cache): $signedPath"
-          } elseif (Test-Path $unsignedPath) {
-            Write-Host "Signing unsigned EXE: $unsignedPath -> $signedPath"
-            Set-PSRepository PSGallery -InstallationPolicy Trusted
-            Install-Module -Name SignPath -Force -SkipPublisherCheck
-            
-            Submit-SigningRequest `
-              -InputArtifactPath $unsignedPath `
-              -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
-              -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
-              -ProjectSlug "HellbombScript" `
-              -SigningPolicySlug "release-signing" `
-              -OutputArtifactPath $signedPath `
-              -WaitForCompletion
-            
-            Remove-Item $unsignedPath -Force
-          } else {
-            Write-Error "CRITICAL: Expected files not found."
-            Write-Error "Expected Unsigned: $unsignedPath"
-            Write-Error "Expected Signed:   $signedPath"
-            Write-Error "This usually means the cache restored files with the WRONG filenames or directory structure."
-            Exit 1
-          }
-
-      - name: Rename to Final Filename (with SHA)
-        id: rename
-        shell: pwsh
-        run: |
-          $cachedFile = "./artifact/${{ steps.get_filename.outputs.build_signed }}"
-          $finalFile  = "./artifact/${{ steps.get_filename.outputs.final_filename }}"
-          
-          if (-not (Test-Path $cachedFile)) {
-             Write-Error "Cannot prepare final artifact. Cached file missing: $cachedFile"
-             Exit 1
-          }
-
-          Copy-Item -Path $cachedFile -Destination $finalFile -Force
-          Write-Host "Prepared artifact: $finalFile"
-
-      - name: Upload signed executable artifact
-        uses: actions/upload-artifact@v5
-        with:
-          name: hellbomb-exe
-          path: "./artifact/${{ steps.get_filename.outputs.final_filename }}"
-
-      - name: Calculate EXE hash (signed)
+      - name: Calculate Hashes
         id: hash
         shell: pwsh
         run: |
-          $exeFile = "./artifact/${{ steps.get_filename.outputs.final_filename }}"
-          $hash = Get-FileHash $exeFile -Algorithm SHA256
-          Write-Output "exe_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+          $exePath = ".\output\${{ steps.vars.outputs.filename }}"
+          $ps1Path = ".\$env:PS1_SCRIPT_NAME"
 
-      - name: Calculate SHA256 of PS1
-        id: ps1_hash
-        shell: pwsh
-        run: |
-          $hash = Get-FileHash "./${{ env.PS1_SCRIPT_NAME }}" -Algorithm SHA256
-          Write-Output "ps1_sha256=$($hash.Hash)" >> $env:GITHUB_OUTPUT
+          if (-not (Test-Path $exePath)) { Throw "Signed EXE not found!" }
+
+          $exeHash = (Get-FileHash $exePath -Algorithm SHA256).Hash
+          $ps1Hash = (Get-FileHash $ps1Path -Algorithm SHA256).Hash
+
+          Write-Output "exe_sha256=$exeHash" >> $env:GITHUB_OUTPUT
+          Write-Output "ps1_sha256=$ps1Hash" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: hellbomb-exe
+          path: ./output/${{ steps.vars.outputs.filename }}
 
   update-security-info:
     needs: build-exe
@@ -176,27 +124,26 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Update SECURITY.MD with new hashes and links
-        working-directory: ${{ github.workspace }}
+      - name: Update SECURITY.MD
         run: |
           python .github/scripts/update_security_info.py \
-          "${{ needs.build-exe.outputs.exe_hash }}" \
-          "${{ needs.build-exe.outputs.exe_filename }}" \
-          "${{ needs.build-exe.outputs.ps1_hash }}" \
-          "${{ env.PS1_SCRIPT_NAME }}"
+            "${{ needs.build-exe.outputs.exe_hash }}" \
+            "${{ needs.build-exe.outputs.exe_filename }}" \
+            "${{ needs.build-exe.outputs.ps1_hash }}" \
+            "${{ env.PS1_SCRIPT_NAME }}"
 
-      - name: Create and push branch
+      - name: Commit & Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b auto/security-info-update
           git add SECURITY.MD
-          git diff --cached --quiet && echo "No changes to commit" && exit 0
-          git commit -m "docs(security): Update SECURITY.md with latest hashes"
+          # Only commit if changes exist
+          git diff --cached --quiet || git commit -m "docs(security): Update SECURITY.md hashes"
           git push origin auto/security-info-update --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
