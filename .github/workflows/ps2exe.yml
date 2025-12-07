@@ -38,8 +38,7 @@ jobs:
           # 2. Construct Filenames
           $shortSha = "${{ github.sha }}".Substring(0, 7)
           $finalName = "Hellbomb_Script_v${version}-${shortSha}-signed.exe"
-          
-          # 3. Output to GitHub Actions
+
           Write-Output "filename=$finalName" >> $env:GITHUB_OUTPUT
           Write-Output "version=$version"    >> $env:GITHUB_OUTPUT
           
