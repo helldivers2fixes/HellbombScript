@@ -88,7 +88,7 @@ jobs:
             -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
             -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
             -ProjectSlug "HellbombScript" `
-            -SigningPolicySlug "release-signing" `
+            -SigningPolicySlug "test-signing" `
             -WaitForCompletion
 
           # D. Cleanup
