@@ -2128,7 +2128,7 @@ Function RunAndPause
 }
 
 Function Invoke-HD2StatusChecks {
-    $hbsReportPath = Join-Path ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -ChildPath "hbs_report.txt"
+    $hbsReportPath = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "hbs_report.txt"
     Start-Transcript -Path $hbsReportPath
     Show-Variables
     Show-MotherboardInfo
@@ -2170,18 +2170,21 @@ Function Invoke-HD2StatusChecks {
     #Transcript cleaning
     Stop-Transcript | Out-Null
 
+    Write-Host "Press [SPACEBAR] once finished inspecting..."
+    Pause
+
     $content = Get-Content $hbsReportPath
 
     # Remove header
-    $startIndex = ($content | Select-String "Transcript started").LineNumber
+    $startIndex = ($content | Select-String "Transcript started")
     if ($startIndex) {
-        $content = $content[$startIndex..($content.Length - 1)]
+        $content = $content[($startIndex.LineNumber)..($content.Length - 1)]
     }
 
     # Remove footer
-    $endIndex = ($content | Select-String "Windows PowerShell transcript end").LineNumber
+    $endIndex = ($content | Select-String "Windows PowerShell transcript end")
     if ($endIndex) {
-        $content = $content[0..($endIndex - 3)]
+        $content = $content[0..(($endIndex.LineNumber) - 3)]
     }
 
     $content | Set-Content $hbsReportPath
