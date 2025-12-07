@@ -364,7 +364,6 @@ ForEach ($generation in $NvidiaCodenames.Keys) {
         $NvidiaCodenameLookupTable[$id] = $generation
     }
 }
-
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
@@ -1036,20 +1035,16 @@ Function Get-CPUZ {
 Function Get-InstalledPrograms {
     # This portion modified from:
     # https://devblogs.microsoft.com/scripting/use-powershell-to-quickly-find-installed-software/
-       Write-Host "$([Environment]::NewLine)Gathering installed programs..." -ForegroundColor Cyan
-
-    $UninstallPaths = @(
-        "SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
-        "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-    )
-    
     $installedPrograms = @()
-    
+	Write-Host "$([Environment]::NewLine)Gathering installed programs..." -ForegroundColor Cyan
+    $UninstallPaths = @(
+		"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
+		"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
     $regKeys = @(
         [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]::Registry64),
         [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::CurrentUser, [Microsoft.Win32.RegistryView]::Registry64)
     )
-
     ForEach ($baseKey in $regKeys) {
         ForEach ($path in $UninstallPaths) {
             $regKey = $baseKey.OpenSubKey($path)
