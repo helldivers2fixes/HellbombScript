@@ -1010,11 +1010,11 @@ Function Get-CPUZ {
         $entry = $zip.Entries | Where-Object { $_.FullName -eq $targetFile }
         If ($entry) {
             # Extract the file manually using streams
-            $script:HellbombScriptDirectory = Join-Path -Path $extractTo -ChildPath $targetFile
-            If (Test-Path $script:HellbombScriptDirectory) {
-    			Remove-Item $script:HellbombScriptDirectory -Force
+            $cpuzExtractionPath = Join-Path -Path $extractTo -ChildPath $targetFile
+            If (Test-Path $cpuzExtractionPath) {
+    			Remove-Item $cpuzExtractionPath -Force
 			}
-			$fileStream = [System.IO.File]::Create($script:HellbombScriptDirectory)
+			$fileStream = [System.IO.File]::Create($cpuzExtractionPath)
             $entryStream = $entry.Open()
             $entryStream.CopyTo($fileStream)
             $fileStream.Close()
