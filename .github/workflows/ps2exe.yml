@@ -37,9 +37,10 @@ jobs:
 
           # 2. Construct Filenames
           $shortSha = "${{ github.sha }}".Substring(0, 7)
-          $finalName = "Hellbomb_Script_v${version}-${shortSha}-signed.exe"
+          $finalName = "Hellbomb_Script_v${version}-signed.exe"
           Write-Output "filename=$finalName" >> $env:GITHUB_OUTPUT
           Write-Output "version=$version"    >> $env:GITHUB_OUTPUT
+          Write-Output "commithash=$shortSha" >> $env:GITHUB_OUTPUT
           
           Write-Host "Target Filename: $finalName"
 
@@ -70,7 +71,7 @@ jobs:
             -outputFile ${{ steps.vars.outputs.filename }} `
             -x64 -requireAdmin -UNICODEEncoding `
             -version "${{ steps.vars.outputs.version }}" `
-            -description "Troubleshoots Helldivers 2 Issues" `
+            -description "Troubleshoots Helldivers 2 Issues. Commit hash ${{ steps.vars.outputs.commithash }}" `
             -copyright "© 2025" `
             -title "Hellbomb Script" `
             -iconFile "./Bomb.ico"
