@@ -102,8 +102,8 @@ jobs:
       - name: Extract signed EXE to output
         shell: pwsh
         run: |
-          Get-Location
-          Get-ChildItem -Recurse -Depth 3
+          Write-Host "$(Get-Location)"
+          Write-Host "$(Get-ChildItem -Recurse -Depth 3)"
           $zip = Get-ChildItem ./signed-artifacts -Filter *.zip | Select-Object -First 1
           if (-not $zip) { Throw "Signed ZIP not found in ./signed-artifacts" }
           Write-Host "Found signed ZIP: $($zip.Name)"
