@@ -77,6 +77,14 @@ jobs:
             -copyright "© 2025" `
             -title "Hellbomb Script" `
             -iconFile "./Bomb.ico"
+            
+      - name: Upload unsigned EXE
+        if: steps.cache-exe.outputs.cache-hit != 'true'
+        id: upload-unsigned
+        uses: actions/upload-artifact@v6
+        with:
+          name: unsigned-exe
+          path: ./temp_unsigned.exe
 
       - name: Submit artifact to SignPath
         if: steps.cache-exe.outputs.cache-hit != 'true'
@@ -87,8 +95,17 @@ jobs:
           project-slug: HellbombScript
           artifact-configuration-slug: default
           signing-policy-slug: test-signing
-          artifact-path: .\temp_unsigned.exe
-          output-artifact-path: output/${{ steps.vars.outputs.filename }}
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+
+      - name: Move signed EXE to output
+        shell: pwsh
+        run: |
+          $signed = Get-ChildItem ./signed-artifacts -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $signed) { Throw "Signed EXE not found" }
+      
+          New-Item -ItemType Directory -Force -Path ./output | Out-Null
+          Move-Item $signed.FullName "./output/${{ steps.vars.outputs.filename }}" -Force
+
 
       - name: Cleanup Files
         shell: pwsh
@@ -113,7 +130,7 @@ jobs:
           Write-Output "ps1_sha256=$ps1Hash" >> $env:GITHUB_OUTPUT
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: hellbomb-exe
           path: ./output/${{ steps.vars.outputs.filename }}
