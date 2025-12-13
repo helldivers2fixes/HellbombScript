@@ -9,7 +9,7 @@
   
 [![PSScriptAnalyzer](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml)
 [![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
-## HOW TO USE:
+## HOW TO USE (Pick one of the 3 options below:
 
 ## EXE
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
