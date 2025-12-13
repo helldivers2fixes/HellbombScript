@@ -102,8 +102,8 @@ jobs:
       - name: Extract signed EXE to output
         shell: pwsh
         run: |
-          $zip = Get-ChildItem ./HellbombScript/signed-artifacts -Filter *.zip | Select-Object -First 1
-          if (-not $zip) { Throw "Signed ZIP not found in .HellbombScript/signed-artifacts" }
+          $zip = Get-ChildItem ./signed-artifacts -Filter *.zip | Select-Object -First 1
+          if (-not $zip) { Throw "Signed ZIP not found in ./signed-artifacts" }
           Write-Host "Found signed ZIP: $($zip.Name)"
           $extractPath = "./signed-extracted"
           New-Item -ItemType Directory -Force -Path $extractPath | Out-Null
