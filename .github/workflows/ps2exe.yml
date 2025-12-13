@@ -38,7 +38,6 @@ jobs:
           # 2. Construct Filenames
           $shortSha = "${{ github.sha }}".Substring(0, 7)
           $finalName = "Hellbomb_Script_v${version}-${shortSha}-signed.exe"
-
           Write-Output "filename=$finalName" >> $env:GITHUB_OUTPUT
           Write-Output "version=$version"    >> $env:GITHUB_OUTPUT
           
@@ -66,11 +65,9 @@ jobs:
           Install-Module -Name PS2EXE -Force -SkipPublisherCheck -Scope CurrentUser
 
           # B. Compile (Unsigned)
-          $unsignedPath = ".\temp_unsigned.exe"
-          
           Invoke-PS2EXE `
             -inputFile $env:PS1_SCRIPT_NAME `
-            -outputFile $unsignedPath `
+            -outputFile ${{ steps.vars.outputs.filename }} `
             -x64 -requireAdmin -UNICODEEncoding `
             -version "${{ steps.vars.outputs.version }}" `
             -description "Troubleshoots Helldivers 2 Issues" `
@@ -84,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: unsigned-exe
-          path: ./temp_unsigned.exe
+          path: ${{ steps.vars.outputs.filename }}
 
       - name: Submit artifact to SignPath
         if: steps.cache-exe.outputs.cache-hit != 'true'
@@ -99,24 +96,6 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: "./signed-artifacts"
 
-      - name: Extract signed EXE to output
-        shell: pwsh
-        run: |
-          Write-Host "$(Get-Location)"
-          Write-Host "$(Get-ChildItem -Recurse -Depth 3)"
-          $zip = Get-ChildItem ./signed-artifacts -Filter *.zip | Select-Object -First 1
-          if (-not $zip) { Throw "Signed ZIP not found in ./signed-artifacts" }
-          Write-Host "Found signed ZIP: $($zip.Name)"
-          $extractPath = "./signed-extracted"
-          New-Item -ItemType Directory -Force -Path $extractPath | Out-Null
-          Expand-Archive -Path $zip.FullName -DestinationPath $extractPath -Force
-          $exe = Get-ChildItem $extractPath -Recurse -Filter *.exe | Select-Object -First 1
-          if (-not $exe) { Throw "Signed EXE not found inside ZIP" }
-          New-Item -ItemType Directory -Force -Path ./output | Out-Null
-          Move-Item $exe.FullName "./output/${{ steps.vars.outputs.filename }}" -Force
-
-
-
       - name: Cleanup Files
         shell: pwsh
         run: |
@@ -128,7 +107,7 @@ jobs:
         id: hash
         shell: pwsh
         run: |
-          $exePath = ".\output\${{ steps.vars.outputs.filename }}"
+          $exePath = ".\signed-artifacts\${{ steps.vars.outputs.filename }}"
           $ps1Path = ".\$env:PS1_SCRIPT_NAME"
 
           if (-not (Test-Path $exePath)) { Throw "Signed EXE not found!" }
@@ -143,7 +122,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: hellbomb-exe
-          path: ./output/${{ steps.vars.outputs.filename }}
+          path: ./signed-artifacts/${{ steps.vars.outputs.filename }}
 
   update-security-info:
     needs: build-exe
