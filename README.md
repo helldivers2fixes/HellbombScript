@@ -11,22 +11,20 @@
 [![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## HOW TO USE (Pick 1 of the 3 options below):
 
-## EXE
-1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
-Make sure old versions of ``cpuz_x64.exe`` that are saved in your Downloads folder are deleted.
+## Option 1: EXE
+1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE**
 
-Right-click on the EXE >> **Properties** >> select the checkbox to Unblock the EXE >> click **OK**. See image: <img width="405" height="568" alt="image" src="https://github.com/user-attachments/assets/d70fd5e9-d08a-4c4f-8e71-746277a0caac" />
-
+2.) Right-click on the EXE >> **Properties** >> select the checkbox to Unblock the EXE >> click **OK**. See image: <img width="405" height="568" alt="image" src="https://github.com/user-attachments/assets/d70fd5e9-d08a-4c4f-8e71-746277a0caac" />
 
 Then run the EXE
 
 Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
 
-2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
+3.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
 
-3.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+4.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## Copy and Paste using Terminal Console (Semi-Automated)
+## Option 2: Copy and Paste using Terminal Console (Semi-Automated)
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
  2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
     ```powershell
@@ -57,7 +55,7 @@ Then you can work through the things below if you have specific issues.
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 | WinLicense Error: An error has occurred while loading imports. Wrong DLL present. | Option ``S`` then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB)    |
 
-## Copy and Paste using Terminal Console (Manual Method)
+## Option 3: Copy and Paste using Terminal Console (Manual Method)
 Copy and paste the script manually per instructions below.
 
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
