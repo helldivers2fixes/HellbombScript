@@ -91,7 +91,7 @@ jobs:
         uses: SignPath/github-action-submit-signing-request@v2
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-          organization-id: 3279ff22-47b8-4bbf-9939-2c88ce1665ed
+          organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
           project-slug: HellbombScript
           artifact-configuration-slug: HellbombScript
           signing-policy-slug: test-signing
