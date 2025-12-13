@@ -82,6 +82,7 @@ Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 
 # Code signing policy:
 “Free code signing provided by SignPath.io, certificate by SignPath Foundation”
+https://github.com/signpath
 
 Committers and reviewers: helldivers2fixes
 
