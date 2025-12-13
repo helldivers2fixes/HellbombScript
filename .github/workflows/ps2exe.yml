@@ -51,7 +51,7 @@ jobs:
           path: ./output
           # Cache key is based on the content of the PS1 script. 
           # If script changes -> Hash changes -> Cache Miss -> Rebuild.
-          key: hellbomb-signed-v1-${{ hashFiles('Hellbomb Script.ps1') }}
+          key: hellbomb-signed-v1-${{ steps.vars.outputs.version }}-${{ hashFiles('Hellbomb Script.ps1') }}
 
       - name: Build & Sign (Only on Cache Miss)
         if: steps.cache-exe.outputs.cache-hit != 'true'
@@ -63,11 +63,10 @@ jobs:
           
           # Trust Gallery & Install Modules
           Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module -Name PS2EXE, SignPath -Force -SkipPublisherCheck -Scope CurrentUser
+          Install-Module -Name PS2EXE -Force -SkipPublisherCheck -Scope CurrentUser
 
           # B. Compile (Unsigned)
           $unsignedPath = ".\temp_unsigned.exe"
-          $finalPath    = ".\output\${{ steps.vars.outputs.filename }}"
           
           Invoke-PS2EXE `
             -inputFile $env:PS1_SCRIPT_NAME `
@@ -79,20 +78,24 @@ jobs:
             -title "Hellbomb Script" `
             -iconFile "./Bomb.ico"
 
-          # C. Sign (SignPath)
-          Write-Host "Submitting to SignPath..."
-          Submit-SigningRequest `
-            -InputArtifactPath $unsignedPath `
-            -OutputArtifactPath $finalPath `
-            -ApiToken "${{ secrets.SIGNPATH_API_TOKEN }}" `
-            -OrganizationId "3279ff22-47b8-4bbf-9939-2c88ce1665ed" `
-            -ProjectSlug "HellbombScript" `
-            -SigningPolicySlug "test-signing" `
-            -WaitForCompletion
+      - name: Submit artifact to SignPath
+        if: steps.cache-exe.outputs.cache-hit != 'true'
+        uses: signpath/github-action-submit-artifact@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: 3279ff22-47b8-4bbf-9939-2c88ce1665ed
+          project-slug: HellbombScript
+          artifact-configuration-slug: default
+          signing-policy-slug: test-signing
+          artifact-path: .\temp_unsigned.exe
+          output-artifact-path: output/${{ steps.vars.outputs.filename }}
 
-          # D. Cleanup
-          Remove-Item $unsignedPath -Force
-          Write-Host "Build and Sign Complete: $finalPath"
+      - name: Cleanup Files
+        shell: pwsh
+        run: |
+          if (Test-Path ".\temp_unsigned.exe") {
+            Remove-Item ".\temp_unsigned.exe" -Force
+          }
 
       - name: Calculate Hashes
         id: hash
