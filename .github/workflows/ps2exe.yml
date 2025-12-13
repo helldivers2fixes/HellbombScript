@@ -97,14 +97,20 @@ jobs:
           signing-policy-slug: test-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
 
-      - name: Move signed EXE to output
+      - name: Extract signed EXE to output
         shell: pwsh
         run: |
-          $signed = Get-ChildItem ./signed-artifacts -Recurse -Filter *.exe | Select-Object -First 1
-          if (-not $signed) { Throw "Signed EXE not found" }
-      
+          $zip = Get-ChildItem ./signed-artifacts -Filter *.zip | Select-Object -First 1
+          if (-not $zip) { Throw "Signed ZIP not found in ./signed-artifacts" }
+          Write-Host "Found signed ZIP: $($zip.Name)"
+          $extractPath = "./signed-extracted"
+          New-Item -ItemType Directory -Force -Path $extractPath | Out-Null
+          Expand-Archive -Path $zip.FullName -DestinationPath $extractPath -Force
+          $exe = Get-ChildItem $extractPath -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) { Throw "Signed EXE not found inside ZIP" }
           New-Item -ItemType Directory -Force -Path ./output | Out-Null
-          Move-Item $signed.FullName "./output/${{ steps.vars.outputs.filename }}" -Force
+          Move-Item $exe.FullName "./output/${{ steps.vars.outputs.filename }}" -Force
+
 
 
       - name: Cleanup Files
