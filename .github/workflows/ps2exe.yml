@@ -96,6 +96,7 @@ jobs:
           artifact-configuration-slug: HellbombScript
           signing-policy-slug: test-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
           output-artifact-directory: signed-artifacts
 
       - name: Extract signed EXE to output
