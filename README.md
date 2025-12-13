@@ -15,6 +15,11 @@
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE** and run it.
 Make sure old versions of ``cpuz_x64.exe`` that are saved in your Downloads folder are deleted.
 
+Right-click on the EXE >> **Properties** >> select the checkbox to Unblock the EXE >> click **OK**. See image: <img width="405" height="568" alt="image" src="https://github.com/user-attachments/assets/d70fd5e9-d08a-4c4f-8e71-746277a0caac" />
+
+
+Then run the EXE
+
 Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
 
 2.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
