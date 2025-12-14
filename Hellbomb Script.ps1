@@ -790,7 +790,12 @@ Function Show-GameLaunchOptions {
     }
 }
 Function Show-PowerPlan {
-    $script:PowerPlan = (Get-CimInstance -Namespace root\cimv2\power -ClassName Win32_PowerPlan -Filter "IsActive = True").ElementName
+    Try {
+		$script:PowerPlan = (Get-CimInstance -Namespace root\cimv2\power -ClassName Win32_PowerPlan -Filter "IsActive = True").ElementName
+		}
+	Catch {
+		$script:PowerPlan = 'Error retrieving Power Plan'
+		}
     Write-Host 'Active Windows Power Plan: ' -NoNewLine -ForegroundColor Cyan
     Write-Host $script:PowerPlan
 }
