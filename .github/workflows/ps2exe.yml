@@ -80,7 +80,7 @@ jobs:
           organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
           project-slug: HellbombScript
           artifact-configuration-slug: HellbombScript
-          signing-policy-slug: test-signing
+          signing-policy-slug: release-signing
           github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: "./signed-artifacts"
