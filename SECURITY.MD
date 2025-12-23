@@ -11,7 +11,7 @@ EXE [VirusTotal](https://www.virustotal.com/gui/file/08BA03BE82515CDE6C68E32C594
 
 Not sure you trust the EXE? You can run
 ```powershell
-& "Hellbomb_Script_v4.0-5484f4b-unsigned.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
+& "Hellbomb_Script_v4.0-signed.exe" -extract:$env:USERPROFILE"\Downloads\Hellbomb Script.ps1"
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
