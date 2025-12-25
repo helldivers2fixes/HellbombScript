@@ -1,3 +1,20 @@
+$script:DetectedOS = $null
+Function Initialize-OSDetection {
+    # PowerShell 7+ exposes $IsWindows/$IsLinux/$IsMacOS
+    If (Get-Variable -Name IsWindows -Scope Global -ErrorAction SilentlyContinue) {
+        If ($IsWindows) { $script:DetectedOS = "Windows"; Return }
+        If ($IsLinux)   { $script:DetectedOS = "Linux";   Return }
+        If ($IsMacOS)   { $script:DetectedOS = "macOS";   Return }
+    }
+    # Fallback for Windows PowerShell 5.1
+    If ($PSVersionTable.OS -match "Windows") { $script:DetectedOS = "Windows"; Return }
+    If ($PSVersionTable.OS -match "Linux")   { $script:DetectedOS = "Linux";   Return }
+    If ($PSVersionTable.OS -match "Darwin")  { $script:DetectedOS = "macOS";   Return }
+
+    $script:DetectedOS = "Unknown"
+}
+Initialize-OSDetection
+
 using namespace System.Management.Automation.Host
 # Get the current host UI RawUI object
 $pshost = Get-Host
@@ -2518,3 +2535,4 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
+
