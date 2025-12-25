@@ -634,7 +634,11 @@ Function Test-BadPrinters {
     Else { $script:Tests.BadPrinter.TestPassed = $true }
 }
 Function Find-CPUInfo {
-    $script:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim()
+    If ($script:DetectedOS -eq 'Windows') { $script:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim() }
+    If ($script:DetectedOS -eq 'Linux') {
+    $script:myCPU = (Get-Content /proc/cpuinfo | Where-Object { $_ -match '^model name' } |
+        Select-Object -First 1).Split(':')[1].Trim()
+    }
     If ( $script:myCPU.Contains('Intel') ) {
         ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
             If (($script:myCPU).Contains($cpuModel)) {
@@ -657,17 +661,45 @@ Function Find-CPUInfo {
     Return
 }
 Function Show-MotherboardInfo {
-    $motherboardInfo = @(
-    [pscustomobject]@{ 'Motherboard Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim();
-    'UEFI Info' = 'SMBIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim() }
-    [pscustomobject]@{ 'Motherboard Info' = 'Product: '+(Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim();
-    'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
-    [pscustomobject]@{ 'Motherboard Info' = '';
-    'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
-    [pscustomobject]@{ 'Motherboard Info' = '';
-    'UEFI Info' = 'BIOS Release Date: '+(Get-CimInstance -ClassName Win32_BIOS).ReleaseDate.ToString("yyyy-MM-dd") }
-    )
-    $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
+    If ($script:DetectedOS -eq 'Windows') {
+        $motherboardInfo = @(
+        [pscustomobject]@{ 'Motherboard Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim();
+        'UEFI Info' = 'SMBIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim() }
+        [pscustomobject]@{ 'Motherboard Info' = 'Product: '+(Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim();
+        'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
+        [pscustomobject]@{ 'Motherboard Info' = '';
+        'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
+        [pscustomobject]@{ 'Motherboard Info' = '';
+        'UEFI Info' = 'BIOS Release Date: '+(Get-CimInstance -ClassName Win32_BIOS).ReleaseDate.ToString("yyyy-MM-dd") }
+        )
+        $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
+    }
+    If ($script:DetectedOS -eq 'Linux') {
+        $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
+        $boardName    = (Get-Content "/sys/devices/virtual/dmi/id/board_name" -ErrorAction SilentlyContinue).Trim()
+        $biosVendor   = (Get-Content "/sys/devices/virtual/dmi/id/bios_vendor" -ErrorAction SilentlyContinue).Trim()
+        $biosVersion  = (Get-Content "/sys/devices/virtual/dmi/id/bios_version" -ErrorAction SilentlyContinue).Trim()
+        $biosDate     = (Get-Content "/sys/devices/virtual/dmi/id/bios_date" -ErrorAction SilentlyContinue).Trim()
+        $motherboardInfo = @(
+        [pscustomobject]@{
+        'Motherboard Info' = "Manufacturer: $boardVendor"
+        'UEFI Info'        = "SMBIOS Version: $biosVersion"
+        }
+        [pscustomobject]@{
+        'Motherboard Info' = "Product: $boardName"
+        'UEFI Info'        = "Manufacturer: $biosVendor"
+        }
+        [pscustomobject]@{
+        'Motherboard Info' = ""
+        'UEFI Info'        = "BIOS Version: $biosVersion"
+        }
+        [pscustomobject]@{
+        'Motherboard Info' = ""
+        'UEFI Info'        = "BIOS Release Date: $biosDate"
+        }
+        )
+        $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
+    }
 }
 Function Show-ISPInfo {
 	Try {
@@ -690,7 +722,7 @@ Function Show-ISPInfo {
 	    Write-Host "Could not retrieve ISP information. The service returned an error: $($ipInfo.message)" -ForegroundColor Yellow
 	}
 }
-Function Show-GPUInfo {
+Function Show-WindowsGPUInfo {
     $gpus = Get-CimInstance -ClassName Win32_VideoController
     # Print GPU information
     ForEach ($gpu in $gpus) {
@@ -760,10 +792,136 @@ Function Show-GPUInfo {
         Write-Host "-------------------------------------"
     }
 }
+Function Show-LinuxGPUInfo {
+    $gpuLines = lspci -mm -nn | Select-String -Pattern 'VGA|3D|Display'
+    $gpus = ForEach ($line in $gpuLines) {
+        $parts = $line.ToString().Split('"') | ForEach-Object { $_.Trim() }
+        [pscustomobject]@{
+            Name    = $parts[5]   # GPU model
+            Vendor  = $parts[3]   # Vendor name
+            RawLine = $line.ToString()
+        }
+    }
+
+    ForEach ($gpu in $gpus) {
+        $vendor        = "Generic"
+        $driverVersion = "Unknown"
+        $archCodename  = "Not Identified"
+        $status        = "Unknown"
+        # -------------------------
+        # AMD
+        # -------------------------
+        If ($gpu.Vendor -match "AMD|Advanced Micro Devices") {
+            $vendor = "AMD"
+            Try {
+                $driverVersion = (
+                    glxinfo -B 2>$null |
+                    Select-String "OpenGL version string"
+                ).ToString().Split(":")[1].Trim()
+            }
+            Catch {
+                $driverVersion = "Unknown (No glxinfo)"
+            }
+
+            # Detect Vega by PCI ID
+            $pciID = $null
+            If ($gpu.RawLine -match "
+
+    \[(.*?)\]
+
+    ") {
+                $pciID = $matches[1]
+            }
+            If ($pciID -and $script:Tests.NoVegaGPUs.VegaPCIDevIDs -contains $pciID) {
+                $archCodename = "Vega"
+            }
+            Try {
+                glxinfo -B 2>$null | Out-Null
+                $status = "OK"
+            }
+            Catch {
+                $status = "Driver Missing"
+            }
+        }
+        ElseIf ($gpu.Vendor -match "NVIDIA") {
+            $vendor = "NVIDIA"
+            $deviceID = $null
+            If ($gpu.RawLine -match "Device ([0-9A-Fa-f]{4})") {
+                $deviceID = $matches[1]
+            }
+            If ($deviceID -and $NvidiaCodenameLookupTable.ContainsKey($deviceID)) {
+                $archCodename = $NvidiaCodenameLookupTable[$deviceID]
+            }
+            Try {
+                $driverVersion = (
+                    nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>$null
+                ).Trim()
+            }
+            Catch {
+                $driverVersion = "Unknown (no nvidia-smi)"
+            }
+            Try {
+                nvidia-smi -L 2>$null | Out-Null
+                $status = "OK"
+            }
+            Catch {
+                $status = "Driver Missing"
+            }
+        }
+        ElseIf ($gpu.Vendor -match "Intel") {
+            $vendor = "Intel"
+            Try {
+                $driverVersion = (
+                    glxinfo -B 2>$null |
+                    Select-String "OpenGL version string"
+                ).ToString().Split(":")[1].Trim()
+            }
+            Catch {
+                $driverVersion = "Unknown (no glxinfo)"
+            }
+            Try {
+                glxinfo -B 2>$null | Out-Null
+                $status = "OK"
+            }
+            Catch {
+                $status = "Driver Missing"
+            }
+        }
+            $script:SystemInfo["GPUInfo"] += @{
+            vendor        = $vendor
+            driverVersion = $driverVersion
+            archCodename  = $archCodename
+            status        = $status
+        }
+        Write-Host "-------------------------------------"
+        Write-Host "  GPU Model: $($gpu.Name)"
+        Write-Host "   Codename: $archCodename"
+        Write-Host "  Drvr Ver.: $driverVersion"
+        Write-Host "     Status: " -NoNewLine
+        If ($status -eq "OK") {
+            Write-Host $status -ForegroundColor Green
+        }
+        Else {
+            Write-Host $status -ForegroundColor Red
+        }
+        Write-Host "-------------------------------------"
+    }
+}
 Function Show-OSInfo {
-    $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    If ( $script:DetectedOS -eq 'Windows') { $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption }
+    If ( $script:DetectedOs -eq 'Linux' ) {
+        $osRelease = Get-Content /etc/os-release |
+        ForEach-Object {
+            $parts = $_.Split("=")
+            If ($parts.Count -eq 2) {
+            [pscustomobject]@{ Key = $parts[0]; Value = $parts[1].Trim('"') }
+            }
+        }
+        $script:OSVersion = ($osRelease | Where-Object { $_.Key -eq "PRETTY_NAME" }).Value
+    }
     Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
     Write-Host '' $script:OSversion
+
 }
 Function Show-GameLaunchOptions {
     $script:localconfigVDF = Join-Path -Path $script:mostRecentSteamUserProfilePath -ChildPath 'config\localconfig.vdf'
@@ -2153,7 +2311,8 @@ Function RunAndPause
 Function Invoke-HD2StatusChecks {
     Show-Variables
     Show-MotherboardInfo
-    Show-GPUInfo
+    If ( $script:DetectedOS -eq 'Windows' ) { Show-WindowsGPUInfo }
+    If ( $script:DetectedOS -eq 'Linux' ) { Show-LinuxGPUInfo }
     Show-OSInfo
     Show-PowerPlan
     Show-ISPInfo
@@ -2170,7 +2329,7 @@ Function Invoke-HD2StatusChecks {
     Test-VisualC++Redists
     Test-Programs
     $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
-    $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
+    If ($script:DetectedOS -eq 'Windows') { $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize }
     Get-SystemUptime
     Get-HardwareInfo
     Find-CPUInfo
@@ -2499,10 +2658,11 @@ $script:AppID = "553850"
 $script:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
-Try {
+If ($script:DetectedOS -eq 'Windows') {
+    Try {
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
-}
-Catch {
+    }
+    Catch {
     Write-Host '[FAIL]' -NoNewLine -ForegroundColor Red
     Write-Host 'Steam was not detected. Exiting Steam to fix this issue.' -ForegroundColor Cyan
     # Get the Steam process
@@ -2512,7 +2672,14 @@ Catch {
     Stop-Process -Name "steam" -Force
     }
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+    }
 }
+If ($script:DetectedOS -eq 'Linux') {
+    $possiblePaths = @( "$HOME/.steam/steam",
+                        "$HOME/.local/share/Steam",
+                        "$HOME/.var/app/com.valvesoftware.Steam/.steam/steam" )
+    $script:SteamPath = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+    }
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
 $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
 # Read each line of the Steam library.vdf file
