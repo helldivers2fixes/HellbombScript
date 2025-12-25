@@ -965,7 +965,7 @@ Function Show-GameLaunchOptions {
         Write-Host 'Launch options retrieved from LAST USED Steam Profile' # This message should probably be moved inside the loop if it's per-block.
     }
 }
-Function Show-PowerPlan {
+Function Show-WindowsPowerPlan {
     Try {
 		$script:PowerPlan = (Get-CimInstance -Namespace root\cimv2\power -ClassName Win32_PowerPlan -Filter "IsActive = True").ElementName
 		}
@@ -973,6 +973,57 @@ Function Show-PowerPlan {
 		$script:PowerPlan = 'Error retrieving Power Plan'
 		}
     Write-Host 'Active Windows Power Plan: ' -NoNewLine -ForegroundColor Cyan
+    Write-Host $script:PowerPlan
+}
+Function Show-LinuxPowerPlan {
+    Try {
+        # Governor path
+        $govPath = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
+
+        # Detect CPU frequency driver
+        $cpuDriverPath = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
+        $cpuDriver = If (Test-Path $cpuDriverPath) {
+            (Get-Content $cpuDriverPath).Trim()
+        } Else {
+            "unknown"
+        }
+
+        # Read governor
+        If (Test-Path $govPath) {
+            $governor = (Get-Content $govPath).Trim()
+        } Else {
+            $governor = "Unavailable"
+        }
+
+        # Interpret based on driver
+        If ($cpuDriver -eq "amd_pstate" -or "amd_pstate_epp") {
+
+            Switch ($governor) {
+
+                "powersave" {
+                    # This is the correct mode for amd_pstate
+                    $script:PowerPlan = "powersave (correct mode for amd_pstate)"
+                }
+
+                "performance" {
+                    # This is NOT the recommended mode
+                    $script:PowerPlan = "performance (not recommended under amd_pstate)"
+                }
+
+                Default {
+                    $script:PowerPlan = "$governor (amd_pstate mode)"
+                }
+            }
+        }
+        Else {
+            # Normal ACPI cpufreq interpretation
+            $script:PowerPlan = $governor
+        }
+    }
+    Catch {
+        $script:PowerPlan = "Error retrieving CPU governor"
+    }
+    Write-Host "Active Linux CPU Governor: " -NoNewLine -ForegroundColor Cyan
     Write-Host $script:PowerPlan
 }
 Function Test-VegaGPUDriver {
@@ -2311,12 +2362,13 @@ Function RunAndPause
 Function Invoke-HD2StatusChecks {
     Show-Variables
     Show-MotherboardInfo
-    If ( $script:DetectedOS -eq 'Windows' ) { Show-WindowsGPUInfo }
+    If ( $script:DetectedOS -eq 'Windows' ){ Show-WindowsGPUInfo }
     If ( $script:DetectedOS -eq 'Linux' ) { Show-LinuxGPUInfo }
     Show-OSInfo
-    Show-PowerPlan
+    If ( $script:DetectedOS -eq 'Windows' ){ Show-WindowsPowerPlan }
+    If ( $script:DetectedOS -eq 'Linux' ) { Show-LinuxPowerPlan }
     Show-ISPInfo
-    Show-GameLaunchOptions
+    If ( $script:DetectedOS -eq 'Windows' ){ Show-GameLaunchOptions }
     Test-PendingReboot
     Reset-HostabilityKey
     Test-Firewall
@@ -2337,7 +2389,6 @@ Function Invoke-HD2StatusChecks {
     Test-AVX2
     Test-MemoryChannels
     Get-MemoryPartNumber -Lines $script:HardwareInfoText
-    Get-MemorySpeed
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
