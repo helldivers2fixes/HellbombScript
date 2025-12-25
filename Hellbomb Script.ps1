@@ -1,3 +1,16 @@
+using namespace System.Management.Automation.Host
+# Get the current host UI RawUI object
+$pshost = Get-Host
+$psWindow = $pshost.UI.RawUI
+# Set the window size (height and width)
+$newWindowSize = $psWindow.WindowSize
+$newWindowSize.Height = 60   # Adjust height as needed
+$psWindow.WindowSize = $newWindowSize
+# Hellbomb Script
+# Requires -RunAsAdministrator
+$ErrorActionPreference = 'Continue'
+Set-StrictMode -Version Latest
+
 $script:DetectedOS = $null
 Function Initialize-OSDetection {
     # PowerShell 7+ exposes $IsWindows/$IsLinux/$IsMacOS
@@ -15,18 +28,6 @@ Function Initialize-OSDetection {
 }
 Initialize-OSDetection
 
-using namespace System.Management.Automation.Host
-# Get the current host UI RawUI object
-$pshost = Get-Host
-$psWindow = $pshost.UI.RawUI
-# Set the window size (height and width)
-$newWindowSize = $psWindow.WindowSize
-$newWindowSize.Height = 60   # Adjust height as needed
-$psWindow.WindowSize = $newWindowSize
-# Hellbomb Script
-# Requires -RunAsAdministrator
-$ErrorActionPreference = 'Continue'
-Set-StrictMode -Version Latest
 $script:SystemInfo = @{
 	"GPUInfo" = @()
 }
@@ -276,7 +277,7 @@ $script:Tests = @{
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     Write-Host 'Bluetooth Audio Gateway (BTAG) Service is running.' -ForegroundColor Cyan
     Write-Host '       This will cause audio routing issues with ' -NoNewLine -ForegroundColor Cyan
-    Write-Host 'Bluetooth Headphones.' -NoNewLine -ForegroundColor Yellow 
+    Write-Host 'Bluetooth Headphones.' -NoNewLine -ForegroundColor Yellow
     Write-Host "$([Environment]::NewLine)       Toggle this service ON or OFF from the menu (Select Audio Options > option B)" -ForegroundColor Cyan
 '@
     }
@@ -402,15 +403,15 @@ Function pause ($message) {
     }
     Else {
         Write-Host "$message"$([Environment]::NewLine) -ForegroundColor Yellow
-        
+
         # Loop until the space bar is pressed
         Do {
             # Read a key press, suppress key display, and include key down events
             $x = $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-            
+
             # Check if the Character property of the key press object is a space ' '
-        } While ($x.Character -ne ' ') 
-        
+        } While ($x.Character -ne ' ')
+
         Write-Host "" # Print a newline after the pause
     }
 }
@@ -441,7 +442,7 @@ Function Install-EXE {
         $Error.Clear()
         Try {
             $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
-            
+
             If ( $installProcess.ExitCode -ne 0) {
                 Write-Host "$([Environment]::NewLine)UAC prompt was canceled, or another error occurred installing $CommonName$([Environment]::NewLine)" -ForegroundColor Red
                 Remove-Item -Path $DownloadPath$FileName
@@ -487,7 +488,7 @@ Function Remove-HD2AppData {
     $Error.Clear()
     Try { Remove-Item -Path $env:APPDATA\Arrowhead\Helldivers2\* -Recurse }
     Catch { Write-Host "Error occurred deleting contents of $env:APPDATA\Arrowhead\Helldivers2\" -ForegroundColor Red }
-    If (!$Error) { 
+    If (!$Error) {
         Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green
         Write-Host "Now please use Steam's " -NoNewLine -ForegroundColor Cyan
         Write-Host 'Verify Integrity of Game Files ' -NoNewLine
@@ -552,10 +553,10 @@ Function Install-VCRedist {
     Exit
 }
 Function Switch-GameInput {
-    Try { 
+    Try {
         	$gameInputSvc = Get-Service -Name "GameInputSvc"
 		}
-	Catch { 
+	Catch {
        	Write-Host "GameInput is not installed." -ForegroundColor Green
 		Return
     }
@@ -596,18 +597,18 @@ Function Find-BlacklistedDrivers {
     }
     # Check for missing critical drivers (AMD and Intel only)
     $MissingDriverPresentCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $true -and $_.InstanceId -match "VEN_1022|VEN_8086" -and 
+        $_.Present -eq $true -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
         ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
     $MissingDriverDisconnectedCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $false -and $_.InstanceId -match "VEN_1022|VEN_8086" -and 
+        $_.Present -eq $false -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
         ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
     } | Measure-Object).Count
     If ( $MissingDriverPresentCounter -gt 0 ) {
         Write-Host "$([Environment]::NewLine)⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
         Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
     }
-    If ( $MissingDriverDisconnectedCounter -gt 2 ) {    
+    If ( $MissingDriverDisconnectedCounter -gt 2 ) {
         Write-Host "$([Environment]::NewLine)ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
         Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
     }
@@ -637,13 +638,13 @@ Function Find-CPUInfo {
     If ( $script:myCPU.Contains('Intel') ) {
         ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
             If (($script:myCPU).Contains($cpuModel)) {
-            $pattern = "Microcode Revision\s+(0x[0-9A-Fa-f]+)"    
+            $pattern = "Microcode Revision\s+(0x[0-9A-Fa-f]+)"
             $script:runningMicrocode = ($script:HardwareInfoText | Select-String -Pattern $pattern | Select-Object -First 1).Matches[0].Groups[1].Value
                 If ( $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1] ) {
                             $script:Tests.IntelMicrocodeCheck.TestPassed = $true
                             Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedIntelMsg
                             Return
-                        }    
+                        }
                         Else {
                         $script:Tests.IntelMicrocodeCheck.TestPassed = $false
                         Return
@@ -717,7 +718,7 @@ Function Show-GPUInfo {
 			If ($deviceID) {
 			    $archCodename = $NvidiaCodenameLookupTable[$deviceID]
 			}
-            Try { 
+            Try {
                     $process = New-Object System.Diagnostics.Process
                     $process.StartInfo = New-Object System.Diagnostics.ProcessStartInfo
                     $process.StartInfo.FileName = "nvidia-smi"
@@ -757,7 +758,7 @@ Function Show-GPUInfo {
             }
         Else { Write-Host $gpu.Status -ForegroundColor Green }
         Write-Host "-------------------------------------"
-    } 
+    }
 }
 Function Show-OSInfo {
     $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
@@ -834,7 +835,7 @@ Function Get-MemorySpeed {
     $freqpattern = '\d{4}'
     # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
-    If ($match -and $match.Line -match $freqpattern) {     
+    If ($match -and $match.Line -match $freqpattern) {
     	$script:Tests.GetMemorySpeed.RAMSpeed = [int]$Matches[0]
         $script:Tests.GetMemorySpeed.TestPassed = $true
     } Else {
@@ -917,7 +918,7 @@ Function Get-MemoryPartNumber {
                         $designation = ($designationLine -Split "\s{1,}" | Select-Object -Last 1).Trim()
                     }
                 }
-                
+
                 # Look for the size and type in the following lines
                 For ($j = $i + 1; $j -lt $Lines.Count; $j++) {
                     If ($Lines[$j] -Match "^DMI Memory Device") { break }
@@ -940,7 +941,7 @@ Function Get-MemoryPartNumber {
             }
         }
     }
-	
+
     # Validate results
     If ($dimmData) {
         $script:Tests.MatchingMemory.RAMInfo = $dimmData
@@ -965,7 +966,7 @@ Function Get-MemoryPartNumber {
 		}
     }
 }
-Function Get-HardwareInfo { 
+Function Get-HardwareInfo {
 	If (-not (Test-Path $script:HellbombScriptDirectory)) {
 		New-Item -Path $script:HellbombScriptDirectory -ItemType Directory -Force | Out-Null
 	}
@@ -1144,7 +1145,7 @@ Function Test-Programs {
     # Avast Web Shield checks
     $regPath = "HKLM:\SOFTWARE\Avast Software\Avast\properties\WebShield\Common"
     $regName = "ProviderEnabled"
-   
+
     If (Test-Path $regPath) {
         $regProps = Get-ItemProperty -Path $regPath
         If ($regProps.PSObject.Properties.Name -contains $regName) {
@@ -1167,7 +1168,7 @@ Function Test-Programs {
                 Break
             }
         }
-        If ($bool) { 
+        If ($bool) {
         $program.Installed = $true
         $program.InstalledVersion = [System.Version]$installedApp.DisplayVersion
         }
@@ -1217,8 +1218,8 @@ Function Test-SystemClockAccuracy {
     # Read the time output as a string
     $NtpQuery = New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)
     $NtpQuery =  $NtpQuery.ReadToEnd().Trim()
-    $process.WaitForExit()    
-    $OffsetString = $NtpQuery | Select-String "[+-]([\d]+)\.([\d]+)s"    
+    $process.WaitForExit()
+    $OffsetString = $NtpQuery | Select-String "[+-]([\d]+)\.([\d]+)s"
     If ($OffsetString) {
         $OffsetValue = [Math]::Abs([double]$OffsetString.Matches[0].Groups[1].Value)
         If ($OffsetValue -lt 5.0) {
@@ -1314,7 +1315,7 @@ Function Test-RequiredURLs {
             $x, $y = [Console]::GetCursorPosition() -split '\D' -ne '' -as 'int[]'
             [Console]::SetCursorPosition(46 , $y)
         }
-        If (Resolve-DnsName -Name $domain.RequiredDomains -DnsOnly -ErrorAction SilentlyContinue) {        
+        If (Resolve-DnsName -Name $domain.RequiredDomains -DnsOnly -ErrorAction SilentlyContinue) {
             # Logic to handle intermittent domain connectivity. If it was marked false already, do not set to pass
             If ( $domain.PassedTest -ne $false ) {
                 $domain.PassedTest = $true
@@ -1370,7 +1371,7 @@ Function Test-ClientDnsConfig {
             Write-Host "[PASS]" -ForegroundColor Green -NoNewLine
             Write-Host " Detected IPv4 DNS servers:" -ForegroundColor Cyan
             $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
-            }    
+            }
             Write-Host "$([Environment]::NewLine)       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
             Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
         }
@@ -1397,7 +1398,7 @@ Function Test-ClientDnsConfig {
         $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
         }
         Write-Host "$([Environment]::NewLine)       Testing IPv6 DNS servers..." -ForegroundColor Cyan
-        Try { 
+        Try {
             Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
         } Catch {
             Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewLine
@@ -1406,7 +1407,7 @@ Function Test-ClientDnsConfig {
             Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewLine
             Write-Host ' on your network adapter.'
         }
-        
+
         }
         Else {
             Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewLine
@@ -1416,7 +1417,7 @@ Function Test-ClientDnsConfig {
             Write-Host ' on your network adapter.'
         }
     }
-    Else { Write-Host "$([Environment]::NewLine)Skipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }       
+    Else { Write-Host "$([Environment]::NewLine)Skipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }
 }
 Function Test-Wifi {
     # Ping the default gateway for 30 seconds and collect statistics
@@ -1438,7 +1439,7 @@ Function Test-Wifi {
         Try {
             $pingResult = Test-Connection $ipAddress -Count 1
         }
-        Catch { 
+        Catch {
             Write-Host 'Error pinging the default gateway... returning to menu' -ForegroundColor Yellow
             Return
         }
@@ -1469,13 +1470,13 @@ Function Test-Wifi {
     $squaredDifferences = $responseTimes | ForEach-Object { ($_ - $mean) * ($_ - $mean) }
     $variance = ($squaredDifferences | Measure-Object -Sum).Sum / $responseTimes.Count
     $stdDev = [math]::Sqrt($variance)
-    
+
     # Format to 3 significant digits
     $avgTimeFormatted = "{0:N3}" -f $avgTime
     $stdDevFormatted = "{0:N3}" -f $stdDev
-    
+
     $packetLossPercentage = ($lost / $sent) * 100
-    
+
     # Output results
     $results = [PSCustomObject]@{
         Sent = $sent
@@ -1487,15 +1488,15 @@ Function Test-Wifi {
         AvgResponseTime = "$avgTimeFormatted ms"
         StdDevResponseTime = "$stdDevFormatted ms"
     }
-    
+
     $results
-    
+
     If ($stdDev -gt 5) {
         Write-Host "Your connection to your default gateway has significant jitter (latency variance).$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Yellow
     }
     If ($packetLossPercentage -gt 1) {
         Write-Host "Your connection to your default gateway has more than 1% packet loss.$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Yellow
-    } 
+    }
     If ($stdDev -le 5 -and $packetLossPercentage -le 1) {
         Write-Host "Your connection appears to be operating normally.$([Environment]::NewLine)$([Environment]::NewLine)" -ForegroundColor Green
     }
@@ -1585,31 +1586,33 @@ Function Test-DoubleNAT {
     Pause "$([Environment]::NewLine)Press [SPACEBAR] to continue..."
 }
 Function Switch-BTAGService {
-    If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host 'This command requires Administrator privileges.',
-    "$([Environment]::NewLine)To run PowerShell with admin privileges:",
-    "$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
-    "$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
-    } Else {
-        If ((Get-Service -Name BTAGService).Status -eq 'Running') {
-            Set-Service -Name BTAGService -StartupType Disabled
-            Stop-Service -Name BTAGService
-            Start-Sleep -Seconds 1.5
-            Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service", 
-            "is now " -ForegroundColor Cyan
-            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
-            Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
-        } Else {
-            If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
-                Set-Service -Name BTAGService -StartupType Automatic
-                Set-Service -Name BTAGService -Status Running
-                Start-Sleep -Seconds 1.5
-                Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service", 
-                "is now " -ForegroundColor Cyan
-                Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
-            }
-        }
-    }
+If ($script:DetectedOS -eq 'Windows') {
+		If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	    Write-Host 'This command requires Administrator privileges.',
+	    "$([Environment]::NewLine)To run PowerShell with admin privileges:",
+	    "$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
+	    "$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
+	    } Else {
+	        If ((Get-Service -Name BTAGService).Status -eq 'Running') {
+	            Set-Service -Name BTAGService -StartupType Disabled
+	            Stop-Service -Name BTAGService
+	            Start-Sleep -Seconds 1.5
+	            Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+	            "is now " -ForegroundColor Cyan
+	            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
+	            Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
+	        } Else {
+	            If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
+	                Set-Service -Name BTAGService -StartupType Automatic
+	                Set-Service -Name BTAGService -Status Running
+	                Start-Sleep -Seconds 1.5
+	                Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+	                "is now " -ForegroundColor Cyan
+	                Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
+	            }
+	        }
+	    }
+	}
 }
 Function Test-VisualC++Redists {
     $VCRedists = @(
@@ -1617,11 +1620,11 @@ Function Test-VisualC++Redists {
     [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2013 Redistributable (x64)'; Installed = $false},
     [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2015-2022 Redistributable (x64)'; Installed = $false}
     )
-    
+
     Write-Host "$([Environment]::NewLine)Checking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan -NoNewLine
      # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
     $filteredApps = $script:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
-    
+
     ForEach ($vcRedist in $VCRedists) {
             If ($filteredApps.DisplayName -like "$($vcRedist.ProgramName)*") {
                 $vcRedist.Installed = $true
@@ -1751,7 +1754,7 @@ Function Reset-HD2SteamCloud {
     # Shutdown Steam and disable SteamCloud
     # Get the Steam process
     $steamProcess = Get-Process -Name "Steam" -ErrorAction SilentlyContinue
-    
+
     # Check if the Steam process is running
     If ($steamProcess) {
         # Stop the Steam process
@@ -1760,17 +1763,17 @@ Function Reset-HD2SteamCloud {
     } Else {
         Write-Host "Steam is not running... continuing"
     }
-  
+
     $HD2SteamCloudSaveFolder = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath $script:AppID
 
     # Define the path to the sharedconfig.vdf file
     $sharedConfigPath = Join-Path $script:mostRecentSteamUserProfilePath -ChildPath '\7\remote\sharedconfig.vdf'
-    
+
     $configContent = Get-Content -Path $sharedConfigPath
-    
+
     $inAppSection = $false
     $modifiedContent = @()
-    
+
     # Parse the sharedconfig.vdf file and modify the cloudenabled value to '0'
     ForEach ($line in $configContent) {
         If ($line -match $script:AppID) {
@@ -1781,15 +1784,15 @@ Function Reset-HD2SteamCloud {
         }
         $modifiedContent += $line
     }
-    
+
     # Write the modified content back to the sharedconfig.vdf file and then clear the modifiedContent array
     $modifiedContent | Out-File -FilePath $sharedConfigPath -Encoding UTF8 -Force
     $modifiedContent = @()
-    
+
     Write-Host 'Cloud save for HD2 has been disabled.' -ForegroundColor Cyan
     Remove-Item -Path $HD2SteamCloudSaveFolder\* -Recurse
     Write-Host "Cleared cloud save folder $HD2SteamCloudSaveFolder" -ForegroundColor Cyan
-    
+
     Write-Host "STOP! Please open Helldivers 2 and skip intro/wait until it gets to the menu BEFORE continuing the script..." -ForegroundColor Red
     pause 'Press [SPACEBAR] to continue...'
 
@@ -1859,7 +1862,7 @@ Function Reset-HostabilityKey {
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
         Write-Host "Hostability key could not be removed.$([Environment]::NewLine)" -ForegroundColor Yellow
-    }    
+    }
 }
 Function Get-VSyncConfig {
     $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
@@ -1920,11 +1923,11 @@ Function Find-Mods {
     {
         Write-Host 'Helldivers 2 not found. Skipping mod detection.'
         Return
-    }    
+    }
     $modsFound = Test-Path -Path "$script:AppInstallPath\data\*.patch_*" -PathType Leaf
     $script:Tests.GameMods.TestPassed = -not $modsFound
 }
-Function Show-ModRemovalWarning {  
+Function Show-ModRemovalWarning {
     Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewLine
     Write-Host 'This script is about to delete modified game files in' -ForegroundColor Yellow
     Write-Host "$script:AppInstallPath\data\" -ForegroundColor Cyan
@@ -1940,7 +1943,7 @@ Function Remove-AllMods {
     {
         Write-Host 'Helldivers 2 not found. Skipping mod removal.'
         Return
-    } 
+    }
     $dataFolder = $script:AppInstallPath + '\data\'
     $filesFound = $false
     Foreach ($file in Get-ChildItem -Path $dataFolder -File) {
@@ -2028,7 +2031,7 @@ Function Get-SecureBootStatus {
     	$secureBoot = Confirm-SecureBootUEFI
      	If ( $secureBoot -eq $true) { $script:Tests.SecureBootEnabled.TestPassed = $true }
     }
-      Catch { 
+      Catch {
     	  If ( $_.Exception.Message -like "*Cmdlet not supported on this platform:*" ) {
        		$script:Tests.SecureBootEnabled.SecureBootNotSupported = $true
 	 	$script:Tests.SecureBootEnabled.TestPassed = $false
@@ -2039,10 +2042,13 @@ Function Restart-Resume {
     Return ( Test-Path $PSScriptRoot\HellbombRestartResume )
 }
 Function Get-MenuTitle {
-    $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-        [Security.Principal.WindowsBuiltInRole]::Administrator
-    )
-
+    $IsAdmin = $false
+	If ($script:DetectedOS -eq 'Windows') {
+		$IsAdmin = ([Security.Principal.WindowsPrincipal] ` [Security.Principal.WindowsIdentity]::GetCurrent() ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+	}
+	If ($script:DetectedOS -eq 'Linux') {
+		$IsAdmin = (id -u) -eq 0
+    }
     $AdminBanner = If (-Not $IsAdmin) {
 @"
 ⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
@@ -2187,7 +2193,7 @@ Function Invoke-HD2StatusChecks {
     Pause
 }
 
-Function Create-Menu 
+Function Create-Menu
 {
     Param(
         [string]$Title,
@@ -2195,7 +2201,7 @@ Function Create-Menu
         [Parameter(Mandatory)]
         [array]$MenuItems
     )
-	
+
 	# Filter Menu Items by $script:DetectedOS ('Windows' or 'Linux')
 	$MenuItems = $MenuItems | Where-Object {
 	    -not $_.ContainsKey("OS") -or
@@ -2228,7 +2234,7 @@ Function Create-Menu
     } while ($true)
 }
 
-Function MainMenu 
+Function MainMenu
 {
 
     $menu = @(
@@ -2244,7 +2250,7 @@ Function MainMenu
     Create-Menu -Title "" -MenuItems $menu
 }
 
-Function ClearDataMenu 
+Function ClearDataMenu
 {
 
     $menu = @(
@@ -2272,7 +2278,7 @@ Function ClearDataMenu
         @{
             Label  = "🧹  Hostability Key |Z|"
             Hotkey = "Z"
-            Action = { RunAndPause { Reset-HostabilityKey } } 
+            Action = { RunAndPause { Reset-HostabilityKey } }
 			OS = 'Any'
         }
 
@@ -2294,7 +2300,7 @@ Function ClearDataMenu
     Create-Menu -Title "🧹 Clear Data Options" -MenuItems $menu
 }
 
-Function GraphicsMenu 
+Function GraphicsMenu
 {
 
     $menu = @(
@@ -2323,7 +2329,7 @@ Function GraphicsMenu
     Create-Menu -Title "🛠️ Graphics Options" -MenuItems $menu
 }
 
-Function NetworkMenu 
+Function NetworkMenu
 {
 
     $menu = @(
@@ -2351,7 +2357,7 @@ Function NetworkMenu
     Create-Menu -Title "🛜 Network Options" -MenuItems $menu
 }
 
-Function AudioMenu 
+Function AudioMenu
 {
 
     $menu = @(
@@ -2472,10 +2478,10 @@ Function Show-TestResults {
 Function Get-MostRecentlyUsedSteamProfilePath {
     # Get all immediate subfolders
     $subfolders = Get-ChildItem -Path (Join-Path $SteamPath -ChildPath 'userdata') -Directory
-    
+
     # Initialize variables to track the most recently modified subfolder
     $mostRecentTime = [datetime]::MinValue
-    
+
     # Iterate through each subfolder to find the most recently modified files
     ForEach ($subfolder in $subfolders) {
         $files = Get-ChildItem -Path $subfolder.FullName -Recurse -File
@@ -2493,10 +2499,10 @@ $script:AppID = "553850"
 $script:AppIDFound = $false
 $LineOfInstallDir = 8
 $LineOfBuildID = 13
-Try { 
+Try {
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
 }
-Catch { 
+Catch {
     Write-Host '[FAIL]' -NoNewLine -ForegroundColor Red
     Write-Host 'Steam was not detected. Exiting Steam to fix this issue.' -ForegroundColor Cyan
     # Get the Steam process
