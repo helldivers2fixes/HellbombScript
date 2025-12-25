@@ -2195,10 +2195,18 @@ Function Create-Menu
         [Parameter(Mandatory)]
         [array]$MenuItems
     )
+	
+	# Filter Menu Items by $script:DetectedOS ('Windows' or 'Linux')
+	$MenuItems = $MenuItems | Where-Object {
+	    -not $_.ContainsKey("OS") -or
+	    $_.OS -eq "Any" -or
+	    $_.OS -eq $script:DetectedOS
+	}
 
     $options = $MenuItems.Label
     $actions = @{}
     $hotkeys = @{}
+	$OS = @{}
 
     for ($i = 0; $i -lt $MenuItems.Count; $i++) {
         if ($MenuItems[$i].Hotkey) {
@@ -2244,36 +2252,42 @@ Function ClearDataMenu
             Label  = "🧹 |C|lear Settings (AppData)"
             Hotkey = "C"
             Action = { RunAndPause { Remove-HD2AppData } }
+			OS = 'Any'
         }
 
         @{
             Label  = "🧹  Clear Only Shader Caches"
             Hotkey = $null
             Action = { RunAndPause { Reset-ShaderCaches } }
+			OS = 'Any'
         }
 
         @{
             Label  = "🧹  Stea|m| Cloud"
             Hotkey = "M"
             Action = { RunAndPause { Reset-HD2SteamCloud } }
+			OS = 'Any'
         }
 
         @{
             Label  = "🧹  Hostability Key |Z|"
             Hotkey = "Z"
             Action = { RunAndPause { Reset-HostabilityKey } } 
+			OS = 'Any'
         }
 
         @{
             Label  = "❌ |Q|uick Mod Removal"
             Hotkey = "Q"
             Action = { RunAndPause { Show-ModRemovalWarning; Remove-AllMods} }
+			OS = 'Any'
         }
 
         @{
             Label  = "⬅️ |B|ack"
             Hotkey = "B"
             Action = $null
+			OS = 'Any'
         }
     )
 
@@ -2288,18 +2302,21 @@ Function GraphicsMenu
             Label  = "🛠️  Select Correct G|P|U"
             Hotkey = "P"
             Action = { RunAndPause { Open-AdvancedGraphics } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "📺 |O|ptimizations Toggle"
             Hotkey = "O"
             Action = { RunAndPause { Switch-FullScreenOptimizations } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "⬅️ |B|ack"
             Hotkey = "B"
             Action = $null
+			OS = 'Any'
         }
     )
 
@@ -2314,12 +2331,14 @@ Function NetworkMenu
             Label  = "🛜 |W|i-Fi LAN Test"
             Hotkey = "W"
             Action = { Test-Wifi }
+			OS = 'Windows'
         }
 
         @{
             Label  = "🌐  NA|T| Test"
             Hotkey = "T"
             Action = { Test-DoubleNAT }
+			OS = 'Windows'
         }
 
         @{
@@ -2340,12 +2359,14 @@ Function AudioMenu
             Label  = "🔈 |B|luetooth Telephony Service"
             Hotkey = $null
             Action = { RunAndPause { Switch-BTAGService } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "⬅️ Back"
             Hotkey = ""
             Action = $null
+			OS = 'Any'
         }
     )
 
@@ -2359,36 +2380,42 @@ Function ResetToggleComponentsMenu
             Label  = "🔁 |G|ameGuard Re-install"
             Hotkey = "G"
             Action = { RunAndPause { Reset-GameGuard } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "🔁 |S|team Reset"
             Hotkey = "S"
             Action = { RunAndPause { Reset-Steam } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "🗑️ |U|ninstall VC++ Redists"
             Hotkey = "U"
             Action = { RunAndPause { Uninstall-VCRedist } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "➕ |I|nstall VC++ Redists"
             Hotkey = "I"
             Action = { RunAndPause { Install-VCRedist } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "🎮 |D|isable/Enable GameInput Service (Toggle)"
             Hotkey = "D"
             Action = { RunAndPause { Switch-gameInput } }
+			OS = 'Windows'
         }
 
         @{
             Label  = "⬅️ |B|ack"
             Hotkey = "B"
             Action = $null
+			OS = 'Any'
         }
     )
 
@@ -2535,4 +2562,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
