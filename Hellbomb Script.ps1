@@ -131,7 +131,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'gameguard.thehelldiversgame.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'mgr.gameguard.co.kr'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'ocsp.digicert.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'playfabapi.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'helldivers2.playfabapi.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'pss-cloud.net'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamcommunity.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamcontent.com'; PassedTest = $null },
