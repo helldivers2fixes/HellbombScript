@@ -80,6 +80,8 @@ Main Menu
 Running the HD2 Status Checks (H) from the EXE (out-dated recording):
 ![Hellbomb Script Animation](https://github.com/user-attachments/assets/8781f62f-3f5b-4530-9085-ea3042833220)
 
+<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/acc63a48-f1e5-4822-95d4-aff2081fd43f" />
+
 # Code signing policy:
 “Free code signing provided by SignPath.io, certificate by SignPath Foundation”
 https://github.com/signpath
