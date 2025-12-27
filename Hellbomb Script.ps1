@@ -2639,7 +2639,7 @@ Function ResetToggleComponentsMenu
 }
 
 Function Show-TestResults {
-    $keyDisplayOrder = @(
+    $keyDisplayOrderWindows = @(
     "GameResolution",
     "RenderResolution",
     "SecureBootEnabled",
@@ -2659,31 +2659,44 @@ Function Show-TestResults {
     "DomainTest",
     "GameMods",
     "BetaBranchActive",
-    "BTAGSDisabled"
+    "BTAGSDisabled",
     "SSDFreeSpace",
     "FreeDiskSpace",
     "USBGameDrive",
     "FasterDriveAvailable"
     )
-    ForEach ( $key in $keyDisplayOrder ) {
-    $test = $script:Tests[$key]
-    If ($test.TestPassed -ne $true) {
-        Invoke-Expression $test.TestFailMsg
-    }
-    Else {
-        # Check if TestPassedMsg exists using Get-Member
-        If ( $test.ContainsKey('TestPassedMsg') ) {
-            Invoke-Expression $test.TestPassedMsg
-        }
-    }
-    If ( $test.ContainsKey('AlwaysDisplayMsg') ) {
-        Invoke-Expression $test.AlwaysDisplayMsg
-    }
-    }
-    # After showing, reset URL tests
-    ForEach ($domain in $script:Tests.DomainTest.DomainList) {
-        $domain.PassedTest = $null
-    }
+	$keyDisplayOrderLinux = @(
+	"GameResolution",
+    "RenderResolution",
+	"DomainTest",
+	"GameMods",
+	"BetaBranchActive"
+	)
+    If ( $script:DetectedOS -eq 'Windows' ) {
+		$keyDisplayOrder = $keyDisplayOrderWindows
+	}
+	If ( $script:DetectedOS -eq 'Linux' ) {
+		$keyDisplayOrder = $keyDisplayOrderLinux
+	}
+	ForEach ( $key in $keyDisplayOrder ) {
+		$test = $script:Tests[$key]
+		If ($test.TestPassed -ne $true) {
+			Invoke-Expression $test.TestFailMsg
+		}
+		Else {
+			# Check if TestPassedMsg exists using Get-Member
+			If ( $test.ContainsKey('TestPassedMsg') ) {
+				Invoke-Expression $test.TestPassedMsg
+			}
+		}
+		If ( $test.ContainsKey('AlwaysDisplayMsg') ) {
+			Invoke-Expression $test.AlwaysDisplayMsg
+		}
+	}
+	# After showing, reset URL tests
+	ForEach ($domain in $script:Tests.DomainTest.DomainList) {
+		$domain.PassedTest = $null
+	}
 }
 Function Get-MostRecentlyUsedSteamProfilePath {
     # Get all immediate subfolders
