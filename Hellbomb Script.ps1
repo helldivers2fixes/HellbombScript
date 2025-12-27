@@ -2371,24 +2371,24 @@ Function Invoke-HD2StatusChecks {
     If ( $script:DetectedOS -eq 'Windows' ){ Show-GameLaunchOptions }
     Test-PendingReboot
     Reset-HostabilityKey
-    Test-Firewall
+    If ( $script:DetectedOS -eq 'Windows' ) { Test-Firewall }
     Test-CRL
     Test-RequiredURLs
     Test-SystemClockAccuracy
-    Find-BlacklistedDrivers
+    If ( $script:DetectedOS -eq 'Windows' ) { Find-BlacklistedDrivers
     Test-BadPrinters
     Test-BTAGService
     Test-VisualC++Redists
-    Test-Programs
+    Test-Programs }
     $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
     If ($script:DetectedOS -eq 'Windows') { $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize }
     Get-SystemUptime
-    Get-HardwareInfo
+    If ($script:DetectedOS -eq 'Windows' ) { Get-HardwareInfo
     Find-CPUInfo
-    Get-SecureBootStatus
+    Get-SecureBootStatus 
     Test-AVX2
     Test-MemoryChannels
-    Get-MemoryPartNumber -Lines $script:HardwareInfoText
+    Get-MemoryPartNumber -Lines $script:HardwareInfoText }
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
