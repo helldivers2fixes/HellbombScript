@@ -1467,15 +1467,33 @@ Function Test-Programs {
     Return
 }
 Function Get-SystemUptime {
-    $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
-    $uptime = ([math]::Round(((Get-Date) - $lastBoot).TotalDays, 0))
-    If ( $uptime -lt 1 ) {
+    If ($script:DetectedOS -eq 'Windows') {
+        # --- Windows logic unchanged ---
+        $lastBoot = (Get-CimInstance -ClassName Win32_OperatingSystem).LastBootUpTime
+        $uptime = [math]::Round(((Get-Date) - $lastBoot).TotalDays, 0)
+    }
+    ElseIf ($script:DetectedOS -eq 'Linux') {
+        Try {
+            $raw = Get-Content -Path "/proc/uptime" -ErrorAction Stop
+            $seconds = [double]($raw.Split(" ")[0])
+            $uptime = [math]::Round(($seconds / 86400), 0)   # convert seconds → days
+        }
+        Catch {
+            Write-Host "Unable to read /proc/uptime" -ForegroundColor Yellow
+            $uptime = $null
+        }
+    }
+    Else {
+        Write-Host "Unsupported OS detected." -ForegroundColor Red
+        Return
+    }
+    If ($uptime -lt 1) {
         $script:Tests.LongSysUptime.TestPassed = $true
     }
     Else {
         $script:Tests.LongSysUptime.SystemUptime = $uptime
         $script:Tests.LongSysUptime.TestPassed = $false
-        }
+    }
 }
 Function Test-SystemClockAccuracy {
     # Define the NTP server
@@ -1581,7 +1599,7 @@ Function Test-CRL {
     Test-ClientDnsConfig
     Return
 }
-Function Test-RequiredURLs {
+Function Test-RequiredURLsWindows {
     Clear-DnsClientCache
     ForEach ($domain in $script:Tests.DomainTest.DomainList) {
         # If not running in ISE or old PowerShell, let's make it pretty
@@ -1606,6 +1624,48 @@ Function Test-RequiredURLs {
     Else {
         $script:Tests.DomainTest.TestPassed = $true
     }
+}
+Function Test-RequiredURLsLinux {
+    # Flush DNS cache if systemd-resolved is present
+    If (Test-Path "/usr/bin/resolvectl") {
+        resolvectl flush-caches 2>$null
+    }
+    Foreach ($domain In $script:Tests.DomainTest.DomainList) {
+        $resolved = $false
+        If (Get-Command dig -ErrorAction SilentlyContinue) {
+            # Check A, AAAA, and CNAME — NOT NS/TXT
+            $a     = dig +short $domain.RequiredDomains A     2>$null
+            $aaaa  = dig +short $domain.RequiredDomains AAAA  2>$null
+            $cname = dig +short $domain.RequiredDomains CNAME 2>$null
+            $resolved = @($a, $aaaa, $cname) |
+                Where-Object { -Not [string]::IsNullOrWhiteSpace($_) } |
+                Measure-Object |
+                Select-Object -ExpandProperty Count
+            $resolved = $resolved -Gt 0
+        }
+        Else {
+            Write-Host "dig is required on Linux for DNS tests" -ForegroundColor Yellow
+            $resolved = $false
+        }
+        If ($resolved) {
+            If ($domain.PassedTest -Ne $false) {
+                $domain.PassedTest = $true
+            }
+        }
+        Else {
+            $domain.PassedTest = $false
+        }
+    }
+    # Final test result
+    If ($script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -Ne $true }) {
+        $script:Tests.DomainTest.TestPassed = $false
+    }
+    Else {
+        $script:Tests.DomainTest.TestPassed = $true
+    }
+}
+Else {
+    Write-Host "DNS test skipped (Linux only)" -ForegroundColor DarkYellow
 }
 Function Test-DnsResolution {
     param (
@@ -1860,30 +1920,32 @@ Function Test-DoubleNAT {
     Pause "$([Environment]::NewLine)Press [SPACEBAR] to continue..."
 }
 Function Switch-BTAGService {
-	If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	Write-Host 'This command requires Administrator privileges.',
-	"$([Environment]::NewLine)To run PowerShell with admin privileges:",
-	"$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
-	"$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
-	} Else {
-		If ((Get-Service -Name BTAGService).Status -eq 'Running') {
-			Set-Service -Name BTAGService -StartupType Disabled
-			Stop-Service -Name BTAGService
-			Start-Sleep -Seconds 1.5
-			Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
-			"is now " -ForegroundColor Cyan
-			Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
-			Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
-		} Else {
-			If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
-				Set-Service -Name BTAGService -StartupType Automatic
-				Set-Service -Name BTAGService -Status Running
-				Start-Sleep -Seconds 1.5
-				Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
-				"is now " -ForegroundColor Cyan
-				Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
-			}
-		}
+If ($script:DetectedOS -eq 'Windows') {
+		If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	    Write-Host 'This command requires Administrator privileges.',
+	    "$([Environment]::NewLine)To run PowerShell with admin privileges:",
+	    "$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
+	    "$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
+	    } Else {
+	        If ((Get-Service -Name BTAGService).Status -eq 'Running') {
+	            Set-Service -Name BTAGService -StartupType Disabled
+	            Stop-Service -Name BTAGService
+	            Start-Sleep -Seconds 1.5
+	            Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+	            "is now " -ForegroundColor Cyan
+	            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
+	            Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
+	        } Else {
+	            If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
+	                Set-Service -Name BTAGService -StartupType Automatic
+	                Set-Service -Name BTAGService -Status Running
+	                Start-Sleep -Seconds 1.5
+	                Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+	                "is now " -ForegroundColor Cyan
+	                Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
+	            }
+	        }
+	    }
 	}
 }
 Function Test-VisualC++Redists {
@@ -1930,56 +1992,129 @@ Function Test-PendingReboot {
     $script:Tests.PendingReboot.RebootRequired = [bool]($script:Tests.PendingReboot.keys | Where-Object { Test-Path $_ })
     $script:Tests.PendingReboot.TestPassed = -not $script:Tests.PendingReboot.RebootRequired
 }
-Function Test-SSDFreeSpace
-{
-    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
-	$GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
-    $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
-    $script:Tests.SSDFreeSpace.TestPassed = (($GameVolumeFreeSpace -ge 25 -and $GamePhysicalDisk.MediaType -eq 'SSD') -or ($GamePhysicalDisk.MediaType -ne 'SSD'))
-}
-Function Test-FreeDiskSpace
-{
-    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
-    $script:Tests.FreeDiskSpace.TestPassed = ($GameVolume.SizeRemaining -gt 150GB)
-}
-Function Test-USBGameDrive
-{
-    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
-    $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
-    $script:Tests.USBGameDrive.TestPassed = ($GamePhysicalDisk -eq $null -or $GamePhysicalDisk.BusType -ne "USB")
-}
-Function Test-FasterDriveAvailable
-{
-    $script:Tests.FasterDriveAvailable.fasterDrives = @()
-    $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
-    $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
-    $GameDiskScore = Get-DiskScore $GamePhysicalDisk
+Function Test-SSDFreeSpace {
 
-    foreach ($systemDisk in Get-PhysicalDisk | Where-Object { $_.UniqueId -ne $GamePhysicalDisk.UniqueId })
-    {
-        $score = Get-DiskScore $systemDisk
-        if ($score -gt $GameDiskScore)
-        {
-            $script:Tests.FasterDriveAvailable.fasterDrives += $systemDisk
+    If ($script:DetectedOS -eq 'Windows') {
+        $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+        $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
+        $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
+        $isSSD = ($GamePhysicalDisk.MediaType -eq 'SSD')
+    }
+
+    ElseIf ($script:DetectedOS -eq 'Linux') {
+        # Determine mount point
+        $mount = ((df -P "$script:AppInstallPath" | Select-Object -Skip 1) -split '\s+')[5]
+
+        # Free space %
+        $df = df -B1 "$mount" | Select-Object -Skip 1
+        $parts = $df -split "\s+"
+        $size = [double]$parts[1]
+        $free = [double]$parts[3]
+        $GameVolumeFreeSpace = ($free / $size) * 100
+
+        # Determine SSD/HDD via rotational flag
+        $device = (df "$mount" | Select-Object -Skip 1).Split()[0] -replace "^/dev/", ""
+
+        # Strip partition suffix (nvme0n1p2 → nvme0n1, sda1 → sda)
+        $parentDevice = $device -replace "(p?\d+)$", ""
+
+        $rotFile = "/sys/block/$parentDevice/queue/rotational"
+
+        $isSSD = (Test-Path $rotFile -and (Get-Content $rotFile) -eq "0")
+    }
+    $script:Tests.SSDFreeSpace.TestPassed =
+        (($GameVolumeFreeSpace -ge 25 -and $isSSD) -or (-not $isSSD))
+}
+Function Test-FreeDiskSpace {
+
+    If ($script:DetectedOS -eq 'Windows') {
+        $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+        $free = $GameVolume.SizeRemaining
+    }
+
+    ElseIf ($script:DetectedOS -eq 'Linux') {
+        $mount = ((df -P "$script:AppInstallPath" | Select-Object -Skip 1) -split '\s+')[5]
+        $df = df -B1 "$mount" | Select-Object -Skip 1
+        $parts = $df -split "\s+"
+        $free = [double]$parts[3]
+    }
+    $script:Tests.FreeDiskSpace.TestPassed = ($free -gt 150GB)
+}
+Function Test-USBGameDrive {
+    If ($script:DetectedOS -eq 'Windows') {
+        $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
+        $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
+        $isUSB = ($GamePhysicalDisk -and $GamePhysicalDisk.BusType -eq "USB")
+    }
+
+    ElseIf ($script:DetectedOS -eq 'Linux') {
+        $mount = (df -P "$script:AppInstallPath" | Select-Object -Skip 1).Split()[5]
+        $device = (df "$mount" | Select-Object -Skip 1).Split()[0] -replace "^/dev/", ""
+        # Check bus type via sysfs
+        $busPath = "/sys/block/$device/device"
+        $isUSB = (Test-Path "$busPath/usb")
+    }
+    $script:Tests.USBGameDrive.TestPassed = (-not $isUSB)
+}
+
+Function Test-FasterDriveAvailable {
+
+    $script:Tests.FasterDriveAvailable.fasterDrives = @()
+
+    if ($script:DetectedOS -eq 'Windows') {
+        $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
+        $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
+        $GameDiskScore = Get-DiskScore $GamePhysicalDisk
+
+        foreach ($systemDisk in Get-PhysicalDisk | Where-Object { $_.UniqueId -ne $GamePhysicalDisk.UniqueId }) {
+            $score = Get-DiskScore $systemDisk
+            if ($score -gt $GameDiskScore) {
+                $script:Tests.FasterDriveAvailable.fasterDrives += $systemDisk
+            }
         }
     }
 
-    if($script:Tests.FasterDriveAvailable.fasterDrives.Count -gt 0)
-    {
-        $script:Tests.FasterDriveAvailable.TestPassed = $false
+    elseif ($script:DetectedOS -eq 'Linux') {
+
+        function Get-LinuxDiskScore($dev) {
+            $rot = Get-Content "/sys/block/$dev/queue/rotational"
+            $isSSD = ($rot -eq "0")
+
+            $isNVMe = ($dev -like "nvme*")
+
+            # Score: NVMe > SSD > HDD
+            if ($isNVMe) { return 3 }
+            elseif ($isSSD) { return 2 }
+            else { return 1 }
+        }
+
+        # Determine game device
+        $mount = (df -P "$script:AppInstallPath" | Select-Object -Skip 1).Split()[5]
+        $gameDev = (df "$mount" | Select-Object -Skip 1).Split()[0] -replace "^/dev/", ""
+
+        $GameDiskScore = Get-LinuxDiskScore $gameDev
+
+        foreach ($dev in Get-ChildItem /sys/block | Select-Object -Expand Name) {
+            if ($dev -eq $gameDev) { continue }
+
+            $score = Get-LinuxDiskScore $dev
+            if ($score -gt $GameDiskScore) {
+                $script:Tests.FasterDriveAvailable.fasterDrives += $dev
+            }
+        }
     }
-    Else
-    {
-        $script:Tests.FasterDriveAvailable.TestPassed = $true
-    }
+
+    $script:Tests.FasterDriveAvailable.TestPassed =
+        ($script:Tests.FasterDriveAvailable.fasterDrives.Count -eq 0)
 }
+
 Function Test-BetaBranch
 {
     $pattern = '(?s)"UserConfig"\s*\{.*?"BetaKey"\s*"([^"]+)"'
     $GameData = Get-Content -Path $script:AppManifestPath -Raw
 
     $script:Tests.BetaBranchActive.TestPassed = $true
-    if($GameData -match $pattern)
+    If($GameData -match $pattern)
     {
         $script:Tests.BetaBranchActive.TestPassed = $false
         $script:Tests.BetaBranchActive.selectedBranch = $Matches[1]
@@ -1989,24 +2124,24 @@ Function Get-DiskScore($disk)
 {
     $score = 0
 
-    switch ($disk.BusType)
+    Switch ($disk.BusType)
     {
         "NVMe"  { $score += 2 }
         "SATA"  { $score += 1 }
         default { $score += 0 }
     }
 
-    if ($disk.MediaType -eq "SSD") { $score += 1 }
-    return $score
+    If ($disk.MediaType -eq "SSD") { $score += 1 }
+    Return $score
 }
 Function Convert-Size($bytes) {
     $units = "B","KB","MB","GB","TB"
     $i = 0
-    while ($bytes -ge 1024 -and $i -lt $units.Length - 1) {
+    While ($bytes -ge 1024 -and $i -lt $units.Length - 1) {
         $bytes /= 1024
         $i++
     }
-    return ("{0:N2} {1}" -f $bytes, $units[$i])
+    Return ("{0:N2} {1}" -f $bytes, $units[$i])
 }
 Function Reset-HD2SteamCloud {
     Clear-Host
@@ -2449,21 +2584,23 @@ Function Invoke-HD2StatusChecks {
     If ( $script:DetectedOS -eq 'Windows' ){ Show-WindowsPowerPlan }
     If ( $script:DetectedOS -eq 'Linux' ) { Show-LinuxPowerPlan }
     Show-ISPInfo
-    If ( $script:DetectedOS -eq 'Windows' ){ Show-GameLaunchOptions }
+    If ( $script:DetectedOS -eq 'Windows' ){ Show-GameLaunchOptions
     Test-PendingReboot
     Reset-HostabilityKey
-    If ( $script:DetectedOS -eq 'Windows' ) { Test-Firewall }
+    Test-Firewall
     Test-CRL
-    Test-RequiredURLs
+    Test-RequiredURLsWindows }
+    If ( $script:DetectedOS -eq 'Linux' ) { Test-RequiredURLsLinux }
+    If ( $script:DetectedOS -eq 'Windows' ){
     Test-SystemClockAccuracy
-    If ( $script:DetectedOS -eq 'Windows' ) { Find-BlacklistedDrivers
+    Find-BlacklistedDrivers
     Test-BadPrinters
     Test-BTAGService
     Test-VisualC++Redists
-    Test-Programs }
-    $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver
-    If ($script:DetectedOS -eq 'Windows') { $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize }
-    Get-SystemUptime
+    Test-Programs
+    $script:Tests.NoVegaGPUs.TestPassed = Test-VegaGPUDriver }
+    If ($script:DetectedOS -eq 'Windows') { $script:Tests.PageFileEnabled.TestPassed = Get-PageFileSize
+    Get-SystemUptime}
     If ($script:DetectedOS -eq 'Windows' ) { Get-HardwareInfo
     Find-CPUInfo
     Get-SecureBootStatus
@@ -2473,10 +2610,10 @@ Function Invoke-HD2StatusChecks {
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
-    Test-SSDFreeSpace
-    Test-FreeDiskSpace
-    Test-USBGameDrive
-    Test-FasterDriveAvailable
+    If ( $script:DetectedOS -eq 'Windows' ){ Test-SSDFreeSpace }
+    If ( $script:DetectedOS -eq 'Windows' ){ Test-FreeDiskSpace }
+    If ( $script:DetectedOS -eq 'Windows' ){ Test-USBGameDrive }
+    If ( $script:DetectedOS -eq 'Windows' ){ Test-FasterDriveAvailable }
     Test-BetaBranch
     Show-TestResults
     Write-Host "`n--- Paused ---"
@@ -2785,10 +2922,10 @@ Function Get-MostRecentlyUsedSteamProfilePath {
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
-$script:AppIDFound = $false
-$LineOfInstallDir = 8
-$LineOfBuildID = 13
 If ($script:DetectedOS -eq 'Windows') {
+    $script:AppIDFound = $false
+    $LineOfInstallDir = 8
+    $LineOfBuildID = 13
     Try {
     $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
     }
@@ -2811,38 +2948,49 @@ If ($script:DetectedOS -eq 'Linux') {
     $script:SteamPath = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
     }
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
-$LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
-# Read each line of the Steam library.vdf file
-# Save a library path, then scan that library for $AppID
-# If AppID is found, return current library path
-ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
-    If ($line -like '*path*') {
-        $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-        Write-Host $script:AppInstallPath
-        $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
-    }
-    If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
+    If ( $script:DetectedOS -eq 'Linux' ) {
+        $LineOfBuildID = 20
+        $AppID = $script:AppID
         $script:AppIDFound = $true
-        # Since we found the App location, let's get some data about it
-        Try {
-                $script:AppManifestPath = "$script:AppInstallPath\steamapps\appmanifest_$AppID.acf"
-                $GameData = Get-Content -Path $script:AppManifestPath
-                }
-        Catch {
-                Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
-                Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
-                Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
-                Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
-                $script:AppInstallPath = $false
+        $script:AppInstallPath = Join-Path $SteamPath -ChildPath 'steamapps/common/Helldivers 2'
+        $script:AppManifestPath = Join-Path $SteamPath "\steamapps\appmanifest_$AppID.acf"
+        $GameData = Get-Content -Path $script:AppManifestPath
+        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
+    }
+    If ( $script:DetectedOS -eq 'Windows' ) {
+        $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
+        # Read each line of the Steam library.vdf file
+        # Save a library path, then scan that library for $AppID
+        # If AppID is found, return current library path
+        ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
+            If ($line -like '*path*') {
+                $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
+                Write-Host $script:AppInstallPath
+                $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
+            }
+            If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
+                $script:AppIDFound = $true
+                # Since we found the App location, let's get some data about it
+                Try {
+                        $script:AppManifestPath = "$script:AppInstallPath\steamapps\appmanifest_$AppID.acf"
+                        $GameData = Get-Content -Path $script:AppManifestPath
+                        }
+                Catch {
+                        Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
+                        Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
+                        Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
+                        Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
+                        $script:AppInstallPath = $false
+                        Break
+                    }
+                $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
+                $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
+                # Update the AppInstallPath with the FULL path
+                $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
                 Break
             }
-        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
-        $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
-        # Update the AppInstallPath with the FULL path
-        $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
-        Break
+        }
     }
-}
 Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
