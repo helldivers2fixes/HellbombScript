@@ -2475,22 +2475,33 @@ Function Restart-Resume {
 }
 Function Get-MenuTitle {
     $IsAdmin = $false
-	If ($script:DetectedOS -eq 'Windows') {
-		$IsAdmin = ([Security.Principal.WindowsPrincipal] ` [Security.Principal.WindowsIdentity]::GetCurrent() ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-	}
-	If ($script:DetectedOS -eq 'Linux') {
-		$IsAdmin = (id -u) -eq 0
+    If ($script:DetectedOS -eq 'Windows') {
+        $IsAdmin = ([Security.Principal.WindowsPrincipal] `
+            [Security.Principal.WindowsIdentity]::GetCurrent()
+        ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     }
+    If ($script:DetectedOS -eq 'Linux') {
+        $IsAdmin = (id -u) -eq 0
+    }
+
     $AdminBanner = If (-Not $IsAdmin) {
 @"
 ⚠️⚠️⚠️ WARNING: Script is NOT running with Administrator privileges! ⚠️⚠️⚠️
         >>> SOME TESTS WILL FAIL OR PRODUCE INCORRECT RESULTS. <<<
 "@
     } Else { "" }
+
+    # Linux early‑alpha warning
+    $LinuxWarning = ""
+    If ($script:DetectedOS -eq 'Linux') {
+        $LinuxWarning = "⚠️⚠️⚠️ Linux support is in Aplha — many features are missing & behavior may be unstable. Pull Requests welcome!"
+    }
+
     $Title = @(
         "-------------------------------------------------------------------------------------------------------",
         "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.0",
         "-------------------------------------------------------------------------------------------------------",
+        $LinuxWarning,
         $AdminBanner
     ) -join "`n"
 
