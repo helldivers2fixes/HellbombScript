@@ -1860,32 +1860,30 @@ Function Test-DoubleNAT {
     Pause "$([Environment]::NewLine)Press [SPACEBAR] to continue..."
 }
 Function Switch-BTAGService {
-If ($script:DetectedOS -eq 'Windows') {
-		If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-	    Write-Host 'This command requires Administrator privileges.',
-	    "$([Environment]::NewLine)To run PowerShell with admin privileges:",
-	    "$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
-	    "$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
-	    } Else {
-	        If ((Get-Service -Name BTAGService).Status -eq 'Running') {
-	            Set-Service -Name BTAGService -StartupType Disabled
-	            Stop-Service -Name BTAGService
-	            Start-Sleep -Seconds 1.5
-	            Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
-	            "is now " -ForegroundColor Cyan
-	            Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
-	            Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
-	        } Else {
-	            If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
-	                Set-Service -Name BTAGService -StartupType Automatic
-	                Set-Service -Name BTAGService -Status Running
-	                Start-Sleep -Seconds 1.5
-	                Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
-	                "is now " -ForegroundColor Cyan
-	                Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
-	            }
-	        }
-	    }
+	If (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+	Write-Host 'This command requires Administrator privileges.',
+	"$([Environment]::NewLine)To run PowerShell with admin privileges:",
+	"$([Environment]::NewLine)    Right-click on PowerShell and click Run as Administrator",
+	"$([Environment]::NewLine)    Then run the script again.$([Environment]::NewLine)" -ForegroundColor Cyan
+	} Else {
+		If ((Get-Service -Name BTAGService).Status -eq 'Running') {
+			Set-Service -Name BTAGService -StartupType Disabled
+			Stop-Service -Name BTAGService
+			Start-Sleep -Seconds 1.5
+			Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+			"is now " -ForegroundColor Cyan
+			Write-Host (Get-Service -Name BTAGService).Status -ForegroundColor Yellow
+			Write-Host 'Please disconnect and re-connect your Bluetooth device.'$([Environment]::NewLine) -ForegroundColor Cyan
+		} Else {
+			If ((Get-Service -Name BTAGService).Status -eq 'Stopped') {
+				Set-Service -Name BTAGService -StartupType Automatic
+				Set-Service -Name BTAGService -Status Running
+				Start-Sleep -Seconds 1.5
+				Write-Host "$([Environment]::NewLine)Bluetooth Audio Gateway Service",
+				"is now " -ForegroundColor Cyan
+				Write-Host (Get-Service -Name BTAGService).Status$([Environment]::NewLine) -ForegroundColor Green
+			}
+		}
 	}
 }
 Function Test-VisualC++Redists {
