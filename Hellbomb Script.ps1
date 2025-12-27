@@ -27,11 +27,54 @@ Function Initialize-OSDetection {
     $script:DetectedOS = "Unknown"
 }
 Initialize-OSDetection
+Function Get-HD2ConfigPath {
+    Param([switch]$All)
+    $appId = 553850
+    $targetRel = "drive_c/users/steamuser/AppData/Roaming/Arrowhead/Helldivers2"
+    $paths = @()
 
+    If ($script:DetectedOS -eq 'Windows') {
+        $path = Join-Path $env:APPDATA "Arrowhead\Helldivers2"
+        If (Test-Path $path) { $paths += (Get-Item $path).FullName }
+    }
+    ElseIf ($script:DetectedOS -eq 'Linux') {
+        $defaultPrefix = "$HOME/.steam/steam/steamapps/compatdata/$appId/pfx/$targetRel"
+        If (Test-Path $defaultPrefix) {
+            $paths += (Resolve-Path -LiteralPath $defaultPrefix).ProviderPath
+        }
+
+        $libFile = "$HOME/.steam/steam/steamapps/libraryfolders.vdf"
+        If (Test-Path $libFile) {
+            $libraries = Select-String -Path $libFile -Pattern 'path"\s*"(.+)"' |
+                ForEach-Object { $_.Matches.Groups[1].Value }
+            Foreach ($lib in $libraries) {
+                $candidate = Join-Path $lib "steamapps/compatdata/$appId/pfx/$targetRel"
+                If (Test-Path $candidate) {
+                    $resolved = Resolve-Path -LiteralPath $candidate
+                    $paths += $resolved.ProviderPath
+                }
+            }
+        }
+    }
+    Else {
+        Write-Host "Unsupported OS detected." -ForegroundColor Red
+        Return $null
+    }
+    $uniquePaths = $paths | Sort-Object -Unique
+    If ($All) { Return $uniquePaths }
+    ElseIf ($uniquePaths.Count -gt 0) { Return $uniquePaths[0] }
+    Else { Return $null }
+}
 $script:SystemInfo = @{
 	"GPUInfo" = @()
 }
-$script:HellbombScriptDirectory = Join-Path ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -ChildPath "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
+If ( $script:DetectedOS -eq 'Windows') {
+    $downloadsPath = (New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path
+}
+If ( $script:DetectedOS -eq 'Linux' ) {
+    $downloadsPath = Join-Path $HOME "Downloads"
+}
+$script:HellbombScriptDirectory = Join-Path $downloadsPath -ChildPath "HellbombScript-2281e8aa-e61f-446d-93d0-49182b519490"
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
@@ -485,51 +528,30 @@ Function Reset-GameGuard {
     Return
 }
 Function Remove-HD2AppData {
-    $appId = 553850
-    $targetRel = "drive_c/users/steamuser/AppData/Roaming/Arrowhead/Helldivers2"
-    $paths = @()
-    Switch ($script:DetectedOS) {
-        'Windows' {
-            $path = Join-Path $env:APPDATA "Arrowhead\Helldivers2"
-            If (Test-Path $path) { $paths += $path }
-        }
-        'Linux' {
-            # Default Steam prefix
-            $defaultPrefix = "$HOME/.steam/steam/steamapps/compatdata/$appId/pfx/$targetRel"
-            If (Test-Path $defaultPrefix) { $paths += $defaultPrefix }
-
-            # Parse libraryfolders.vdf for multiple drives
-            $libFile = "$HOME/.steam/steam/steamapps/libraryfolders.vdf"
-            If (Test-Path $libFile) {
-                $libraries = Select-String -Path $libFile -Pattern 'path"\s*"(.+)"' | ForEach-Object {
-                    $_.Matches.Groups[1].Value
-                }
-                Foreach ($lib in $libraries) {
-                    $candidate = Join-Path $lib "steamapps/compatdata/$appId/pfx/$targetRel"
-                    If (Test-Path $candidate) {
-                        $paths += $candidate
-                    }
-                }
-            }
-        }
-        Default { 
-            Write-Host "Unsupported OS detected." -ForegroundColor Red
-            Return
-        }
-    }
+    $paths = Get-HD2ConfigPath -All
     If ($paths.Count -gt 1) {
-        Write-Host "Warning: Multiple Helldivers 2 installations detected!" -ForegroundColor Yellow
+        Write-Host "Warning: Multiple Helldivers 2 config folders detected. This can be normal on a Linux-based OS" -ForegroundColor Yellow
     }
     If ($paths.Count -gt 0) {
+        $oldPref = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
         Foreach ($path in $paths) {
+            If (-Not (Test-Path -LiteralPath $path)) {
+                Write-Host "Path not found: $path" -ForegroundColor Yellow
+                Continue
+            }
+            Write-Host "Clearing: $path" -ForegroundColor Cyan
             Try {
-                Remove-Item -Path "$path/*" -Recurse -Force
+                Get-ChildItem -LiteralPath $path -Force -Recurse |
+                    Remove-Item -Force -Recurse
                 Write-Host "Cleared: $path" -ForegroundColor Green
             }
             Catch {
-                Write-Host "Error occurred deleting contents of $path" -ForegroundColor Red
+                Write-Host "Error deleting contents of $path" -ForegroundColor Red
+                Write-Host $_.Exception.Message -ForegroundColor DarkRed
             }
         }
+        $ProgressPreference = $oldPref
         Write-Host "Now please use Steam's " -NoNewLine -ForegroundColor Cyan
         Write-Host 'Verify Integrity of Game Files ' -NoNewLine
         Write-Host 'function.' -ForegroundColor Cyan
@@ -537,8 +559,7 @@ Function Remove-HD2AppData {
     Else {
         Write-Host "Helldivers 2 AppData path not found." -ForegroundColor Yellow
     }
-    Pause 'Press [SPACEBAR] to continue...'
-    MainMenu
+    Return
 }
 Function Get-IsProcessRunning {
     [CmdletBinding()]
@@ -2099,7 +2120,13 @@ Function Switch-FullScreenOptimizations
         Return Write-Host "$([Environment]::NewLine)Fullscreen optimizations disabled for $exePath. This is probably the desired setting." -ForegroundColor Green
 }
 Function Reset-HostabilityKey {
-    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
+    $basePath = Get-HD2ConfigPath
+    If (-not $basePath) {
+        Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
+        Write-Host 'Helldivers 2 config folder not found.' -ForegroundColor Cyan
+        Return
+    }
+    $configPath = Join-Path $basePath "user_settings.config"
     Try { $OriginalHash = Get-FileHash -Path $configPath -Algorithm SHA256}
     Catch {
         Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
@@ -2118,11 +2145,13 @@ Function Reset-HostabilityKey {
     }
 }
 Function Get-VSyncConfig {
-    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
+    $basePath = Get-HD2ConfigPath
+    If (-not $basePath) { Return }
+    $configPath = Join-Path $basePath "user_settings.config"
     Try {
             If ( Select-String $configPath -Pattern "vsync = false" -Quiet ) {
                 $script:Tests.VSyncDisabled.TestPassed = $true
-                }
+            }
             Else {
                 $script:Tests.VSyncDisabled.TestPassed = $false
             }
@@ -2132,25 +2161,35 @@ Function Get-VSyncConfig {
     }
 }
 Function Get-GameResolution {
-    $configPath = "$env:APPDATA\Arrowhead\Helldivers2\user_settings.config"
-    $lines = Get-Content $configPath
-    Try {
-    $screen = Get-ConfigResolutionBlock -SettingName 'screen_resolution' -Lines $lines
-    $render = Get-ConfigResolutionBlock -SettingName 'render_resolution' -Lines $lines
-    If ($screen) {
-        $script:Tests.GameResolution.WidthValue = $screen.Width
-        $script:Tests.GameResolution.HeightValue = $screen.Height
-        $script:Tests.GameResolution.TestPassed = $true
-    } Else {
+    $basePath = Get-HD2ConfigPath
+    If (-not $basePath) {
         $script:Tests.GameResolution.TestPassed = $false
-    }
-    If ($render) {
-        $script:Tests.RenderResolution.WidthValue = $render.Width
-        $script:Tests.RenderResolution.HeightValue = $render.Height
-        $script:Tests.RenderResolution.TestPassed = $true
-    } Else {
         $script:Tests.RenderResolution.TestPassed = $false
+        Return
     }
+
+    $configPath = Join-Path $basePath "user_settings.config"
+
+    Try {
+        $lines = Get-Content $configPath
+        $screen = Get-ConfigResolutionBlock -SettingName 'screen_resolution' -Lines $lines
+        $render = Get-ConfigResolutionBlock -SettingName 'render_resolution' -Lines $lines
+
+        If ($screen) {
+            $script:Tests.GameResolution.WidthValue = $screen.Width
+            $script:Tests.GameResolution.HeightValue = $screen.Height
+            $script:Tests.GameResolution.TestPassed = $true
+        } Else {
+            $script:Tests.GameResolution.TestPassed = $false
+        }
+
+        If ($render) {
+            $script:Tests.RenderResolution.WidthValue = $render.Width
+            $script:Tests.RenderResolution.HeightValue = $render.Height
+            $script:Tests.RenderResolution.TestPassed = $true
+        } Else {
+            $script:Tests.RenderResolution.TestPassed = $false
+        }
     } Catch {
         $script:Tests.GameResolution.TestPassed = $false
         $script:Tests.RenderResolution.TestPassed = $false
@@ -2223,8 +2262,15 @@ Function Remove-AllMods {
 }
 Function Reset-ShaderCaches {
     # Clear HD2 shader cache
-    Remove-Item (Join-Path (Join-Path $env:APPDATA 'Arrowhead\Helldivers2\shader_cache') '*') -Recurse -ErrorAction SilentlyContinue
-    Write-Host "HD2 shader cache cleared successfully!" -ForegroundColor Green
+    $basePath = Get-HD2ConfigPath
+
+    If ($basePath) {
+        $shaderCachePath = Join-Path $basePath "shader_cache"
+        Remove-Item (Join-Path $shaderCachePath '*') -Recurse -ErrorAction SilentlyContinue
+        Write-Host "HD2 shader cache cleared successfully!" -ForegroundColor Green
+    } Else {
+        Write-Host "HD2 configuration folder not found. Skipping HD2 shader clear." -ForegroundColor Yellow
+    }
     Write-Host 'Would you like to clear the Windows DX Shader Cache? (Y/N)' -ForegroundColor Yellow
     $response = Read-Host
     If ($response -match '^[Yy]$') {
@@ -2308,7 +2354,6 @@ Function Get-MenuTitle {
         >>> SOME TESTS WILL FAIL OR PRODUCE INCORRECT RESULTS. <<<
 "@
     } Else { "" }
-
     $Title = @(
         "-------------------------------------------------------------------------------------------------------",
         "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.0",
@@ -2318,7 +2363,6 @@ Function Get-MenuTitle {
 
     Return $Title
 }
-
 Function Show-ArrowMenu
 {
     Param(
@@ -2378,11 +2422,9 @@ Function Show-ArrowMenu
                 }
             }
         }
-
         #Clear previous highlight
         $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $oldIndex)
         Write-Host $Options[$oldIndex] -NoNewLine
-
         #Set new highlight
         $Host.UI.RawUI.CursorPosition = [System.Management.Automation.Host.Coordinates]::new(0, $menuStartPosition.Y + $selectedIndex)
         Write-Host $Options[$selectedIndex] -ForegroundColor Cyan -NoNewLine
@@ -2390,19 +2432,16 @@ Function Show-ArrowMenu
 
     } While ($true)
 }
-
 Function RunAndPause
 {
     Param(
         [scriptblock]$ScriptBlock
     )
-
     & $ScriptBlock
     Write-Host "`n--- Paused ---"
     Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
     Pause
 }
-
 Function Invoke-HD2StatusChecks {
     Show-Variables
     Show-MotherboardInfo
@@ -2429,7 +2468,7 @@ Function Invoke-HD2StatusChecks {
     Get-SystemUptime
     If ($script:DetectedOS -eq 'Windows' ) { Get-HardwareInfo
     Find-CPUInfo
-    Get-SecureBootStatus 
+    Get-SecureBootStatus
     Test-AVX2
     Test-MemoryChannels
     Get-MemoryPartNumber -Lines $script:HardwareInfoText }
@@ -2455,14 +2494,12 @@ Function Create-Menu
         [Parameter(Mandatory)]
         [array]$MenuItems
     )
-
 	# Filter Menu Items by $script:DetectedOS ('Windows' or 'Linux')
 	$MenuItems = $MenuItems | Where-Object {
 	    -not $_.ContainsKey("OS") -or
 	    $_.OS -eq "Any" -or
 	    $_.OS -eq $script:DetectedOS
 	}
-
     $options = $MenuItems.Label
     $actions = @{}
     $hotkeys = @{}
@@ -2474,7 +2511,6 @@ Function Create-Menu
         }
         $actions[$i] = $MenuItems[$i].Action
     }
-
     do {
         $choice = Show-ArrowMenu -Title $Title -Options $options -Hotkeys $hotkeys
 
@@ -2487,10 +2523,8 @@ Function Create-Menu
         & $action
     } while ($true)
 }
-
 Function MainMenu
 {
-
     $menu = @(
         @{ Label="🔍 |H|D2 Status Checks";      Hotkey="H"; Action={ Invoke-HD2StatusChecks } }
         @{ Label="🧹 |C|lear Data Options >";   Hotkey="C"; Action={ ClearDataMenu } }
@@ -2503,10 +2537,8 @@ Function MainMenu
 
     Create-Menu -Title "" -MenuItems $menu
 }
-
 Function ClearDataMenu
 {
-
     $menu = @(
         @{
             Label  = "🧹 |C|lear Settings (AppData)"
@@ -2550,13 +2582,11 @@ Function ClearDataMenu
 			OS = 'Any'
         }
     )
-
     Create-Menu -Title "🧹 Clear Data Options" -MenuItems $menu
 }
 
 Function GraphicsMenu
 {
-
     $menu = @(
         @{
             Label  = "🛠️  Select Correct G|P|U"
@@ -2582,10 +2612,8 @@ Function GraphicsMenu
 
     Create-Menu -Title "🛠️ Graphics Options" -MenuItems $menu
 }
-
 Function NetworkMenu
 {
-
     $menu = @(
         @{
             Label  = "🛜 |W|i-Fi LAN Test"
@@ -2610,10 +2638,8 @@ Function NetworkMenu
 
     Create-Menu -Title "🛜 Network Options" -MenuItems $menu
 }
-
 Function AudioMenu
 {
-
     $menu = @(
         @{
             Label  = "🔈 |B|luetooth Telephony Service"
@@ -2632,7 +2658,6 @@ Function AudioMenu
 
     Create-Menu -Title "🔊 Audio Options" -MenuItems $menu
 }
-
 Function ResetToggleComponentsMenu
 {
     $menu = @(
@@ -2681,7 +2706,6 @@ Function ResetToggleComponentsMenu
 
     Create-Menu -Title "🔊 Reset/Toggle Components" -MenuItems $menu
 }
-
 Function Show-TestResults {
     $keyDisplayOrderWindows = @(
     "GameResolution",
@@ -2834,7 +2858,6 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 $script:InstalledProgramsList = Get-InstalledPrograms
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
-
 Try
 {
     MainMenu
