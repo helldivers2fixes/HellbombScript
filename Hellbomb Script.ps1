@@ -487,14 +487,18 @@ Function Reset-GameGuard {
 Function Remove-HD2AppData {
     $appId = 553850
     $targetRel = "drive_c/users/steamuser/AppData/Roaming/Arrowhead/Helldivers2"
+    $paths = @()
     Switch ($script:DetectedOS) {
-        'Windows' { $path = Join-Path $env:APPDATA "Arrowhead\Helldivers2" }
+        'Windows' {
+            $path = Join-Path $env:APPDATA "Arrowhead\Helldivers2"
+            If (Test-Path $path) { $paths += $path }
+        }
         'Linux' {
             # Default Steam prefix
             $defaultPrefix = "$HOME/.steam/steam/steamapps/compatdata/$appId/pfx/$targetRel"
-            $path = $defaultPrefix
+            If (Test-Path $defaultPrefix) { $paths += $defaultPrefix }
 
-            # Optional: parse libraryfolders.vdf for multiple drives
+            # Parse libraryfolders.vdf for multiple drives
             $libFile = "$HOME/.steam/steam/steamapps/libraryfolders.vdf"
             If (Test-Path $libFile) {
                 $libraries = Select-String -Path $libFile -Pattern 'path"\s*"(.+)"' | ForEach-Object {
@@ -503,33 +507,37 @@ Function Remove-HD2AppData {
                 Foreach ($lib in $libraries) {
                     $candidate = Join-Path $lib "steamapps/compatdata/$appId/pfx/$targetRel"
                     If (Test-Path $candidate) {
-                        $path = $candidate
-                        Break
+                        $paths += $candidate
                     }
                 }
             }
         }
-        Default {
+        Default { 
             Write-Host "Unsupported OS detected." -ForegroundColor Red
             Return
         }
     }
-    If (Test-Path $path) {
-        Try {
-            Remove-Item -Path "$path/*" -Recurse -Force
-            Write-Host "Helldivers 2 AppData has been cleared successfully!" -ForegroundColor Green
-            Write-Host "Now please use Steam's " -NoNewLine -ForegroundColor Cyan
-            Write-Host 'Verify Integrity of Game Files ' -NoNewLine
-            Write-Host 'function.' -ForegroundColor Cyan
+    If ($paths.Count -gt 1) {
+        Write-Host "Warning: Multiple Helldivers 2 installations detected!" -ForegroundColor Yellow
+    }
+    If ($paths.Count -gt 0) {
+        Foreach ($path in $paths) {
+            Try {
+                Remove-Item -Path "$path/*" -Recurse -Force
+                Write-Host "Cleared: $path" -ForegroundColor Green
+            }
+            Catch {
+                Write-Host "Error occurred deleting contents of $path" -ForegroundColor Red
+            }
         }
-        Catch {
-            Write-Host "Error occurred deleting contents of $path" -ForegroundColor Red
-        }
+        Write-Host "Now please use Steam's " -NoNewLine -ForegroundColor Cyan
+        Write-Host 'Verify Integrity of Game Files ' -NoNewLine
+        Write-Host 'function.' -ForegroundColor Cyan
     }
     Else {
-        Write-Host "Helldivers 2 AppData path not found: $path" -ForegroundColor Yellow
+        Write-Host "Helldivers 2 AppData path not found." -ForegroundColor Yellow
     }
-    Pause 'Press [SPACEBAR] to continue.'
+    Pause 'Press [SPACEBAR] to continue...'
     MainMenu
 }
 Function Get-IsProcessRunning {
@@ -2835,4 +2843,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
