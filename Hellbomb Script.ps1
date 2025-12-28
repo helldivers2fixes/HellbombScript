@@ -2933,8 +2933,8 @@ Function Get-MostRecentlyUsedSteamProfilePath {
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
+$script:AppIDFound = $false
 If ($script:DetectedOS -eq 'Windows') {
-    $script:AppIDFound = $false
     $LineOfInstallDir = 8
     $LineOfBuildID = 13
     Try {
