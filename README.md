@@ -79,7 +79,7 @@ Copy and paste the script manually per instructions below.
  7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
  8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## This program uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
+## The Windows version uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
 <img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="200">
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
