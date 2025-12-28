@@ -2795,7 +2795,14 @@ Function AudioMenu
             Label  = "⬅️ Back"
             Hotkey = ""
             Action = $null
-			OS = 'Any'
+			OS = 'Windows'
+        }
+		
+		@{
+            Label  = "⬅️ Back"
+            Hotkey = "B"
+            Action = $null
+			OS = 'Linux'
         }
     )
 
