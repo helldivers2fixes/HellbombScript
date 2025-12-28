@@ -57,7 +57,7 @@ Function Get-HD2ConfigPath {
         Write-Host "Unsupported OS detected." -ForegroundColor Red
         Return $null
     }
-    $uniquePaths = $paths | Sort-Object -Unique
+    $uniquePaths = @( $paths | Sort-Object -Unique )
     If ($All) { Return $uniquePaths }
     ElseIf ($uniquePaths.Count -gt 0) { Return $uniquePaths[0] }
     Else { Return $null }
