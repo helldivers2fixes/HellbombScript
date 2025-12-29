@@ -7,6 +7,9 @@ permissions:
 on:
   push:
     branches: [ main ]
+    paths:
+      - "Hellbomb Script.ps1" # Trigger build of EXE only if the PS1 file is modified
+  workflow_dispatch: # Enables running the workflow manually if needed
 
 env:
   PS1_SCRIPT_NAME: "Hellbomb Script.ps1"

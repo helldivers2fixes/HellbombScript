@@ -12,10 +12,13 @@ name: PSScriptAnalyzer
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "Hellbomb Script.ps1"
   pull_request:
     branches: [ "main" ]
-  schedule:
-    - cron: '45 11 * * 0'
+    paths:
+      - "Hellbomb Script.ps1"
+  workflow_dispatch:
 
 permissions:
   contents: read

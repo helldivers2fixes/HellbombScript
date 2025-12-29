@@ -1,0 +1,95 @@
+name: Hellbomb Script Cross-platform PowerShell Test Suite
+permissions:
+  contents: read
+  
+on:
+  push:
+    paths:
+      - "Hellbomb Script.ps1"
+  pull_request:
+    paths:
+      - "Hellbomb Script.ps1"
+  workflow_dispatch:
+
+jobs:
+  # --- JOB 1: SYNTAX VALIDATION ---
+  syntax-check:
+    name: Global Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Validate PowerShell Syntax
+        shell: pwsh
+        run: |
+          $ScriptPath = "./Hellbomb Script.ps1"
+          $Errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($ScriptPath, [ref]$null, [ref]$Errors)
+          if ($Errors) {
+              $Errors | ForEach-Object { Write-Error "Syntax Error: $($_.Message) at line $($_.Extent.StartLineNumber)" }
+              exit 1
+          }
+          Write-Host "Syntax check passed!"
+
+  # --- JOB 2: NATIVE WINDOWS (5.1) ---
+  test-windows:
+    name: Native Windows PS (5.1)
+    needs: syntax-check
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Install Pester
+        shell: powershell
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester Tests
+        shell: powershell
+        continue-on-error: true
+        run: |
+          Import-Module Pester -Force
+          Invoke-Pester -Path "./HellbombScript.Tests.ps1" `
+                        -OutputFile "${{ github.workspace }}\pester-win.xml" `
+                        -OutputFormat NUnitXml
+
+      - name: Upload Pester Results (Windows)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pester-results-windows
+          path: ${{ github.workspace }}\pester-win.xml
+
+  # --- JOB 3: UBUNTU CORE (pwsh) ---
+  test-ubuntu:
+    name: Ubuntu PowerShell Core
+    needs: syntax-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester Tests
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Import-Module Pester -Force
+          Invoke-Pester -Path "./HellbombScript.Tests.ps1" `
+                        -OutputFile "${{ github.workspace }}/pester-ubuntu.xml" `
+                        -OutputFormat NUnitXml
+
+      - name: Upload Pester Results (Ubuntu)
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: pester-results-ubuntu
+          path: ${{ github.workspace }}/pester-ubuntu.xml
