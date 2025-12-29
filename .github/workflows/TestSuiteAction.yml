@@ -13,38 +13,32 @@ on:
 
 jobs:
   test:
+    name: ${{ matrix.title }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
             shell: powershell
             title: "Native Windows PS"
-            # Path for Windows PowerShell 5.1
             module_path: '~\Documents\WindowsPowerShell\Modules'
           - os: ubuntu-latest
             shell: pwsh
             title: "Ubuntu PowerShell Core"
-            # Path for PowerShell Core on Linux
             module_path: '~/.local/share/powershell/Modules'
-      fail-fast: false
-
-    name: ${{ matrix.title }}
-    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      # 1. Setup PowerShell module cache using the OS-specific path from the matrix
       - name: Setup PowerShell module cache
         id: ps-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v4
         with:
           path: ${{ matrix.module_path }}
-          # The key is unique per OS so they don't overwrite each other
           key: ${{ matrix.os }}-pester-cache-v1
 
-      # 2. Only install if the cache for THIS OS was not found
       - name: Install Pester
         if: steps.ps-cache.outputs.cache-hit != 'true'
         shell: ${{ matrix.shell }}
@@ -63,6 +57,8 @@ jobs:
           $config.TestResult.Enabled = $true
           $config.TestResult.OutputPath = "pester-results.xml"
           $config.TestResult.OutputFormat = "NUnitXml"
+          $config.Output.Verbosity = "Detailed" 
+          
           Invoke-Pester -Configuration $config
 
       - name: Generate Pester Report
