@@ -7,7 +7,7 @@ Approvers: helldivers2fixes
 
 ## Security Info:
 
-EXE [VirusTotal](https://www.virustotal.com/gui/file/08BA03BE82515CDE6C68E32C5947AEB4595A6860537285E11B4673B2559DE5BC) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/08BA03BE82515CDE6C68E32C5947AEB4595A6860537285E11B4673B2559DE5BC) link.
+EXE [VirusTotal](https://www.virustotal.com/gui/file/B0C57EE0539884A17667CE2D5B0FDB28755185135AC160DF96D57194579FE80F) & [Hybrid Analysis](https://www.hybrid-analysis.com/sample/B0C57EE0539884A17667CE2D5B0FDB28755185135AC160DF96D57194579FE80F) link.
 
 Not sure you trust the EXE? You can run
 ```powershell
@@ -15,11 +15,11 @@ Not sure you trust the EXE? You can run
 ```
 in PowerShell to extract the script from the EXE to verify it's the same source code as what's shown here.
 
-**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/CB80DDEEF742EA8A99EE88A0E8D8788F0BACFEF92BE2462899E1A96CF571826D)
+**Script Version** [VirusTotal Results](https://www.virustotal.com/gui/file/3B438B86CFEBFB0B89F711F535BCF5DCFCFEFDF911E06C810A3EB89921BEE25B)
 
-The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``CB80DDEEF742EA8A99EE88A0E8D8788F0BACFEF92BE2462899E1A96CF571826D``.
+The ``Hellbomb Script.ps1`` SHA256 hash should match the VirusTotal file hash of ``3B438B86CFEBFB0B89F711F535BCF5DCFCFEFDF911E06C810A3EB89921BEE25B``.
 
-**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/CB80DDEEF742EA8A99EE88A0E8D8788F0BACFEF92BE2462899E1A96CF571826D)
+**Script Version** [Hybrid-Analysis Link](https://www.hybrid-analysis.com/sample/3B438B86CFEBFB0B89F711F535BCF5DCFCFEFDF911E06C810A3EB89921BEE25B)
 
 You can compare the file hash to the VirusTotal link to ensure that the VirusTotal results match the file you're attempting to run.
 
@@ -31,7 +31,7 @@ cd $((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self
 ```
 4. Run
 ```powershell
-Get-FileHash 'Hellbomb Script.ps1' -eq CB80DDEEF742EA8A99EE88A0E8D8788F0BACFEF92BE2462899E1A96CF571826D
+Get-FileHash 'Hellbomb Script.ps1' -eq 3B438B86CFEBFB0B89F711F535BCF5DCFCFEFDF911E06C810A3EB89921BEE25B
 ```
 5. The statement should return/evaluate to ``True``
 
