@@ -523,14 +523,14 @@ Function Reset-GameGuard {
     Return
 }
 Function Remove-HD2AppData {
-    $paths = Get-HD2ConfigPath -All
+    $paths = @( Get-HD2ConfigPath -All )
     If ($paths.Count -gt 1) {
         Write-Host "Warning: Multiple Helldivers 2 config folders detected. This can be normal on a Linux-based OS" -ForegroundColor Yellow
     }
     If ($paths.Count -gt 0) {
         $oldPref = $ProgressPreference
         $ProgressPreference = 'SilentlyContinue'
-        Foreach ($path in @($paths)) {
+        Foreach ($path in $paths) {
             If (-Not (Test-Path -LiteralPath $path)) {
                 Write-Host "Path not found: $path" -ForegroundColor Yellow
                 Continue
