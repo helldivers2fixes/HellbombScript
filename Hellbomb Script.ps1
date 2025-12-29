@@ -2636,11 +2636,11 @@ Function Create-Menu
         [array]$MenuItems
     )
 	# Filter Menu Items by $script:DetectedOS ('Windows' or 'Linux')
-	$MenuItems = $MenuItems | Where-Object {
+	$MenuItems = @( $MenuItems | Where-Object {
 	    -not $_.ContainsKey("OS") -or
 	    $_.OS -eq "Any" -or
 	    $_.OS -eq $script:DetectedOS
-	}
+	} )
     $options = $MenuItems.Label
     $actions = @{}
     $hotkeys = @{}
@@ -3025,4 +3025,3 @@ Finally
 {
     $Host.UI.RawUI.CursorPosition = $script:menuEnd
 }
-
