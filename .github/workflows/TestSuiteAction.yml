@@ -1,4 +1,4 @@
-name: Hellbomb Script Cross-platform PowerShell Test Suite
+name: Cross-platform Test Suite
 permissions:
   contents: read
   
