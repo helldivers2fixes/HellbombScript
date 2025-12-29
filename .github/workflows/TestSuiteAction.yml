@@ -12,61 +12,86 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: ${{ matrix.title }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            shell: powershell
-            title: "Native Windows PS"
-            module_path: '~\Documents\WindowsPowerShell\Modules'
-          - os: ubuntu-latest
-            shell: pwsh
-            title: "Ubuntu PowerShell Core"
-            module_path: '~/.local/share/powershell/Modules'
-
+  # --- JOB 1: NATIVE WINDOWS ---
+  test-windows:
+    name: Native Windows PS (5.1)
+    runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup PowerShell module cache
-        id: ps-cache
+      - name: Cache Pester (Windows)
+        id: cache-win
         uses: actions/cache@v4
         with:
-          path: ${{ matrix.module_path }}
-          key: ${{ matrix.os }}-pester-cache-v1
+          path: '~\Documents\WindowsPowerShell\Modules'
+          key: windows-pester-v1
 
       - name: Install Pester
-        if: steps.ps-cache.outputs.cache-hit != 'true'
-        shell: ${{ matrix.shell }}
+        if: steps.cache-win.outputs.cache-hit != 'true'
+        shell: powershell
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
 
       - name: Run Pester Tests
-        id: pester_run
-        shell: ${{ matrix.shell }}
-        continue-on-error: true 
+        shell: powershell
+        continue-on-error: true
         run: |
-          Write-Host "Running on: $($PSVersionTable.PSVersion)"
           $config = [PesterConfiguration]::Default
           $config.Run.Path = "./HellbombScript.Tests.ps1"
           $config.TestResult.Enabled = $true
-          $config.TestResult.OutputPath = "pester-results.xml"
+          $config.TestResult.OutputPath = "pester-win.xml"
           $config.TestResult.OutputFormat = "NUnitXml"
-          $config.Output.Verbosity = "Detailed" 
-          
           Invoke-Pester -Configuration $config
 
-      - name: Generate Pester Report
+      - name: Generate Report
         uses: zyborg/pester-tests-report@v1.5.0
         if: always()
         with:
-          test_results_path: pester-results.xml
-          report_name: ${{ matrix.title }}_Results
-          report_title: Hellbomb Test Results (${{ matrix.title }})
+          test_results_path: pester-win.xml
+          report_name: Windows_Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tests_fail_step: true
+
+  # --- JOB 2: UBUNTU CORE ---
+  test-ubuntu:
+    name: Ubuntu PowerShell Core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Cache Pester (Ubuntu)
+        id: cache-ubuntu
+        uses: actions/cache@v4
+        with:
+          path: '~/.local/share/powershell/Modules'
+          key: ubuntu-pester-v1
+
+      - name: Install Pester
+        if: steps.cache-ubuntu.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Run Pester Tests
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $config = [PesterConfiguration]::Default
+          $config.Run.Path = "./HellbombScript.Tests.ps1"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "pester-ubuntu.xml"
+          $config.TestResult.OutputFormat = "NUnitXml"
+          Invoke-Pester -Configuration $config
+
+      - name: Generate Report
+        uses: zyborg/pester-tests-report@v1.5.0
+        if: always()
+        with:
+          test_results_path: pester-ubuntu.xml
+          report_name: Ubuntu_Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tests_fail_step: true
