@@ -12,7 +12,7 @@
 [![Cross-platform PowerShell Tests](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml/badge.svg?branch=main)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml)
 [![EXE Building](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## CHOOSE A VERSION
-### [Linux Instructions](https://github.com/helldivers2fixes/HellbombScript/blob/main/README.md#running-on-arch-linux-or-cachyos-alpha--not-all-features-are-supported-on-linux)
+### 🐧[Linux Instructions](https://github.com/helldivers2fixes/HellbombScript/blob/main/README.md#running-on-arch-linux-or-cachyos-alpha--not-all-features-are-supported-on-linux)
 
 ### Windows:
 
