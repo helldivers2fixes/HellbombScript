@@ -9,7 +9,8 @@
   [![GitHub downloads](https://img.shields.io/github/downloads/helldivers2fixes/HellbombScript/total)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
   
 [![PSScriptAnalyzer](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml)
-[![Build Hellbomb Script EXE & Update Hashes](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
+[![Cross-platform PowerShell Tests](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml/badge.svg?branch=main)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml)
+[![EXE Building](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## HOW TO USE (Pick 1 of the 3 options below):
 
 ## Option 1: EXE
