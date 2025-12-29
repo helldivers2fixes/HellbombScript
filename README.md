@@ -27,13 +27,9 @@
 
 2.) Right-click on the EXE >> **Properties** >> select the checkbox to Unblock the EXE >> click **OK**. See image: <img width="405" height="568" alt="image" src="https://github.com/user-attachments/assets/d70fd5e9-d08a-4c4f-8e71-746277a0caac" />
 
-Then run the EXE
+3.) Run the EXE
 
-Or, you can avoid using an EXE completely and [copy & paste the latest code directly](https://github.com/helldivers2fixes/HellbombScript?tab=readme-ov-file#copy-and-paste-using-terminal-console-semi-automated) ⚠️ Latest code may have issues, so you may need to [select a release tag](https://github.com/helldivers2fixes/HellbombScript/tags) for it to run successfully.
-
-3.) The menu uses letters to select choices. (Always start with ``H``.) Type ``H`` Press ``Enter`` to confirm the selection.
-
-4.) Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+4.) See [How to Use Section](https://github.com/helldivers2fixes/HellbombScript/tree/main#how-to-operate-the-script) 
 
 ## Option 2: Copy and Paste using Terminal Console (Semi-Automated)
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
@@ -61,8 +57,7 @@ Copy and paste the script manually per instructions below.
  4. **Paste** into Terminal (Admin) or Windows PowerShell (Admin). Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
  5. Acknowledge the warning prompt and click **Paste Anyway**
  6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)         
- 7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
- 8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+
 # How to Operate the Script
 
 ## Start by pressing ``Enter`` to run the default choice (``H``) or press ``H``
