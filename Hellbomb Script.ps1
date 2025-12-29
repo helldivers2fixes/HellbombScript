@@ -1624,43 +1624,42 @@ Function Test-RequiredURLsLinux {
     # Flush DNS cache if systemd-resolved is present
     If (Test-Path "/usr/bin/resolvectl") {
         resolvectl flush-caches 2>$null
-    }
-    Foreach ($domain In $script:Tests.DomainTest.DomainList) {
-        $resolved = $false
-        If (Get-Command dig -ErrorAction SilentlyContinue) {
-            # Check A, AAAA, and CNAME — NOT NS/TXT
-            $a     = dig +short $domain.RequiredDomains A     2>$null
-            $aaaa  = dig +short $domain.RequiredDomains AAAA  2>$null
-            $cname = dig +short $domain.RequiredDomains CNAME 2>$null
-            $resolved = @($a, $aaaa, $cname) |
-                Where-Object { -Not [string]::IsNullOrWhiteSpace($_) } |
-                Measure-Object |
-                Select-Object -ExpandProperty Count
-            $resolved = $resolved -Gt 0
-        }
-        Else {
-            Write-Host "dig is required on Linux for DNS tests" -ForegroundColor Yellow
-            $resolved = $false
-        }
-        If ($resolved) {
-            If ($domain.PassedTest -Ne $false) {
-                $domain.PassedTest = $true
-            }
-        }
-        Else {
-            $domain.PassedTest = $false
-        }
-    }
-    # Final test result
-    If ($script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -Ne $true }) {
-        $script:Tests.DomainTest.TestPassed = $false
-    }
-    Else {
-        $script:Tests.DomainTest.TestPassed = $true
-    }
-}
-Else {
-    Write-Host "DNS test skipped (Linux only)" -ForegroundColor DarkYellow
+   		Foreach ($domain In $script:Tests.DomainTest.DomainList) {
+	        $resolved = $false
+	        If (Get-Command dig -ErrorAction SilentlyContinue) {
+	            # Check A, AAAA, and CNAME — NOT NS/TXT
+	            $a     = dig +short $domain.RequiredDomains A     2>$null
+	            $aaaa  = dig +short $domain.RequiredDomains AAAA  2>$null
+	            $cname = dig +short $domain.RequiredDomains CNAME 2>$null
+	            $resolved = @($a, $aaaa, $cname) |
+	                Where-Object { -Not [string]::IsNullOrWhiteSpace($_) } |
+	                Measure-Object |
+	                Select-Object -ExpandProperty Count
+	            $resolved = $resolved -Gt 0
+	        }
+	        Else {
+	            Write-Host "dig is required on Linux for DNS tests" -ForegroundColor Yellow
+	            $resolved = $false
+	        }
+	        If ($resolved) {
+	            If ($domain.PassedTest -Ne $false) {
+	                $domain.PassedTest = $true
+	            }
+	        }
+	        Else {
+	            $domain.PassedTest = $false
+	        }
+	    }
+    	# Final test result
+	    If ($script:Tests.DomainTest.DomainList | Where-Object { $_.PassedTest -Ne $true }) {
+	        $script:Tests.DomainTest.TestPassed = $false
+	    }
+	    Else {
+	        $script:Tests.DomainTest.TestPassed = $true
+	    }
+	} Else {
+	    Write-Host "DNS test skipped (Linux only)" -ForegroundColor DarkYellow
+	}	
 }
 Function Test-DnsResolution {
     param (
