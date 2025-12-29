@@ -1874,6 +1874,7 @@ Function Open-AdvancedGraphics {
 }
 
 Function Test-Wifi {
+ If ($script:DetectedOS -eq 'Linux') {
 
 $PingDuration = 30   # seconds
 $JitterThreshold = 5 # ms
@@ -1966,6 +1967,7 @@ if ($LossPct -gt $PacketLossWarn) {
     Write-Host "`nPress [ENTER] to continue..."
     [Console]::ReadLine() | Out-Null
 }
+}
 
 Function Test-PrivateIP {
     <#
@@ -1988,7 +1990,7 @@ Function Test-PrivateIP {
     $IP -Match '(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)'
 }
 Function Test-DoubleNAT {
-    
+if ($script:DetectedOS -eq 'Linux') {    
     Write-Host "`nRunning Double-NAT test... this may take a minute" -ForegroundColor Cyan
     $server = 'cloudflare.com'
     $ip = (bash -c "dig +short $server A" | ForEach-Object { $_.Trim() })[0]
@@ -2009,243 +2011,23 @@ Function Test-DoubleNAT {
     }
     $publicIP = (Invoke-RestMethod -Uri "https://ifconfig.me/ip").Trim()
     $wanIP = $tracerouteIPs | Where-Object { -not (Test-PrivateIP $_) } | Select-Object -First 1
-    if ($privateIPs.Count -gt 2) {
+    if ($privateIPs.Count -gt 1) {
         $doubleNatMsg = "⚠️ Double-NAT detected"
     } else {
         $doubleNatMsg = "No Double-NAT detected"
     }
-    $cgNatMsg = ""
-    if ($privateIPs.Count -gt 3 -and $publicIP -ne $wanIP) {
-        $cgNatMsg = "⚠️ Possible CG-NAT detected (device IP differs from WAN IP: $publicIP vs $wanIP)"
-        $cgNatMsg += "`n💡 Recommendation: Use a VPN that supports P2P connectivity to bypass CG-NAT limitations."
-    }
+#     $cgNatMsg = ""
+#    if ($privateIPs.Count -gt 3 -and $publicIP -ne $wanIP) {
+#        $cgNatMsg = "⚠️ Possible CG-NAT detected (device IP differs from WAN IP: $publicIP vs $wanIP)"
+#        $cgNatMsg += "`n💡 Recommendation: Use a VPN that supports P2P connectivity to bypass CG-NAT limitations."
+#    }
     Write-Host ""
     Write-Host $doubleNatMsg -ForegroundColor Yellow
-    if ($cgNatMsg) { Write-Host $cgNatMsg -ForegroundColor Cyan }
+#    if ($cgNatMsg) { Write-Host $cgNatMsg -ForegroundColor Cyan }
     Write-Host "`nPress [ENTER] to continue..."
     [Console]::ReadLine() | Out-Null
 
 }
-
-Function Network-test {
-
-Write-Host "Starting Cloudflare network test..." -ForegroundColor Cyan
-
-$cloudflareDNS = "1.1.1.1"
-$downloadUrl = "https://speed.cloudflare.com/__down?bytes=10485760"  # 10 MB
-$uploadUrl   = "https://speed.cloudflare.com/__up"
-$tempUploadFile = "/tmp/upload_test.bin"
-
-
-Write-Host "`nPinging Cloudflare DNS ($cloudflareDNS)..." -ForegroundColor Yellow
-$pingResult = ping -c 10 $cloudflareDNS
-$pingOutput = $pingResult | Out-String
-
-$packetLossLine = ($pingOutput -split "`n" | Where-Object {$_ -match "packet loss"})
-if ($packetLossLine -match "(\d+)% packet loss") { $packetLoss = [int]$matches[1] } else { $packetLoss = 0 }
-
-$statsLine = ($pingOutput -split "`n" | Where-Object {$_ -match "rtt"})
-if ($statsLine -match "rtt min/avg/max/mdev = ([\d\.]+)/([\d\.]+)/([\d\.]+)/([\d\.]+)") {
-    $minLatency = [double]$matches[1]
-    $avgLatency = [double]$matches[2]
-    $maxLatency = [double]$matches[3]
-    $jitter     = [double]$matches[4]
-} else {
-    $minLatency = $avgLatency = $maxLatency = $jitter = 0
-}
-
-
-Write-Host "`nMeasuring download speed (10 MB)..." -ForegroundColor Yellow
-$downloadStart = Get-Date
-curl -s -o /dev/null $downloadUrl
-$downloadEnd = Get-Date
-$downloadTime = ($downloadEnd - $downloadStart).TotalSeconds
-$downloadMbps = [math]::Round((10*8)/$downloadTime, 2)  
-
-Write-Host "Preparing 10 MB upload file..." -ForegroundColor Yellow
-dd if=/dev/urandom of=$tempUploadFile bs=1M count=10 status=none
-
-Write-Host "Measuring upload speed (10 MB)..." -ForegroundColor Yellow
-$uploadStart = Get-Date
-curl -s --data-binary "@$tempUploadFile" -X POST $uploadUrl -o /dev/null
-$uploadEnd = Get-Date
-$uploadTime = ($uploadEnd - $uploadStart).TotalSeconds
-$uploadMbps = [math]::Round((10*8)/$uploadTime, 2)
-
-
-Remove-Item $tempUploadFile
-
-$latencyScore    = [math]::Max(0, 100 - [math]::Round($avgLatency))
-$jitterScore     = [math]::Max(0, 100 - [math]::Round($jitter * 2))
-$packetLossScore = [math]::Max(0, 100 - [math]::Round($packetLoss * 5))
-$throughputScore = [math]::Min(100, [math]::Round(($downloadMbps + $uploadMbps)/2))
-
-
-$gamingScore = [math]::Round(0.4*$latencyScore + 0.3*$jitterScore + 0.2*$packetLossScore + 0.1*$throughputScore)
-
-
-if ($gamingScore -le 40) {
-    $gamingRating = "Very Poor"
-    $color = "Red"
-}
-elseif ($gamingScore -le 60) {
-    $gamingRating = "Poor"
-    $color = "DarkYellow" 
-}
-elseif ($gamingScore -le 80) {
-    $gamingRating = "Good"
-    $color = "Green"
-}
-else {
-    $gamingRating = "Very Good"
-    $color = "Cyan"
-}
-
-
-Write-Host "`nNetwork Test Results:" -ForegroundColor Green
-Write-Host "-------------------------------------------------"
-Write-Host ("Cloudflare DNS:      {0}" -f $cloudflareDNS)
-Write-Host ("Latency (min):       {0} ms" -f $minLatency)
-Write-Host ("Latency (avg):       {0} ms" -f $avgLatency)
-Write-Host ("Latency (max):       {0} ms" -f $maxLatency)
-Write-Host ("Jitter:              {0} ms" -f $jitter)
-Write-Host ("Packet Loss:         {0} %" -f $packetLoss)
-Write-Host ("Download Speed:      {0} Mbps" -f $downloadMbps)
-Write-Host ("Upload Speed:        {0} Mbps" -f $uploadMbps)
-Write-Host "-------------------------------------------------"
-Write-Host -NoNewline "Estimated Gaming Quality: "
-Write-Host $gamingRating -ForegroundColor $color
-Write-Host "-------------------------------------------------"
-Write-Host "Test complete!" -ForegroundColor Cyan
-
-
-Write-Host "`nPress [ENTER] to continue..."
-    [Console]::ReadLine() | Out-Null
-}
-
-Function niccheck {
-
-
-function Get-NetworkInterfaces {
-
-    foreach ($iface in Get-ChildItem /sys/class/net) {
-
-        if ($iface.Name -eq "lo") { continue }
-
-        $vendorFile = "/sys/class/net/$($iface.Name)/device/vendor"
-        if (-not (Test-Path $vendorFile)) { continue }
-
-        $vendorId = (Get-Content $vendorFile).Trim()
-
-        switch ($vendorId) {
-            "0x8086" { $vendor = "Intel" }
-            "0x10ec" { $vendor = "Realtek" }
-            default  { continue }
-        }
-
-        $driverLink = "/sys/class/net/$($iface.Name)/device/driver/module"
-        if (-not (Test-Path $driverLink)) { continue }
-
-        $driver = Split-Path -Leaf (Get-Item $driverLink).Target
-
-        $versionFile = "/sys/module/$driver/version"
-        $driverVersion = if (Test-Path $versionFile) {
-            (Get-Content $versionFile).Trim()
-        } else {
-            "Unknown"
-        }
-
-        [PSCustomObject]@{
-            Interface = $iface.Name
-            Vendor    = $vendor
-            Driver    = $driver
-            Version   = $driverVersion
-        }
-    }
-}
-
-function Get-LatestKernelVersion {
-    try {
-        $html = (Invoke-WebRequest -Uri "https://kernel.org" -UseBasicParsing).Content
-        $versions = [regex]::Matches($html, "\b\d+\.\d+\.\d+\b") |
-            ForEach-Object { $_.Value }
-
-        return ($versions | Sort-Object { [version]$_ } -Descending | Select-Object -First 1)
-    }
-    catch {
-        return "Unknown"
-    }
-}
-
-
-$nics = Get-NetworkInterfaces
-$latestKernel = Get-LatestKernelVersion
-$currentKernel = (uname -r).Split('-')[0]
-
-if (-not $nics) {
-    Write-Host "No Intel or Realtek network interfaces detected." -ForegroundColor Yellow
-} else {
-
-    foreach ($nic in $nics) {
-
-        Write-Host ""
-        Write-Host "Interface : $($nic.Interface)"
-        Write-Host "Vendor    : $($nic.Vendor)"
-        Write-Host "Driver    : $($nic.Driver)"
-        Write-Host "Installed : $($nic.Version)"
-        Write-Host "Kernel    : $currentKernel"
-        Write-Host "Latest    : $latestKernel"
-
-        if ($latestKernel -ne "Unknown") {
-            if ([version]$currentKernel -lt [version]$latestKernel) {
-                Write-Host "Status    : Newer driver available via kernel update" -ForegroundColor Yellow
-            } else {
-                Write-Host "Status    : Driver is up to date" -ForegroundColor Green
-            }
-        } else {
-            Write-Host "Status    : Unable to determine latest version" -ForegroundColor DarkYellow
-        }
-
-        Write-Host "----------------------------------------------"
-    }
-}
-
-Write-Host "`nPress [ENTER] to continue..."
-    [Console]::ReadLine() | Out-Null
-
-}
-
-Function Timesync {
-
-Clear-Host
-
-Write-Host "Resyncing system time..."
-Write-Host "------------------------"
-
-# Enable NTP
-sudo timedatectl set-ntp true 2>/dev/null
-
-# Restart time sync service
-sudo systemctl restart systemd-timesyncd 2>/dev/null
-
-# Allow time for synchronization
-Start-Sleep -Seconds 3
-
-# Check sync status
-$ntpSync = (timedatectl show -p NTPSynchronized --value).Trim()
-
-Write-Host ""
-
-if ($ntpSync -eq "yes") {
-    Write-Host "Status : SUCCESS"
-    Write-Host "Result : System time is synchronized."
-} else {
-    Write-Host "Status : FAILURE"
-    Write-Host "Result : System time is NOT synchronized."
-}
-
-Write-Host "`nPress [ENTER] to continue..."
-    [Console]::ReadLine() | Out-Null
 }
 
 Function Switch-BTAGService {
@@ -3095,6 +2877,7 @@ Function NetworkMenu
             Hotkey = "W"
             Action = { Test-Wifi }
 			
+			
         }
 
         @{
@@ -3102,26 +2885,6 @@ Function NetworkMenu
             Hotkey = "T"
             Action = { Test-DoubleNAT }
 			
-        }
-		
-		@{
-            Label  = "🌐  |S|peed Test"
-            Hotkey = "S"
-            Action = { Network-test }
-			
-        }
-
-		@{
-            Label  = "🌐  Network |D|river check"
-            Hotkey = "D"
-            Action = { niccheck }
-			
-        }
-		
-				@{
-            Label  = "🌐  System |C|lock sync"
-            Hotkey = "C"
-            Action = { Timesync }
 			
         }
 		
