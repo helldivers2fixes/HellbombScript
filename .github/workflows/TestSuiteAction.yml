@@ -1,5 +1,8 @@
 name: Hellbomb Script Cross-platform PowerShell Test Suite
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]
