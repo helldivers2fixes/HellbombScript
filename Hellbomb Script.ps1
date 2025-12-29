@@ -3014,7 +3014,7 @@ $HelldiversProcess = [PSCustomObject]@{
 $script:InstalledProgramsList = $null
 Write-Host 'Checking to see if Helldivers 2 is currently running...' -ForegroundColor Cyan
 Get-IsProcessRunning $HelldiversProcess
-$script:InstalledProgramsList = Get-InstalledPrograms
+If ( $script:DetectedOS -eq 'Windows' ) { $script:InstalledProgramsList = Get-InstalledPrograms }
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
 Try
 {
