@@ -180,7 +180,7 @@ $script:Tests = @{
     "DomainTest" = @{
         'TestPassed' = $null
         'DomainList' = @(
-            [PSCustomObject]@{ RequiredDomains = 'akamaihd.net'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'steamcdn-a.akamaihd.net'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'api.live.prod.thehelldiversgame.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'cluster-a.playfabapi.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'gameguard.co.kr'; PassedTest = $null },
@@ -192,7 +192,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamcommunity.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamcontent.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamgames.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'steampowered.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'api.steampowered.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamstatic.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null }
