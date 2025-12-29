@@ -2399,7 +2399,7 @@ Function Show-TestResults {
     "DomainTest",
     "GameMods",
     "BetaBranchActive",
-    "BTAGSDisabled"
+    "BTAGSDisabled",
     "SSDFreeSpace",
     "FreeDiskSpace",
     "USBGameDrive",
