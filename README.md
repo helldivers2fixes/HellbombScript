@@ -11,7 +11,16 @@
 [![PSScriptAnalyzer](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml)
 [![Cross-platform PowerShell Tests](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml/badge.svg?branch=main)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml)
 [![EXE Building](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
-## HOW TO USE (Pick 1 of the 3 options below):
+## CHOOSE A VERSION
+### [Linux Instructions](https://github.com/helldivers2fixes/HellbombScript/edit/main/README.md#running-on-arch-linux-or-cachyos-alpha--not-all-features-are-supported-on-linux)
+
+### Windows:
+
+[Option 1:](https://github.com/helldivers2fixes/HellbombScript/edit/main/README.md#option-1-exe) EXE
+
+[Option 2:](https://github.com/helldivers2fixes/HellbombScript/edit/main/README.md#option-2-copy-and-paste-using-terminal-console-semi-automated) Semi-automated from Terminal
+
+[Option 3:](https://github.com/helldivers2fixes/HellbombScript/edit/main/README.md#option-3-copy-and-paste-using-terminal-console-manual-method) Copy and Paste
 
 ## Option 1: EXE
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE**
@@ -39,12 +48,22 @@ Or, you can avoid using an EXE completely and [copy & paste the latest code dire
     💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
     If you want to verify, paste the URL into the browser and it will reveal the raw script text.
 
-## Running on Arch Linux or CachyOS (Alpha & not all features are supported on Linux)
-```bash
-sudo paru -S powershell-bin
-pwsh # Launch PowerShell
-Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/InitialLinuxSupport/Hellbomb%20Script.ps1 | Invoke-Expression
-```
+
+## Option 3: Copy and Paste using Terminal Console (Manual Method)
+Copy and paste the script manually per instructions below.
+
+ 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
+ 2. Middle/Ctrl + click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1) so that these instructions stay open
+ 3. **Copy** entire script by clicking the copy button in the top right by the script
+    
+       <img src="https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" width="300">
+       
+ 4. **Paste** into Terminal (Admin) or Windows PowerShell (Admin). Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
+ 5. Acknowledge the warning prompt and click **Paste Anyway**
+ 6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)         
+ 7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
+ 8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
+# How to Operate the Script
 
 ## Start by pressing ``Enter`` to run the default choice (``H``) or press ``H``
 
@@ -65,21 +84,14 @@ Then you can work through the things below if you have specific issues.
 | Total Game Reset (No progress loss) | Option ``C`` and Option ``M``        |
 | WinLicense Error: An error has occurred while loading imports. Wrong DLL present. | Option ``S`` then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB)    |
 
-## Option 3: Copy and Paste using Terminal Console (Manual Method)
-Copy and paste the script manually per instructions below.
-
- 1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
- 2. Middle/Ctrl + click on [the Hellbomb PowerShell Script](https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1) so that these instructions stay open
- 3. **Copy** entire script by clicking the copy button in the top right by the script
-    
-       <img src="https://github.com/helldivers2fixes/HellbombScript/assets/166264070/5a600b1c-64f6-4956-ba2f-f82c9a317f81" width="300">
-       
- 4. **Paste** into Terminal (Admin) or Windows PowerShell (Admin). Use ``Ctrl`` + ``V`` (Right-clicking in Terminal can cause errors!).
- 5. Acknowledge the warning prompt and click **Paste Anyway**
- 6. Press ``Enter`` until the program runs, and the menu appears (depending on how you paste you may have to press **Enter** a couple of times)         
- 7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
- 8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
-
+# Linux Instructions
+## Running on Arch Linux or CachyOS (Alpha & not all features are supported on Linux)
+```bash
+sudo paru -S powershell-bin
+pwsh # Launch PowerShell
+Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/InitialLinuxSupport/Hellbomb%20Script.ps1 | Invoke-Expression
+```
+# Program Info and Screenshots
 ## The Windows version uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
 <img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="200">
 
