@@ -89,7 +89,7 @@ Then you can work through the things below if you have specific issues.
 ```bash
 sudo paru -S powershell-bin
 pwsh # Launch PowerShell
-Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/InitialLinuxSupport/Hellbomb%20Script.ps1 | Invoke-Expression
+Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
 ```
 # Program Info and Screenshots
 ## The Windows version uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
