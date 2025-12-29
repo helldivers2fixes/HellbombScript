@@ -1,4 +1,4 @@
-name: Build Hellbomb Script EXE & Update Hashes
+name: Compile EXE
 
 permissions:
   contents: write
