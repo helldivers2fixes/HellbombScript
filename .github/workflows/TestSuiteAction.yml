@@ -52,19 +52,16 @@ jobs:
         continue-on-error: true
         run: |
           Import-Module Pester -Force
-          # Parameter syntax is more stable in CI than [PesterConfiguration]
           Invoke-Pester -Path "./HellbombScript.Tests.ps1" `
                         -OutputFile "${{ github.workspace }}\pester-win.xml" `
                         -OutputFormat NUnitXml
 
-      - name: Generate Report
-        uses: zyborg/pester-tests-report@v1.5.0
+      - name: Upload Pester Results (Windows)
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          test_results_path: ${{ github.workspace }}\pester-win.xml
-          report_name: Windows_Results
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tests_fail_step: true
+          name: pester-results-windows
+          path: ${{ github.workspace }}\pester-win.xml
 
   # --- JOB 3: UBUNTU CORE (pwsh) ---
   test-ubuntu:
@@ -90,11 +87,9 @@ jobs:
                         -OutputFile "${{ github.workspace }}/pester-ubuntu.xml" `
                         -OutputFormat NUnitXml
 
-      - name: Generate Report
-        uses: zyborg/pester-tests-report@v1.5.0
+      - name: Upload Pester Results (Ubuntu)
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          test_results_path: ${{ github.workspace }}/pester-ubuntu.xml
-          report_name: Ubuntu_Results
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tests_fail_step: true
+          name: pester-results-ubuntu
+          path: ${{ github.workspace }}/pester-ubuntu.xml
