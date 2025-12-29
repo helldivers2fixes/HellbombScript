@@ -1,5 +1,6 @@
 # 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)   
   [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v4.0alpha2r4/Hellbomb_Script_v4.0-signed.exe)
+  [![GitHub operatingsystem](https://img.shields.io/badge/os-linux-green)]
   [![GitHub release](https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
   [![GitHub liscense](https://img.shields.io/github/license/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/tree/main?tab=MIT-1-ov-file)
   [![GitHub forks](https://img.shields.io/github/forks/helldivers2fixes/HellbombScript)]()
@@ -37,7 +38,15 @@ Or, you can avoid using an EXE completely and [copy & paste the latest code dire
     💡 It's always a good idea to read what you're executing. In this case, you're telling PowerShell to download the script text and then execute it.
     If you want to verify, paste the URL into the browser and it will reveal the raw script text.
 
+## Running on Arch Linux or CachyOS (Alpha & not all features are supported on Linux)
+```bash
+sudo paru -S powershell-bin
+pwsh # Launch PowerShell
+Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/InitialLinuxSupport/Hellbomb%20Script.ps1 | Invoke-Expression
+```
+
 ## Start by pressing ``Enter`` to run the default choice (``H``) or press ``H``
+
 ### Read through **all** the output for anything that is a [FAIL] or looks incorrect.
 
 Then you can work through the things below if you have specific issues.
@@ -70,7 +79,7 @@ Copy and paste the script manually per instructions below.
  7. Choose a selection using the corresponding letters. (``H`` is always a good place to start.) Press ``Enter`` to confirm the selection.
  8. Expect Administrator prompts depending on what you're doing. Check to make sure the prompts match what you wanted to do.
 
-## This program uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
+## The Windows version uses CPU-Z for some functions. Special thanks to Franck at CPU-Z for granting me permission to use it.
 <img src = "https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="200">
 
 ## Screenshots (formatting will differ based on Terminal/PowerShell version):
