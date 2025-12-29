@@ -1,5 +1,5 @@
 # 💣Hellbomb💣 Script for troubleshooting [Helldivers 2](https://store.steampowered.com/app/553850/HELLDIVERS_2/)   
-  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v4.0alpha2r3/Hellbomb_Script_v4.0-signed.exe)
+  [![GitHub operatingsystem](https://img.shields.io/badge/os-windows-blue)](https://github.com/helldivers2fixes/HellbombScript/releases/download/v4.0alpha2r4/Hellbomb_Script_v4.0-signed.exe)
   [![GitHub release](https://img.shields.io/github/v/release/helldivers2fixes/HellbombScript?include_prereleases&sort=date&display_name=release&style=flat-square)](https://github.com/helldivers2fixes/HellbombScript/releases/latest)
   [![GitHub liscense](https://img.shields.io/github/license/helldivers2fixes/HellbombScript)](https://github.com/helldivers2fixes/HellbombScript/tree/main?tab=MIT-1-ov-file)
   [![GitHub forks](https://img.shields.io/github/forks/helldivers2fixes/HellbombScript)]()
@@ -28,7 +28,7 @@ Or, you can avoid using an EXE completely and [copy & paste the latest code dire
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
  2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
     ```powershell
-    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0alpha2r3/Hellbomb%20Script.ps1 | Invoke-Expression
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0alpha2r4/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
     If you would like to use the latest code, feel free to try it! It will have the latest features, but may not work right, or be incomplete.
     ```powershell
