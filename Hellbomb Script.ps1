@@ -17,11 +17,11 @@ Function Initialize-OSDetection {
 }
 Initialize-OSDetection
 $pshost = Get-Host
-If ( $script:DetectedOS -eq 'Windows' ) { $psWindow = $pshost.UI.RawUI }
+$psWindow = $pshost.UI.RawUI
 # Set the window size (height and width)
-$newWindowSize = $psWindow.WindowSize
+If ( $script:DetectedOS -eq 'Windows' ) { $newWindowSize = $psWindow.WindowSize
 $newWindowSize.Height = 60   # Adjust height as needed
-$psWindow.WindowSize = $newWindowSize
+$psWindow.WindowSize = $newWindowSize }
 Function Get-HD2ConfigPath {
     Param([switch]$All)
     $appId = 553850
