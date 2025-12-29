@@ -530,7 +530,7 @@ Function Remove-HD2AppData {
     If ($paths.Count -gt 0) {
         $oldPref = $ProgressPreference
         $ProgressPreference = 'SilentlyContinue'
-        Foreach ($path in $paths) {
+        Foreach ($path in @($paths)) {
             If (-Not (Test-Path -LiteralPath $path)) {
                 Write-Host "Path not found: $path" -ForegroundColor Yellow
                 Continue
