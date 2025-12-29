@@ -1,8 +1,5 @@
 name: Hellbomb Script Cross-platform PowerShell Test Suite
 
-permissions:
-  contents: read
-
 on:
   push:
     branches: [ main ]
@@ -15,23 +12,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  # --- JOB 1: NATIVE WINDOWS ---
+  # --- JOB 1: SYNTAX VALIDATION ---
+  syntax-check:
+    name: Global Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Validate PowerShell Syntax
+        shell: pwsh
+        run: |
+          $ScriptPath = "./Hellbomb Script.ps1"
+          $Errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($ScriptPath, [ref]$null, [ref]$Errors)
+          if ($Errors) {
+              $Errors | ForEach-Object { Write-Error "Syntax Error: $($_.Message) at line $($_.Extent.StartLineNumber)" }
+              exit 1
+          }
+          Write-Host "Syntax check passed!"
+
+  # --- JOB 2: NATIVE WINDOWS (5.1) ---
   test-windows:
     name: Native Windows PS (5.1)
+    needs: syntax-check
     runs-on: windows-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Cache Pester (Windows)
-        id: cache-win
-        uses: actions/cache@v4
-        with:
-          path: '~\Documents\WindowsPowerShell\Modules'
-          key: windows-pester-v1
+        uses: actions/checkout@v5
 
       - name: Install Pester
-        if: steps.cache-win.outputs.cache-hit != 'true'
         shell: powershell
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
@@ -41,39 +51,31 @@ jobs:
         shell: powershell
         continue-on-error: true
         run: |
-          $config = [PesterConfiguration]::Default
-          $config.Run.Path = "./HellbombScript.Tests.ps1"
-          $config.TestResult.Enabled = $true
-          $config.TestResult.OutputPath = "pester-win.xml"
-          $config.TestResult.OutputFormat = "NUnitXml"
-          Invoke-Pester -Configuration $config
+          Import-Module Pester -Force
+          # Parameter syntax is more stable in CI than [PesterConfiguration]
+          Invoke-Pester -Path "./HellbombScript.Tests.ps1" `
+                        -OutputFile "${{ github.workspace }}\pester-win.xml" `
+                        -OutputFormat NUnitXml
 
       - name: Generate Report
         uses: zyborg/pester-tests-report@v1.5.0
         if: always()
         with:
-          test_results_path: pester-win.xml
+          test_results_path: ${{ github.workspace }}\pester-win.xml
           report_name: Windows_Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tests_fail_step: true
 
-  # --- JOB 2: UBUNTU CORE ---
+  # --- JOB 3: UBUNTU CORE (pwsh) ---
   test-ubuntu:
     name: Ubuntu PowerShell Core
+    needs: syntax-check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Cache Pester (Ubuntu)
-        id: cache-ubuntu
-        uses: actions/cache@v4
-        with:
-          path: '~/.local/share/powershell/Modules'
-          key: ubuntu-pester-v1
+        uses: actions/checkout@v6
 
       - name: Install Pester
-        if: steps.cache-ubuntu.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
           Set-PSRepository PSGallery -InstallationPolicy Trusted
@@ -83,18 +85,16 @@ jobs:
         shell: pwsh
         continue-on-error: true
         run: |
-          $config = [PesterConfiguration]::Default
-          $config.Run.Path = "./HellbombScript.Tests.ps1"
-          $config.TestResult.Enabled = $true
-          $config.TestResult.OutputPath = "pester-ubuntu.xml"
-          $config.TestResult.OutputFormat = "NUnitXml"
-          Invoke-Pester -Configuration $config
+          Import-Module Pester -Force
+          Invoke-Pester -Path "./HellbombScript.Tests.ps1" `
+                        -OutputFile "${{ github.workspace }}/pester-ubuntu.xml" `
+                        -OutputFormat NUnitXml
 
       - name: Generate Report
         uses: zyborg/pester-tests-report@v1.5.0
         if: always()
         with:
-          test_results_path: pester-ubuntu.xml
+          test_results_path: ${{ github.workspace }}/pester-ubuntu.xml
           report_name: Ubuntu_Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
           tests_fail_step: true
