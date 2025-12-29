@@ -20,7 +20,7 @@
 
 [Option 2:](https://github.com/helldivers2fixes/HellbombScript/blob/main/README.md#option-2-copy-and-paste-using-terminal-console-semi-automated) Semi-automated from Terminal
 
-[Option 3:](https://github.com/helldivers2fixes/HellbombScript//blob/main/README.md#option-3-copy-and-paste-using-terminal-console-manual-method) Copy and Paste
+[Option 3:](https://github.com/helldivers2fixes/HellbombScript/blob/main/README.md#option-3-copy-and-paste-using-terminal-console-manual-method) Copy and Paste
 
 ## Option 1: EXE
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE**
