@@ -4,11 +4,9 @@ permissions:
   
 on:
   push:
-    branches: [ main ]
     paths:
       - "Hellbomb Script.ps1"
   pull_request:
-    branches: [ main ]
     paths:
       - "Hellbomb Script.ps1"
   workflow_dispatch:
