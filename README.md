@@ -12,15 +12,15 @@
 [![Cross-platform PowerShell Tests](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml/badge.svg?branch=main)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml)
 [![EXE Building](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml/badge.svg)](https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml)
 ## CHOOSE A VERSION
-### [Linux Instructions](https://github.com/helldivers2fixes/HellbombScript/main/README.md#running-on-arch-linux-or-cachyos-alpha--not-all-features-are-supported-on-linux)
+### [Linux Instructions](https://github.com/helldivers2fixes/HellbombScript/main/blob/README.md#running-on-arch-linux-or-cachyos-alpha--not-all-features-are-supported-on-linux)
 
 ### Windows:
 
-[Option 1:](https://github.com/helldivers2fixes/HellbombScript/main/README.md#option-1-exe) EXE
+[Option 1:](https://github.com/helldivers2fixes/HellbombScript/blob/main/README.md#option-1-exe) EXE
 
-[Option 2:](https://github.com/helldivers2fixes/HellbombScript/main/README.md#option-2-copy-and-paste-using-terminal-console-semi-automated) Semi-automated from Terminal
+[Option 2:](https://github.com/helldivers2fixes/HellbombScript/main/blob/README.md#option-2-copy-and-paste-using-terminal-console-semi-automated) Semi-automated from Terminal
 
-[Option 3:](https://github.com/helldivers2fixes/HellbombScript/main/README.md#option-3-copy-and-paste-using-terminal-console-manual-method) Copy and Paste
+[Option 3:](https://github.com/helldivers2fixes/HellbombScript/main/blob.README.md#option-3-copy-and-paste-using-terminal-console-manual-method) Copy and Paste
 
 ## Option 1: EXE
 1.) [DOWNLOAD](https://github.com/helldivers2fixes/HellbombScript/releases) the latest **EXE**
