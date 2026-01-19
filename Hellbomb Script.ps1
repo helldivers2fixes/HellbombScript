@@ -3058,7 +3058,7 @@ Try
 }
 catch
 {
-    Write-Host "An error occured that crashed the script."
+    Write-Host "An error occurred that crashed the script."
     Write-Host "Error: $($_.Exception.Message)"
     Write-Host $_.ScriptStackTrace
     Pause
