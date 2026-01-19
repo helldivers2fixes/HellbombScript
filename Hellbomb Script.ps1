@@ -464,42 +464,68 @@ Function Install-EXE {
         [Parameter(Mandatory = $true, Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $FileName,
-        [Parameter(Mandatory = $true, Position = 3)]
+        [Parameter(Mandatory = $false, Position = 3)]
+        [ValidateNotNullOrEmpty()]
+		[string] $SignerCertificateThumbprint,
+		[Parameter(Mandatory = $false, Position = 4)]
         [ValidateNotNullOrEmpty()]
         [string] $SHA256Hash,
-        [Parameter(Mandatory = $true, Position = 4)]
+        [Parameter(Mandatory = $true, Position = 5)]
         [ValidateNotNullOrEmpty()]
         [string] $CommonName
     )
-    # Turn off progress bar to speed up download
+	$downloadedFile = Join-Path $DownloadPath $FileName
+	# Logic check to ensure that either a Digital Certificate thumbprint is passed or a hash
+	# to force verification of any binary that is executed
+	$hasThumbprint = $PSBoundParameters.ContainsKey('SignerCertificateThumbprint')
+	$hasHash = $PSBoundParameters.ContainsKey('SHA256Hash')
+	If (-not ($hasThumbprint -xor $hasHash)) {
+		Throw "You must provide either -SignerCertificateThumbprint OR -SHA256Hash (but not both)."
+	}
+    # Turn off progress bar (only affects this function--will revert automatically) to speed up download 
     $ProgressPreference = 'SilentlyContinue'
     Write-Host "$([Environment]::NewLine)Downloading $CommonName..." -ForegroundColor Cyan
-    Invoke-WebRequest $DownloadURL -OutFile ($DownloadPath + $FileName)
-    If ( (Get-FileHash -Path ($DownloadPath + $FileName) -Algorithm SHA256).Hash -eq $SHA256Hash) {
-        Write-Host 'Installing... look for UAC prompts' -ForegroundColor Cyan
-        $Error.Clear()
-        Try {
-            $installProcess = Start-Process ($DownloadPath + $FileName) -ArgumentList "/q" -PassThru -Wait
+    Invoke-WebRequest $DownloadURL -OutFile $downloadedFile	
+	If ($hasThumbprint) {	
+	    If (-not $IsWindows) {
+	        Throw "Certificate thumbprint validation requires Windows Authenticode support."
+	    }	
+	    $sig = Get-AuthenticodeSignature -FilePath $downloadedFile
+	    If ($sig.Status -ne 'Valid') {
+	        Write-Host "Digital signature is invalid. Aborting $CommonName" -ForegroundColor Yellow
+	        Remove-Item -Path $downloadedFile
+	        Return
+	    }
+	    If ($sig.SignerCertificate.Thumbprint -ne $SignerCertificateThumbprint) {
+	        Write-Host "Digital certificate thumbprint mismatch. Aborting $CommonName" -ForegroundColor Yellow
+	        Remove-Item -Path $downloadedFile
+	        Return
+	    }
+	}
+	If ($hasHash) {
+	    $fileHash = (Get-FileHash -Path $downloadedFile -Algorithm SHA256).Hash
+	    If ($fileHash -ne $SHA256Hash) {
+	        Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
+	        Remove-Item -Path $downloadedFile
+	        Return
+	    }
+	}
+	Write-Host 'Installing... look for UAC prompts' -ForegroundColor Cyan
+	$Error.Clear()
+	Try {
+		$installProcess = Start-Process $downloadedFile -ArgumentList "/q" -PassThru -Wait
 
-            If ( $installProcess.ExitCode -ne 0) {
-                Write-Host "$([Environment]::NewLine)UAC prompt was canceled, or another error occurred installing $CommonName$([Environment]::NewLine)" -ForegroundColor Red
-                Remove-Item -Path $DownloadPath$FileName
-                # Re-enable Progress Bar
-                $ProgressPreference = 'Continue'
-                Return
-            }
-        }
-        Catch { Write-Host "Error occurred installing $CommonName" -ForegroundColor Red }
-        If (!$Error) {
-            Write-Host "$CommonName installed successfully!" -ForegroundColor Green
-        }
-    }
-    Else {
-        Write-Host "Installer file hash verification failed. Aborting $CommonName" -ForegroundColor Yellow
-    }
-    Remove-Item -Path (Join-Path $DownloadPath $FileName)
-    # Re-enable Progress Bar
-    $ProgressPreference = 'Continue'
+		If ( $installProcess.ExitCode -ne 0) {
+			Write-Host "$([Environment]::NewLine)UAC prompt was canceled, or another error occurred installing $CommonName$([Environment]::NewLine)" -ForegroundColor Red
+			Remove-Item -Path $downloadedFile
+			Return
+		}
+	}
+	Catch { Write-Host "Error occurred installing $CommonName" -ForegroundColor Red }
+	If (!$Error) {
+		Write-Host "$CommonName installed successfully!" -ForegroundColor Green
+	}
+    Remove-Item -Path $downloadedFile
 }
 Function Reset-GameGuard {
     # Delete GameGuard files
@@ -573,7 +599,8 @@ Function Uninstall-VCRedist {
     $redistributables = @(
         'Microsoft Visual C++ 2012 Redistributable (x64)',
         'Microsoft Visual C++ 2013 Redistributable (x64)',
-        'Microsoft Visual C++ 2015-2022 Redistributable (x64)'
+        'Microsoft Visual C++ 2015-2022 Redistributable (x64)',
+		'Microsoft Visual C++ v14 Redistributable (x64)'
     )
 
     ForEach ($programName in $redistributables) {
@@ -595,8 +622,8 @@ Function Uninstall-VCRedist {
     }
 }
 Function Install-VCRedist {
-    Pause "$([Environment]::NewLine) ⚠️ Make sure you used Reset/Toggle Components >> Option U to uninstall current VC++ Redists before using this option..." -ForegroundColor Yellow
-    Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing..." -ForegroundColor Cyan
+    Pause "$([Environment]::NewLine) ⚠️ Make sure you used Reset/Toggle Components >> Option U to uninstall current VC++ Redists before using this option... [SPACEBAR] to continue" -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine) This function will likely cause your computer to restart. Save any work before continuing... [SPACEBAR] to continue" -ForegroundColor Cyan
     Install-EXE -DownloadURL 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2012.exe' `
         -SHA256Hash '681BE3E5BA9FD3DA02C09D7E565ADFA078640ED66A0D58583EFAD2C1E3CC4064' -CommonName '2012 Visual C++ Redistributable'
@@ -605,11 +632,11 @@ Function Install-VCRedist {
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2013.exe' `
         -SHA256Hash 'E554425243E3E8CA1CD5FE550DB41E6FA58A007C74FAD400274B128452F38FB8' -CommonName '2013 Visual C++ Redistributable'
 
-    Install-EXE -DownloadURL 'https://download.visualstudio.microsoft.com/download/pr/1754ea58-11a6-44ab-a262-696e194ce543/3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A/VC_redist.x64.exe' `
-        -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++Redist2019.exe' `
-        -SHA256Hash '3642E3F95D50CC193E4B5A0B0FFBF7FE2C08801517758B4C8AEB7105A091208A' -CommonName '2019 Visual C++ Redistributable'
+    Install-EXE -DownloadURL 'https://aka.ms/vc14/vc_redist.x64.exe' `
+        -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++v14Redist.exe' `
+		-SignerCertificateThumbprint '3F56A45111684D454E231CFDC4DA5C8D370F9816' -CommonName 'Microsoft Visual C++ v14 Redistributable'
 
-    Pause "$([Environment]::NewLine)Please restart the computer before continuing." -ForegroundColor Yellow
+    Pause "$([Environment]::NewLine)Please restart the computer before continuing... [SPACEBAR] to continue" -ForegroundColor Yellow
     Exit
 }
 Function Switch-GameInput {
