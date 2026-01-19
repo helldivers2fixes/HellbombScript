@@ -1971,20 +1971,28 @@ If ($script:DetectedOS -eq 'Windows') {
 }
 Function Test-VisualC++Redists {
     $VCRedists = @(
-    [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2012 Redistributable (x64)'; Installed = $false},
-    [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2013 Redistributable (x64)'; Installed = $false},
-    [PSCustomObject]@{ProgramName = 'Microsoft Visual C++ 2015-2022 Redistributable (x64)'; Installed = $false}
+    [PSCustomObject]@{ProgramNames = @('Microsoft Visual C++ 2012 Redistributable (x64)'); Installed = $false},
+    [PSCustomObject]@{ProgramNames = @('Microsoft Visual C++ 2013 Redistributable (x64)'); Installed = $false},
+    [PSCustomObject]@{ProgramNames = @(
+			'Microsoft Visual C++ v14 Redistributable (x64)',
+			'Microsoft Visual C++ 2015-2022 Redistributable (x64)'
+			);
+		Installed = $false
+		}
     )
 
     Write-Host "$([Environment]::NewLine)Checking for required Microsoft Visual C++ Redistributables..." -ForegroundColor Cyan -NoNewLine
      # Speed up the search by checking if the program name starts with 'Microsoft' before entering nested loop
     $filteredApps = $script:InstalledProgramsList | Where-Object { $_.DisplayName -like 'Microsoft Visual*' }
 
-    ForEach ($vcRedist in $VCRedists) {
-            If ($filteredApps.DisplayName -like "$($vcRedist.ProgramName)*") {
-                $vcRedist.Installed = $true
-            }
-        }
+	ForEach ( $vcRedist in $VCRedists ) {
+		Foreach ( $name in $vcRedist.ProgramNames ) {
+			If ( $filteredApps | Where-Object { $_.DisplayName -like "$name*" } ) {
+				$vcRedist.Installed = $true
+				Break
+			}
+		}
+	}
     $missingRedists = $VCRedists | Where-Object { $_.Installed -eq $false }
     If ($missingRedists) {
         Write-Host "$([Environment]::NewLine)You are missing critical Visual C++ Redists. The game will not run.$([Environment]::NewLine)" -ForegroundColor Yellow
@@ -1992,7 +2000,7 @@ Function Test-VisualC++Redists {
         Write-Host ("{0,-33}" -f '-------------------------------------')
         ForEach ($redist in $missingRedists) {
             Write-Host '[FAIL] ' -ForegroundColor Red -NoNewLine
-            Write-Host ("{0,-26}" -f $redist.ProgramName) -ForegroundColor Yellow
+            Write-Host ("{0,-26}" -f $redist.ProgramNames[0]) -ForegroundColor Yellow
         }
         Write-Host "$([Environment]::NewLine)Please install them using the [" -ForegroundColor Yellow -NoNewLine
         Write-Host 'I' -NoNewLine
