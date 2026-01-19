@@ -1268,8 +1268,8 @@ Function Get-HardwareInfo {
 	}
     # Define URLs and paths
 	$timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-	$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.17-en.zip"
-	$CPUZZip = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "cpu-z_2.17-en.zip"
+	$CPUZUrl = "https://download.cpuid.com/cpu-z/cpu-z_2.18-en.zip"
+	$CPUZZip = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "cpu-z_2.18-en.zip"
 	$CPUZExe = Join-Path -Path $script:HellbombScriptDirectory -ChildPath "cpuz_x64.exe"
 	$CPUZFile = "cpuz_x64.exe"
 	$HellbombScriptReportName = "CPUZHellbombReport-$timestamp"
@@ -1282,7 +1282,7 @@ Function Get-HardwareInfo {
                 Return Write-Error "Failed to download ${CPUZZip}: $_"
             }
     	}
-    	If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne 'AA4D68627D441804CE5B6ABE23AE630AEE9E0492A69140AEEC79DA62C45C5215') {
+    	If ( (Get-FileHash -Path $CPUZZip -Algorithm SHA256).Hash -ne '5F7175D0CBC692754F596F38EC12D17215EFB95FC911DEBF6F79C65DF1C8E1DC') {
         Remove-Item $CPUZZip
         Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Continue
     	}
@@ -1294,7 +1294,7 @@ Function Get-HardwareInfo {
         }
     }
     $CPUZSHA256 = (Get-FileHash -Path (Join-Path -Path $script:HellbombScriptDirectory -ChildPath $CPUZFile) -Algorithm SHA256).Hash
-    If ( $CPUZSHA256 -ne 'E1F8752E8D50CB75B0CD1656C58BD3D2672791CA0A2875DA2209AF6AE17D62D3' ) {
+    If ( $CPUZSHA256 -ne 'B0D40B5EB26F053BCAB2A10C86ACD18862E8C3ED1FB715280AE15B1B5C2B652C' ) {
         Remove-Item $CPUZZip
 		Remove-Item $CPUZFile
 		Invoke-WebRequest -Uri $CPUZUrl -OutFile $CPUZZip -ErrorAction Stop
