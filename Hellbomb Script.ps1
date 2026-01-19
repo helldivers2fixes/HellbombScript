@@ -1781,7 +1781,7 @@ Function Test-Wifi {
         Write-Host "No default gateway available... returning to menu" -ForegroundColor Yellow
         Return
         }
-    Write-Host "$([Environment]::NewLine)Testing the connection to the default gateway..." -ForegroundColor Cyan
+    Write-Host "$([Environment]::NewLine)Testing the connection to the default gateway for (30 seconds)... please wait for results & do not press any keys..." -ForegroundColor Cyan
         $NetworkType = (Get-NetAdapter -InterfaceIndex $mainAdapter.InterfaceIndex).PhysicalMediaType
 		$NetworkType = $NetworkType -replace '.*?(802\.\d+).*','$1'
 		If ($NetworkType -ne '802.11') {
