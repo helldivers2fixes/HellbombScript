@@ -1,4 +1,4 @@
-using namespace System.Management.Automation.Host
+﻿using namespace System.Management.Automation.Host
 # Hellbomb Script
 # Requires -RunAsAdministrator
 $ErrorActionPreference = 'Continue'
@@ -2660,7 +2660,15 @@ Function Create-Menu
         if ($null -eq $action) { return }
 
         Clear-Host
-        & $action
+        try {
+            & $action
+        }
+        catch {
+            Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Stack Trace: $($_.ScriptStackTrace)" -ForegroundColor Red
+            Write-Host "$([Environment]::NewLine)Press [SPACEBAR] to continue..."
+            Pause
+        }
     } while ($true)
 }
 Function MainMenu
@@ -3016,9 +3024,17 @@ Write-Host 'Checking to see if Helldivers 2 is currently running...' -Foreground
 Get-IsProcessRunning $HelldiversProcess
 If ( $script:DetectedOS -eq 'Windows' ) { $script:InstalledProgramsList = Get-InstalledPrograms }
 Write-Host "Building menu... $([Environment]::NewLine)$([Environment]::NewLine)"
+
 Try
 {
     MainMenu
+}
+catch
+{
+    Write-Host "An error occured that crashed the script."
+    Write-Host "Error: $($_.Exception.Message)"
+    Write-Host $_.ScriptStackTrace
+    Pause
 }
 Finally
 {
