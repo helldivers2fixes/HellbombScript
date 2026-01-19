@@ -2766,7 +2766,7 @@ Function NetworkMenu
         @{
             Label  = "🛜 |W|i-Fi LAN Test"
             Hotkey = "W"
-            Action = { Test-Wifi }
+            Action = { RunAndPause { Test-Wifi }; }
 			OS = 'Windows'
         }
 
