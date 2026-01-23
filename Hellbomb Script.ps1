@@ -1543,27 +1543,35 @@ Function Test-SystemClockAccuracy {
         }
     }
 }
-Function Test-Firewall {
-    # Cast as array due to PowerShell returning object (no count property) if one rule, but array if two rules
-    [array]$HD2FirewallRules = Get-NetFirewallRule -Action Allow -Enabled True -Direction Inbound | Where-Object DisplayName -In ("Helldivers" + [char]0x2122 + " 2"), "Helldivers 2"
-    If ($null -eq $HD2FirewallRules) {
-        $script:Tests.FirewallRules.TestPassed = $false
+Function Test-Firewall
+{
+    try 
+    {
+        $HD2FirewallApplicationFilters = Get-NetFirewallApplicationFilter -Program (Join-Path -Path $script:AppInstallPath -ChildPath "bin\helldivers2.exe") -ErrorAction SilentlyContinue   
     }
-    Else {
-        $script:Tests.FirewallRules.Rules[0].PassedTest = $false
-        $script:Tests.FirewallRules.Rules[1].PassedTest = $false
-        ForEach ( $rule in $HD2FirewallRules) {
-            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'TCP')) {
+    catch { }
+    
+    foreach ($filter in $HD2FirewallApplicationFilters)
+    {
+        if($null -eq $filter) { continue }
+        $associatedRule = Get-NetFirewallRule -AssociatedNetFirewallApplicationFilter $filter
+        if($null -eq $associatedRule) { continue }
+
+        if($associatedRule.Action -eq 'Allow' -and $associatedRule.Direction -eq 'Inbound' -and $associatedRule.Enabled -eq $true)
+        {
+            $ruleProtocol = ($associatedRule | Get-NetFirewallPortFilter).Protocol
+
+            if($ruleProtocol -eq 'TCP')
+            { 
                 $script:Tests.FirewallRules.Rules[0].PassedTest = $true
             }
-            If ( $rule.Enabled -and (($rule | Get-NetFirewallPortFilter).Protocol -eq 'UDP')) {
+            elseif($ruleProtocol -eq 'UDP')
+            {
                 $script:Tests.FirewallRules.Rules[1].PassedTest = $true
             }
         }
-        If ( $script:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $script:Tests.FirewallRules.Rules[1].PassedTest -eq $true) {
-            $script:Tests.FirewallRules.TestPassed = $true
-        }
     }
+    $script:Tests.FirewallRules.TestPassed = $script:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $script:Tests.FirewallRules.Rules[1].PassedTest -eq $true
 }
 Function Test-CRL {
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
