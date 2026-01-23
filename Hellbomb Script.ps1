@@ -487,7 +487,7 @@ Function Install-EXE {
     Write-Host "$([Environment]::NewLine)Downloading $CommonName..." -ForegroundColor Cyan
     Invoke-WebRequest $DownloadURL -OutFile $downloadedFile	
 	If ($hasThumbprint) {	
-	    If (-not $IsWindows) {
+	    If (-not $script:DetectedOS -eq "Windows") {
 	        Throw "Certificate thumbprint validation requires Windows Authenticode support."
 	    }	
 	    $sig = Get-AuthenticodeSignature -FilePath $downloadedFile
