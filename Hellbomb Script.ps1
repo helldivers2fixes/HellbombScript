@@ -1549,8 +1549,12 @@ Function Test-Firewall
     {
         $HD2FirewallApplicationFilters = Get-NetFirewallApplicationFilter -Program (Join-Path -Path $script:AppInstallPath -ChildPath "bin\helldivers2.exe") -ErrorAction SilentlyContinue   
     }
-    catch { }
-    
+    catch
+    { 
+        $script:Tests.FirewallRules.TestPassed = $false
+        return
+    }
+
     foreach ($filter in $HD2FirewallApplicationFilters)
     {
         if($null -eq $filter) { continue }
