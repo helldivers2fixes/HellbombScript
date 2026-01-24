@@ -82,7 +82,7 @@ Then you can work through the things below if you have specific issues.
 # Linux Instructions
 ## Running on Arch Linux or CachyOS (Alpha & not all features are supported on Linux)
 ```bash
-sudo paru -S powershell-bin
+sudo paru -S powershell-bin # Install PowerShell Core
 pwsh # Launch PowerShell
 Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/heads/main/Hellbomb%20Script.ps1 | Invoke-Expression
 ```
