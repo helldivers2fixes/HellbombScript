@@ -206,14 +206,25 @@ $script:Tests = @{
     "FirewallRules" = @{
         'TestPassed' = $null
         'Rules' = @(
-            [PSCustomObject]@{ RuleName = 'Inbound TCP Rule'; PassedTest = $null },
-            [PSCustomObject]@{ RuleName = 'Inbound UDP Rule'; PassedTest = $null }
+            [PSCustomObject]@{ RuleName = 'Inbound TCP Rule'; PassedTest = $null; CorrectName = $null }
+            [PSCustomObject]@{ RuleName = 'Inbound UDP Rule'; PassedTest = $null; CorrectName = $null }
         )
         'TestFailMsg' = @'
-        Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
-        $script:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
-        Start-Process wf.msc
+        $rulesPassed = -not ($script:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true })
+        $namesPassed = -not ($script:Tests.FirewallRules.Rules | Where-Object {$_.CorrectName -eq $false })
+        if($rulesPassed -eq $false)
+        {
+            Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
+            Write-Host "The Windows Firewall is missing the following required rules: " -ForegroundColor Yellow
+            $script:Tests.FirewallRules.Rules | Where-Object {$_.PassedTest -ne $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
+            Start-Process wf.msc
+        }
+        if($namesPassed -eq $false)
+        {
+            Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
+            Write-Host "The following Windows Firewall rules do not have the correct name:" -ForegroundColor Yellow
+            $script:Tests.FirewallRules.Rules | Where-Object {$_.CorrectName -ne $true -and $_.PassedTest -eq $true } | ForEach-Object { "       Helldivers 2 $($_.Rulename)" } | Write-Host -ForegroundColor White
+        }
 '@
     }
 "GameMods" = @{
@@ -1545,7 +1556,9 @@ Function Test-SystemClockAccuracy {
 }
 Function Test-Firewall
 {
-    try 
+    $HD2FirewallRuleName = "Helldivers$([char]0x2122) 2"
+
+    try
     {
         $HD2FirewallApplicationFilters = Get-NetFirewallApplicationFilter -Program (Join-Path -Path $script:AppInstallPath -ChildPath "bin\helldivers2.exe") -ErrorAction SilentlyContinue   
     }
@@ -1564,18 +1577,21 @@ Function Test-Firewall
         if($associatedRule.Action -eq 'Allow' -and $associatedRule.Direction -eq 'Inbound' -and $associatedRule.Enabled -eq $true)
         {
             $ruleProtocol = ($associatedRule | Get-NetFirewallPortFilter).Protocol
-
-            if($ruleProtocol -eq 'TCP')
-            { 
-                $script:Tests.FirewallRules.Rules[0].PassedTest = $true
-            }
-            elseif($ruleProtocol -eq 'UDP')
+            $ruleTestEntry = switch ($ruleProtocol) 
             {
-                $script:Tests.FirewallRules.Rules[1].PassedTest = $true
+                "TCP" { $script:Tests.FirewallRules.Rules[0] }
+                "UDP" { $script:Tests.FirewallRules.Rules[1] }
+                Default {}
             }
+            
+            $ruleTestEntry.PassedTest = $true
+            $ruleTestEntry.CorrectName = $associatedRule.DisplayName -eq $HD2FirewallRuleName
         }
     }
-    $script:Tests.FirewallRules.TestPassed = $script:Tests.FirewallRules.Rules[0].PassedTest -eq $true -and $script:Tests.FirewallRules.Rules[1].PassedTest -eq $true
+
+    $allTestsPassed = -not ($script:Tests.FirewallRules.Rules | Where-Object { $_.PassedTest -ne $true })
+    $allNamesCorrect = -not ($script:Tests.FirewallRules.Rules | Where-Object { $_.CorrectName -ne $true })
+    $script:Tests.FirewallRules.TestPassed = $allTestsPassed -and $allNamesCorrect
 }
 Function Test-CRL {
     # Adapted from: https://stackoverflow.com/questions/11531068/powershell-capturing-standard-out-and-error-with-process-object
