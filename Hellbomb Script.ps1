@@ -2027,7 +2027,7 @@ Function Test-SSDFreeSpace {
         $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":")
         $GamePhysicalDisk = $GameVolume | Get-Partition | Get-Disk | Get-PhysicalDisk
         $GameVolumeFreeSpace = ($GameVolume.SizeRemaining / $GameVolume.Size) * 100
-        $isSSD = ($GamePhysicalDisk.MediaType -eq 'SSD')
+        $isSSD = ($GamePhysicalDisk.PSObject.Properties['MediaType']?.Value -eq 'SSD')
     }
 
     ElseIf ($script:DetectedOS -eq 'Linux') {
