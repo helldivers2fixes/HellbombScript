@@ -1857,7 +1857,9 @@ Function Test-Wifi {
     }
 }
 Function Test-BTAGService {
-    $script:Tests.BTAGSDisabled.TestPassed = ((Get-Service -Name BTAGService).Status -ne 'Running')
+    # Handles Windows installs that are missing BTAGS (Windows Server for example)
+	$service = Get-Service -Name 'BTAGService' -ErrorAction SilentlyContinue
+	$script:Tests.BTAGSDisabled.TestPassed = ($null -eq $service) -or ($service.Status -ne 'Running')
 }
 Function Reset-Steam {
     $SteamProcess = [PSCustomObject]@{
