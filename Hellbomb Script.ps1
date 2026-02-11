@@ -1792,7 +1792,7 @@ Function Test-Wifi {
     $pingResults = New-Object System.Collections.Generic.List[Object]
     While ([datetime]::UtcNow -lt $endTime) {
         Try {
-            $pingResult = Test-Connection $ipAddress -Count 1
+            $pingResult = Test-Connection $ipAddress -Count 1 -ErrorAction Stop
         }
         Catch {
             Write-Host 'Error pinging the default gateway... returning to menu' -ForegroundColor Yellow
