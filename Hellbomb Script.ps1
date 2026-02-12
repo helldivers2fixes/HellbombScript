@@ -1128,7 +1128,7 @@ Function Test-AVX2 {
 Function Get-MemorySpeed {
     # RAM Speed
     $linepattern = '^Memory Frequency.*$'
-    $freqpattern = '(\d{4})\s*MHz'
+    $freqpattern = '(\d{4}(?:\.\d+)?)\s*MHz'
     # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
     If ($match) {
@@ -2651,7 +2651,8 @@ Function Invoke-HD2StatusChecks {
     Get-SecureBootStatus
     Test-AVX2
     Test-MemoryChannels
-    Get-MemoryPartNumber -Lines $script:HardwareInfoText }
+    Get-MemoryPartNumber -Lines $script:HardwareInfoText
+	Get-MemorySpeed }
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
