@@ -174,7 +174,7 @@ $script:Tests = @{
     'TestPassedMsg' = @'
     Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
 	Write-Host 'RAM is currently running at ' -NoNewLine -ForegroundColor Cyan
-    Write-Host ([string]::Concat(($script:Tests.GetMemorySpeed.RAMSpeed * 2), ' MHz')) -ForegroundColor White
+    Write-Host ("{0} MHz" -f [int]($script:Tests.GetMemorySpeed.RAMSpeed * 2)) -ForegroundColor White
 '@
     }
     "DomainTest" = @{
@@ -1128,15 +1128,20 @@ Function Test-AVX2 {
 Function Get-MemorySpeed {
     # RAM Speed
     $linepattern = '^Memory Frequency.*$'
-    $freqpattern = '\d{4}'
+    $freqpattern = '(\d{4}(?:\.\d+)?)\s*MHz'
     # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
-    If ($match -and $match.Line -match $freqpattern) {
-    	$script:Tests.GetMemorySpeed.RAMSpeed = [int]$Matches[0]
-        $script:Tests.GetMemorySpeed.TestPassed = $true
-    } Else {
-    	$script:Tests.GetMemorySpeed.TestPassed = $false
-    }
+    If ($match) {
+	$speed = [regex]::Match($match.Line, $freqpattern).Groups[1].Value
+		If ($speed) {
+			$script:Tests.GetMemorySpeed.RAMSpeed = [double]$speed
+        	$script:Tests.GetMemorySpeed.TestPassed = $true
+	    } Else {
+	    	$script:Tests.GetMemorySpeed.TestPassed = $false
+	    }
+	} Else {
+		$script:Tests.GetMemorySpeed.TestPassed = $false
+	}
 }
 Function Get-MemoryPartNumber {
     [CmdletBinding()]
@@ -2648,7 +2653,8 @@ Function Invoke-HD2StatusChecks {
     Get-SecureBootStatus
     Test-AVX2
     Test-MemoryChannels
-    Get-MemoryPartNumber -Lines $script:HardwareInfoText }
+    Get-MemoryPartNumber -Lines $script:HardwareInfoText
+	Get-MemorySpeed }
     Find-Mods
     Get-VSyncConfig
     Get-GameResolution
