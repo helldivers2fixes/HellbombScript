@@ -2982,6 +2982,58 @@ Function Get-MostRecentlyUsedSteamProfilePath {
         }
     }
 }
+Function Parse-VDF {
+    param(
+        [string]$Content
+    )
+
+    $root  = @{}
+    $stack = [System.Collections.Generic.Stack[hashtable]]::new()
+    $stack.Push($root)
+    $pendingKey = $null
+
+    $regex = [regex]::new('"((?:\\.|[^"\\])*)"|[{}]', [Text.RegularExpressions.RegexOptions]::Compiled)
+
+    foreach ($m in $regex.Matches($Content)) {
+        switch ($m.Value) {
+            '{' {
+                if ($pendingKey) {
+                    $child = @{}
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $child
+                    $stack.Push($child)
+                    $pendingKey = $null
+                }
+                else {
+                    throw "Unexpected '{' at position $($m.Index)"
+                }
+            }
+
+            '}' {
+                if ($stack.Count -gt 1) {
+                    $stack.Pop() | Out-Null
+                }
+                $pendingKey = $null
+            }
+
+            default {
+                $raw = $m.Groups[1].Value
+                $unescaped = [regex]::Unescape($raw)
+
+                if ($pendingKey) {
+                    $parent = $stack.Peek()
+                    $parent[$pendingKey] = $unescaped
+                    $pendingKey = $null
+                }
+                else {
+                    $pendingKey = $unescaped
+                }
+            }
+        }
+    }
+
+    return $root
+}
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
