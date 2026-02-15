@@ -3038,74 +3038,120 @@ Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
 $script:AppIDFound = $false
-If ($script:DetectedOS -eq 'Windows') {
-    $LineOfInstallDir = 8
-    $LineOfBuildID = 13
-    Try {
-    $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
-    }
-    Catch {
-    Write-Host '[FAIL]' -NoNewLine -ForegroundColor Red
-    Write-Host 'Steam was not detected. Exiting Steam to fix this issue.' -ForegroundColor Cyan
-    # Get the Steam process
-    $steamProcess = Get-Process -Name "steam" -ErrorAction SilentlyContinue
-    If ($steamProcess) {
-    # Stop the Steam process
-    Stop-Process -Name "steam" -Force
-    }
-    $script:SteamPath = (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
-    }
-}
-If ($script:DetectedOS -eq 'Linux') {
-    $possiblePaths = @( "$HOME/.steam/steam",
-                        "$HOME/.local/share/Steam",
-                        "$HOME/.var/app/com.valvesoftware.Steam/.steam/steam" )
-    $script:SteamPath = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-    }
-Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
-    If ( $script:DetectedOS -eq 'Linux' ) {
-        $LineOfBuildID = 20
-        $AppID = $script:AppID
-        $script:AppIDFound = $true
-        $script:AppInstallPath = Join-Path $SteamPath -ChildPath 'steamapps/common/Helldivers 2'
-        $script:AppManifestPath = Join-Path $SteamPath "\steamapps\appmanifest_$AppID.acf"
-        $GameData = Get-Content -Path $script:AppManifestPath
-        $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
-    }
-    If ( $script:DetectedOS -eq 'Windows' ) {
-        $LibraryData = Get-Content -Path $SteamPath\steamapps\libraryfolders.vdf
-        # Read each line of the Steam library.vdf file
-        # Save a library path, then scan that library for $AppID
-        # If AppID is found, return current library path
-        ForEach ($line in $($LibraryData -split "$([Environment]::NewLine)")) {
-            If ($line -like '*path*') {
-                $script:AppInstallPath = ($line | ForEach-Object { $_.split('"')[3] })
-                Write-Host $script:AppInstallPath
-                $script:AppInstallPath = $script:AppInstallPath.Replace('\\', '\')
+
+#Steam Path Detection
+$script:SteamPath = switch ($script:DetectedOS) 
+{
+    "Windows"
+    { 
+        try
+        {
+            (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
+        }
+        catch
+        {
+            Write-Host "[FAIL]" -NoNewLine -ForegroundColor Red
+            Write-Host "Steam was not detected. Exiting Steam to fix this issue..." -ForegroundColor Cyan
+            Pause "$([Environment]::NewLine) Press [SPACEBAR] to continue"
+
+            $steamProcess = Get-Process -Name "steam" -ErrorAction SilentlyContinue
+            If ($null -ne $steamProcess)
+            {
+                Stop-Process -Name "steam" -Force
             }
-            If (($line | ForEach-Object { $_.split('"') | Select-Object -Skip 1 }) -like "*$AppID*") {
-                $script:AppIDFound = $true
-                # Since we found the App location, let's get some data about it
-                Try {
-                        $script:AppManifestPath = "$script:AppInstallPath\steamapps\appmanifest_$AppID.acf"
-                        $GameData = Get-Content -Path $script:AppManifestPath
-                        }
-                Catch {
-                        Write-Host "Error retrieving $script:AppInstallPath\steamapps\appmanifest_$AppID.acf" -ForegroundColor Yellow
-                        Write-Host 'If you moved Helldivers 2 without telling Steam, this can cause problems.' -ForegroundColor Cyan
-                        Write-Host 'See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620.' -ForegroundColor Cyan
-                        Write-Host 'Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options.' -ForegroundColor Yellow
-                        $script:AppInstallPath = $false
-                        Break
-                    }
-                $script:BuildID = ($GameData[$LineOfBuildID - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 }).Trim() | Where-Object { $_ }
-                $GameFolderName = ($GameData[$LineOfInstallDir - 1] | ForEach-Object { $_.split('"') | Select-Object -Skip 2 })
-                # Update the AppInstallPath with the FULL path
-                $script:AppInstallPath = Join-Path -Path $script:AppInstallPath -ChildPath "steamapps\common\$($GameFolderName[1])"
-                Break
+            Else
+            {
+                Write-Host "[FAIL]" -NoNewLine -ForegroundColor Red
+                Write-Host "Steam was not running. Ensure Steam is installed and re-run the script." -ForegroundColor Cyan
+                exit
             }
+
+            (Get-ItemProperty -Path "Registry::HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam").InstallPath
         }
     }
+
+    "Linux"
+    {
+        $possiblePaths = @(
+            "$HOME/.steam/steam",
+            "$HOME/.local/share/Steam",
+            "$HOME/.var/app/com.valvesoftware.Steam/.steam/steam"
+        )
+
+        $validPath = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+        if($null -eq $validPath)
+        {
+            Write-Host "[FAIL]" -NoNewLine -ForegroundColor Red
+            Write-Host "Steam was not detected. Exiting...." -ForegroundColor Cyan
+            exit
+        }
+
+        $validPath
+    }
+
+    Default
+    {
+        Write-Host "[FAIL]" -NoNewLine -ForegroundColor Red
+        Write-Host "OS not yet supported. Exiting...." -ForegroundColor Cyan
+        exit
+    }
+}
+
+Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
+#Library Parsing
+switch ($script:DetectedOS)
+{
+    "Windows"
+    {
+        $LibraryPath = Join-Path $script:SteamPath -ChildPath "steamapps\libraryfolders.vdf"
+        $LibraryData = Get-Content -Path $LibraryPath -Raw
+        $ParsedLibrary = Parse-VDF -Content $LibraryData
+
+        ForEach($libraryEntry in $ParsedLibrary["libraryfolders"].GetEnumerator())
+        {
+            $library = $libraryEntry.Value
+            if(-Not $library["apps"].ContainsKey($script:AppID)) { continue }
+
+            $script:AppIDFound = $true
+
+            $GameDataPath = Join-Path $library["path"] -ChildPath "steamapps\appmanifest_$script:AppID.acf"
+            $GameDataContent = $null
+            Try
+            {
+                $GameDataContent = Get-Content -Path $GameDataPath -Raw
+            }
+            Catch
+            {
+                Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
+                Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
+                Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
+                Write-Host "Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
+                $script:AppInstallPath = $false
+                break
+            }
+
+            $ParsedGameData = Parse-VDF $GameDataContent
+            $script:BuildID = $ParsedGameData["AppState"]["buildid"]
+            Write-Host "Parsed BuildID: $script:BuildID" -ForegroundColor Cyan
+            $script:AppInstallPath = [System.IO.Path]::Combine($library["path"], "steamapps\common", $ParsedGameData["AppState"]["installdir"])
+            $script:AppManifestPath = Join-Path $library["path"] -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
+        }
+    }
+
+    "Linux"
+    {
+        $script:AppIDFound = $true
+        $script:AppInstallPath = Join-Path $script:SteamPath -ChildPath "steamapps\common/Helldivers 2"
+        $script:AppManifestPath = Join-Path $script:SteamPath -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
+        $GameData = Get-Content -Path $script:AppManifestPath
+        $script:BuildID = $ParsedGameData["AppState"]["buildid"]
+    }
+
+    Default 
+    {
+
+    }
+}
 Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
