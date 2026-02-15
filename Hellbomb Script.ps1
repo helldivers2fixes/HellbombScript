@@ -1128,7 +1128,7 @@ Function Test-AVX2 {
 Function Get-MemorySpeed {
     # RAM Speed
     $linepattern = '^Memory Frequency.*$'
-    $freqpattern = '(\d{4}(?:\.\d+)?)\s*MHz'
+    $freqpattern = '((?=\d)\d+(?:\.\d+))\s*MHz'
     # Find and display lines matching the pattern
     $match = $script:HardwareInfoText | Select-String -Pattern $linepattern
     If ($match) {
