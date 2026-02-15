@@ -2988,17 +2988,14 @@ Function Parse-VDF {
     )
 
     $root  = @{}
-    $stack = New-Object System.Collections.Stack
+    $stack = [System.Collections.Generic.Stack[hashtable]]::new()
     $stack.Push($root)
     $pendingKey = $null
 
-    $regex = [regex] '\"((?:\\.|[^""\\])*)\"|[{}]'
-    $matches = $regex.Matches($Content)
+    $regex = [regex]::new('"((?:\\.|[^"\\])*)"|[{}]', [Text.RegularExpressions.RegexOptions]::Compiled)
 
-    foreach ($m in $matches) {
-        $token = $m.Groups[0].Value
-
-        switch ($token) {
+    foreach ($m in $regex.Matches($Content)) {
+        switch ($m.Value) {
             '{' {
                 if ($pendingKey) {
                     $child = @{}
