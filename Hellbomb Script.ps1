@@ -748,18 +748,54 @@ Function Find-CPUInfo {
     Return
 }
 Function Show-MotherboardInfo {
-    If ($script:DetectedOS -eq 'Windows') {
+    If ($script:DetectedOS -eq 'Windows')
+    {
+        $baseboard  =    Get-CimInstance -ClassName Win32_BaseBoard -ErrorAction SilentlyContinue
+        $bios       =    Get-CimInstance -ClassName Win32_BIOS -ErrorAction SilentlyContinue
+        $motherboardInfo = @()
+
+        function Get-SafeString
+        {
+            param($Object, $Property)
+
+            if ($null -eq $Object) { return "Unknown" }
+
+            $value = $Object.$Property
+            if ([string]::IsNullOrWhiteSpace($value)) { return "Unknown" }
+
+            $value.Trim()
+        }
+
+        function Get-SafeDate
+        {
+            param($Object, $Property)
+
+            if ($null -eq $Object -or $null -eq $Object.$Property) {
+                return "Unknown"
+            }
+
+            $Object.$Property.ToString("yyyy-MM-dd")
+        }
+
         $motherboardInfo = @(
-        [pscustomobject]@{ 'Motherboard Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BaseBoard).Manufacturer.Trim();
-        'UEFI Info' = 'SMBIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).SMBIOSBIOSVersion.Trim() }
-        [pscustomobject]@{ 'Motherboard Info' = 'Product: '+(Get-CimInstance -ClassName Win32_BaseBoard).Product.Trim();
-        'UEFI Info' = 'Manufacturer: '+(Get-CimInstance -ClassName Win32_BIOS).Manufacturer.Trim() }
-        [pscustomobject]@{ 'Motherboard Info' = '';
-        'UEFI Info' = 'BIOS Version: '+(Get-CimInstance -ClassName Win32_BIOS).Name.Trim() }
-        [pscustomobject]@{ 'Motherboard Info' = '';
-        'UEFI Info' = 'BIOS Release Date: '+(Get-CimInstance -ClassName Win32_BIOS).ReleaseDate.ToString("yyyy-MM-dd") }
+            [pscustomobject]@{
+                "Motherboard Info" = "Manufacturer: " + (Get-SafeString $baseBoard Manufacturer)
+                "UEFI Info"        = "SMBIOS Version: " + (Get-SafeString $bios SMBIOSBIOSVersion)
+            }
+            [pscustomobject]@{
+                "Motherboard Info" = "Product: " + (Get-SafeString $baseBoard Product)
+                "UEFI Info"        = "Manufacturer: " + (Get-SafeString $bios Manufacturer)
+            }
+            [pscustomobject]@{
+                "Motherboard Info" = ""
+                "UEFI Info"        = "BIOS Version: " + (Get-SafeString $bios Name)
+            }
+            [pscustomobject]@{
+                "Motherboard Info" = ""
+                "UEFI Info"        = "BIOS Release Date: " + (Get-SafeDate $bios ReleaseDate)
+            }
         )
-        $motherboardInfo | Format-Table 'Motherboard Info', 'UEFI Info' -AutoSize
+        $motherboardInfo | Format-Table "Motherboard Info", "UEFI Info" -AutoSize
     }
     If ($script:DetectedOS -eq 'Linux') {
         $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
