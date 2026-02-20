@@ -825,25 +825,46 @@ Function Show-MotherboardInfo {
     }
 }
 Function Show-ISPInfo {
-	Try {
-	    $ipInfo = Invoke-RestMethod -Uri "http://ip-api.com/json" -ErrorAction Stop
-	}
-	Catch {
-	    Write-Host "Error: Could not retrieve ISP."
-	    Return
-	}
-	# Check if the query was successful and has a status of 'success'
-	If ($ipInfo.status -eq "success") {
-	    $asn = ($ipInfo.as -split " ")[0]
-	    $isp = $ipInfo.isp
-	        Write-Host 'Your ISP is: ' -NoNewLine -ForegroundColor Cyan
-		 	Write-Host $($isp)
-	        Write-Host 'Your ASN is: ' -NoNewLine -ForegroundColor Cyan
-		 	Write-Host $($asn)
-	    }
-	Else {
-	    Write-Host "Could not retrieve ISP information. The service returned an error: $($ipInfo.message)" -ForegroundColor Yellow
-	}
+    Try {
+        $ipInfo = Invoke-RestMethod -Uri "http://ip-api.com/json" -ErrorAction Stop
+    }
+    Catch {
+        Write-Host "Error: Could not retrieve ISP." -ForegroundColor Red
+        Return
+    }
+    If ($ipInfo.status -ne "success") {
+        Write-Host "Could not retrieve ISP information. The service returned an error: $($ipInfo.message)" -ForegroundColor Yellow
+        Return
+    }
+    # Extract ASN and ISP
+    $asn = ($ipInfo.as -split " ")[0] -replace "^AS",""
+    $asn = '37707'
+    $isp = $ipInfo.isp
+    Write-Host "Your ISP is: " -NoNewLine -ForegroundColor Cyan
+    Write-Host $isp
+    Write-Host "Your ASN is: " -NoNewLine -ForegroundColor Cyan
+    Write-Host $asn
+    # --- Spamhaus ASN DROP check ---
+    Try {
+        $raw = Invoke-WebRequest "https://www.spamhaus.org/drop/asndrop.json"
+        # PowerShell Core returns bytes; convert to string safely
+        $content = $raw.Content | ForEach-Object { $_.ToString() }
+        # Parse NDJSON (one JSON object per line)
+        $asnDrop = $content -split "`n" |
+            Where-Object { $_.Trim() -ne "" } |
+            ForEach-Object { $_ | ConvertFrom-Json }
+    }
+    Catch {
+        Write-Host "Warning: Could not retrieve Spamhaus ASN DROP list." -ForegroundColor Yellow
+        Return
+    }
+    $isListed = $asnDrop | Where-Object { $_.asn -eq [int]$asn }
+    If ($isListed) {
+        Write-Host "⚠ WARNING: Your ASN ($asn) appears in the Spamhaus ASN DROP list!" -ForegroundColor Red
+    }
+    Else {
+        Write-Host "Your ASN is NOT listed in the Spamhaus ASN DROP list." -ForegroundColor Green
+    }
 }
 Function Show-WindowsGPUInfo {
     $gpus = Get-CimInstance -ClassName Win32_VideoController
