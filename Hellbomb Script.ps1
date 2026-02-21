@@ -3168,6 +3168,7 @@ switch ($script:DetectedOS)
         $script:AppInstallPath = Join-Path $script:SteamPath -ChildPath "steamapps\common/Helldivers 2"
         $script:AppManifestPath = Join-Path $script:SteamPath -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
         $GameData = Get-Content -Path $script:AppManifestPath
+        $ParsedGameData = Parse-VDF $GameData
         $script:BuildID = $ParsedGameData["AppState"]["buildid"]
     }
 
