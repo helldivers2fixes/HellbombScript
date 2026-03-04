@@ -1483,7 +1483,15 @@ Function Test-Programs {
             }
         }
     }
-
+	# MSI AI LAN Manager checks
+	$regPath = 'HKLM:\SOFTWARE\WOW6432Node\MSI\MSI Center\Component\LAN Manager'
+	$exePath = (Join-Path "$env:ProgramFiles (x86)" 'MSI\MSI Center\LAN Manager\MSI_LAN_Manager_Tool.exe')
+	If (Test-Path -LiteralPath $regPath) {
+	    If (Test-Path -LiteralPath $exePath -PathType Leaf) {
+	        Write-Host "$([Environment]::NewLine)⚠️ MSI AI LAN Manager module in MSI Center is installed!" -ForegroundColor Yellow
+	        Write-Host 'To prevent connectivity issues, open MSI Center and uninstall AI LAN Manager.' -ForegroundColor Cyan
+	    }
+	}
     $bool = $false
     ForEach ($program in $ProblematicPrograms) {
         ForEach ($installedApp in $script:InstalledProgramsList) {
