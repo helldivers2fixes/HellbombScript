@@ -826,7 +826,7 @@ Function Show-MotherboardInfo {
 }
 Function Show-ISPInfo {
     Try {
-        $ipInfo = Invoke-RestMethod -Uri "http://ip-api.com/json" -ErrorAction Stop
+        $ipInfo = Invoke-RestMethod -Uri "http://ip-api.com/json" -ErrorAction Stop -UseBasicParsing
     }
     Catch {
         Write-Host "Error: Could not retrieve ISP." -ForegroundColor Red
