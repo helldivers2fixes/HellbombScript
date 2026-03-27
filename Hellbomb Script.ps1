@@ -2180,19 +2180,27 @@ Function Test-FreeDiskSpace {
     $script:Tests.FreeDiskSpace.TestPassed = ($free -gt 150GB)
 }
 Function Test-USBGameDrive {
-    If ($script:DetectedOS -eq 'Windows') {
-        $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
-        $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
-        $isUSB = ($GamePhysicalDisk -and $GamePhysicalDisk.BusType -eq "USB")
+    $isUSB = switch ($script:DetectedOS)
+    {
+        "Windows" 
+        {
+            $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
+            $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
+            Write-Host $GamePhysicalDisk
+            $GamePhysicalDisk -and ($GamePhysicalDisk.PSObject.Properties.Name -contains 'BusType') -and ($GamePhysicalDisk.BusType -eq "USB")
+        }
+
+        "Linux"
+        {
+            $mount = (df -P "$script:AppInstallPath" | Select-Object -Skip 1).Split()[5]
+            $device = (df "$mount" | Select-Object -Skip 1).Split()[0] -replace "^/dev/", ""
+            # Check bus type via sysfs
+            $busPath = "/sys/block/$device/device"
+            Test-Path "$busPath/usb"
+        }
+        Default { $false }
     }
 
-    ElseIf ($script:DetectedOS -eq 'Linux') {
-        $mount = (df -P "$script:AppInstallPath" | Select-Object -Skip 1).Split()[5]
-        $device = (df "$mount" | Select-Object -Skip 1).Split()[0] -replace "^/dev/", ""
-        # Check bus type via sysfs
-        $busPath = "/sys/block/$device/device"
-        $isUSB = (Test-Path "$busPath/usb")
-    }
     $script:Tests.USBGameDrive.TestPassed = (-not $isUSB)
 }
 
@@ -2261,16 +2269,26 @@ Function Test-BetaBranch
 }
 Function Get-DiskScore($disk)
 {
+    if (-not $disk) { return 0 }
     $score = 0
 
-    Switch ($disk.BusType)
+    $busType = $null
+    if (Get-Member -InputObject $disk -Name 'BusType' -ErrorAction SilentlyContinue)
+    {
+        $busType = $disk.BusType
+    }
+
+    Switch ($busType)
     {
         "NVMe"  { $score += 2 }
         "SATA"  { $score += 1 }
         default { $score += 0 }
     }
 
-    If ($disk.MediaType -eq "SSD") { $score += 1 }
+    if ((Get-Member -InputObject $disk -Name 'BusType') -and $disk.MediaType -eq "SSD")
+    {
+        $score += 1
+    }
     Return $score
 }
 Function Convert-Size($bytes) {
