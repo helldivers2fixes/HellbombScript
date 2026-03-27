@@ -857,7 +857,7 @@ Function Show-ISPInfo {
         Write-Host "Warning: Could not retrieve Spamhaus ASN DROP list." -ForegroundColor Yellow
         Return
     }
-    $isListed = $asnDrop | Where-Object { $_.asn -eq [int]$asn }
+    $isListed = $asnDrop | Where-Object { (Get-Member -InputObject $_ -Name "asn" -MemberType Properties) -and $_.asn -eq [int]$asn }
     If ($isListed) {
         Write-Host "⚠ WARNING: Your ASN ($asn) appears in the Spamhaus ASN DROP list!" -ForegroundColor Red
     }
