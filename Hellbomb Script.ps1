@@ -3282,7 +3282,7 @@ switch ($script:DetectedOS)
             $GameDataContent = $null
             Try
             {
-                $GameDataContent = Get-Content -Path $GameDataPath -Raw
+                $GameDataContent = Get-Content -Path $GameDataPath -Raw -ErrorAction Stop
             }
             Catch
             {
@@ -3290,6 +3290,8 @@ switch ($script:DetectedOS)
                 Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
                 Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
                 Write-Host "Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
+                Write-Host "Press [SPACEBAR] to continue..."
+                pause
                 $script:AppInstallPath = $false
                 break
             }
