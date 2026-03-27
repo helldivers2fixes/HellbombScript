@@ -1085,9 +1085,31 @@ Function Show-GameLaunchOptions {
         Return
     }
 
-    $localconfigData = Get-Content -Path $script:localconfigVDF -Raw
+    $localconfigData = $null
+
+    try
+    {
+        $localconfigData = Get-Content -Path $script:localconfigVDF -Raw
+    }
+    catch {
+        Write-Host "[WARN] " -NoNewline -ForegroundColor Yellow
+        Write-Host "Error reading $script:localconfigVDF"
+        Write-Host "Skipping Launch Options check..."
+        return;
+    }
+
     $ParsedConfig = Read-VDF $localconfigData
-    $HD2ConfigData = $ParsedConfig["UserLocalConfigStore"]["Software"]["Valve"]["Steam"]["apps"][$script:AppID.ToString()]
+    $KeyPath = @(
+        "UserLocalConfigStore",
+        "Software",
+        "Valve",
+        "Steam",
+        "apps",
+        $script:AppID.ToString()
+    )
+
+    $HD2ConfigData = Get-VDFValue -Root $ParsedConfig -Path $KeyPath
+
     if($null -eq $HD2ConfigData)
     {
         Write-Host "Could not locate Helldivers 2 data in $script:localconfigVDF." -ForegroundColor Yellow
@@ -3114,6 +3136,49 @@ Function Read-VDF {
     }
 
     return $root
+}
+function Get-VDFValue {
+    param(
+        [hashtable]$Root,
+        [string[]]$Path
+    )
+
+    $current = $Root
+
+    foreach ($key in $Path) {
+        if ($current -isnot [System.Collections.IDictionary]) {
+            return $null
+        }
+
+        if (-not $current.Contains($key)) {
+            return $null
+        }
+
+        $current = $current[$key]
+    }
+
+    return $current
+}
+function Split-VDFPath
+{
+    param([string]$Path)
+
+    $regex = '"((?:\\.|[^"\\])*)"|[^.]+'
+    $parts = @()
+
+    foreach ($m in [regex]::Matches($Path, $regex))
+    {
+        if ($m.Groups[1].Success)
+        {
+            $parts += [regex]::Unescape($m.Groups[1].Value)
+        }
+        else
+        {
+            $parts += $m.Value
+        }
+    }
+
+    return $parts
 }
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
