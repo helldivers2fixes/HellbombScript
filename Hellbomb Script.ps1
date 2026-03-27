@@ -856,7 +856,7 @@ Function Show-ISPInfo {
     Write-Host $asn
     # --- Spamhaus ASN DROP check ---
     Try {
-        $raw = Invoke-WebRequest "https://www.spamhaus.org/drop/asndrop.json"
+        $raw = Invoke-WebRequest "https://www.spamhaus.org/drop/asndrop.json" -UseBasicParsing
         # PowerShell Core returns bytes; convert to string safely
         $content = $raw.Content | ForEach-Object { $_.ToString() }
         # Parse NDJSON (one JSON object per line)
