@@ -838,7 +838,6 @@ Function Show-ISPInfo {
     }
     # Extract ASN and ISP
     $asn = ($ipInfo.as -split " ")[0] -replace "^AS",""
-    $asn = '37707'
     $isp = $ipInfo.isp
     Write-Host "Your ISP is: " -NoNewLine -ForegroundColor Cyan
     Write-Host $isp
