@@ -341,7 +341,7 @@ $script:Tests = @{
     'TestPassed' = $null
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-    Write-Host "Drive has less than 150GB of free space. This may cause updates to fail."
+    Write-Host "Drive has less than 30GB of free space. This may cause updates to fail."
 '@
     }
 "USBGameDrive" = @{
@@ -2177,7 +2177,7 @@ Function Test-FreeDiskSpace {
         $parts = $df -split "\s+"
         $free = [double]$parts[3]
     }
-    $script:Tests.FreeDiskSpace.TestPassed = ($free -gt 150GB)
+    $script:Tests.FreeDiskSpace.TestPassed = ($free -gt 30GB)
 }
 Function Test-USBGameDrive {
     $isUSB = switch ($script:DetectedOS)
