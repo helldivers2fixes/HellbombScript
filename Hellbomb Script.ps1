@@ -2186,7 +2186,6 @@ Function Test-USBGameDrive {
         {
             $GameVolume = Get-Volume -DriveLetter (Split-Path $script:AppInstallPath -Qualifier).TrimEnd(":") -ErrorAction SilentlyContinue
             $GamePhysicalDisk = $GameVolume | Get-Partition -ErrorAction SilentlyContinue | Get-Disk -ErrorAction SilentlyContinue | Get-PhysicalDisk -ErrorAction SilentlyContinue
-            Write-Host $GamePhysicalDisk
             $GamePhysicalDisk -and ($GamePhysicalDisk.PSObject.Properties.Name -contains 'BusType') -and ($GamePhysicalDisk.BusType -eq "USB")
         }
 
