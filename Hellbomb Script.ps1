@@ -2418,12 +2418,13 @@ Function Switch-FullScreenOptimizations
 }
 Function Reset-HostabilityKey {
     $basePath = Get-HD2ConfigPath
-    If (-not $basePath) {
-        Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
-        Write-Host 'Helldivers 2 config folder not found.' -ForegroundColor Cyan
-        Return
-    }
     $configPath = Join-Path $basePath "user_settings.config"
+    if(-Not (Test-Path $configPath))
+    {
+        Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
+        Write-Host 'Helldivers 2 config file not found.' -ForegroundColor Cyan
+        return
+    }
     Try { $OriginalHash = Get-FileHash -Path $configPath -Algorithm SHA256}
     Catch {
         Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
@@ -2443,8 +2444,12 @@ Function Reset-HostabilityKey {
 }
 Function Get-VSyncConfig {
     $basePath = Get-HD2ConfigPath
-    If (-not $basePath) { Return }
     $configPath = Join-Path $basePath "user_settings.config"
+    if(-Not (Test-Path $configPath))
+    {
+        $script:Tests.VSyncDisabled.TestPassed = $true
+        Return
+    }
     Try {
             If ( Select-String $configPath -Pattern "vsync = false" -Quiet ) {
                 $script:Tests.VSyncDisabled.TestPassed = $true
@@ -2459,13 +2464,14 @@ Function Get-VSyncConfig {
 }
 Function Get-GameResolution {
     $basePath = Get-HD2ConfigPath
-    If (-not $basePath) {
+    $configPath = Join-Path $basePath "user_settings.config"
+
+    if(-Not (Test-Path $configPath))
+    {
         $script:Tests.GameResolution.TestPassed = $false
         $script:Tests.RenderResolution.TestPassed = $false
         Return
     }
-
-    $configPath = Join-Path $basePath "user_settings.config"
 
     Try {
         $lines = Get-Content $configPath
