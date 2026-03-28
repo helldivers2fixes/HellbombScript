@@ -371,8 +371,8 @@ $script:Tests = @{
     'TestPassed' = $null
     'selectedBranch' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
-    Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active."
+    Write-Host "$([Environment]::NewLine)[FAIL] " -NoNewLine -ForegroundColor Red
+    Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active. All branches but 'public'/default will no longer recieve updates." -ForegroundColor Yellow
 '@
     }
 }
@@ -2257,15 +2257,23 @@ Function Test-FasterDriveAvailable {
 
 Function Test-BetaBranch
 {
-    $pattern = '(?s)"UserConfig"\s*\{.*?"BetaKey"\s*"([^"]+)"'
-    $GameData = Get-Content -Path $script:AppManifestPath -Raw
-
-    $script:Tests.BetaBranchActive.TestPassed = $true
-    If($GameData -match $pattern)
-    {
-        $script:Tests.BetaBranchActive.TestPassed = $false
-        $script:Tests.BetaBranchActive.selectedBranch = $Matches[1]
+    if(-Not (Test-Path $script:AppManifestPath))
+    { 
+        $script:Tests.BetaBranchActive.TestPassed = $true
+        return
     }
+    $AppManifestContent = Get-Content -Path $script:AppManifestPath -Raw
+
+    $ParsedAppManifest = Read-VDF $AppManifestContent
+    $SelectedBetaPath = @(
+        "AppState",
+        "UserConfig",
+        "BetaKey"
+    )
+
+    $SelectedBetaBranch = Get-VDFValue -Root $ParsedAppManifest -Path $SelectedBetaPath
+    $script:Tests.BetaBranchActive.TestPassed = ($null -eq $SelectedBetaBranch -or $SelectedBetaBranch.ToLower() -eq "public")
+    $script:Tests.BetaBranchActive.selectedBranch = $SelectedBetaBranch
 }
 Function Get-DiskScore($disk)
 {
