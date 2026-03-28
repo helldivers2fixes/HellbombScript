@@ -371,8 +371,8 @@ $script:Tests = @{
     'TestPassed' = $null
     'selectedBranch' = $null
     'TestFailMsg' = @'
-    Write-Host "$([Environment]::NewLine)[INFO] " -NoNewLine
-    Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active."
+    Write-Host "$([Environment]::NewLine)[FAIL] " -NoNewLine -ForegroundColor Red
+    Write-Host "Beta branch ($($script:Tests.BetaBranchActive.selectedBranch)) is active. All branches but 'public'/default will no longer recieve updates." -ForegroundColor Yellow
 '@
     }
 }
