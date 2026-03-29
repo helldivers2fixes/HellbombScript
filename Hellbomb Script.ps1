@@ -21,13 +21,7 @@ $psWindow = $pshost.UI.RawUI
 # Set the window size (height and width)
 If ( $script:DetectedOS -eq 'Windows' )
 { 
-    $newSize = [Size]::new($psWindow.WindowSize.Width, 60)  # Adjust height as needed
-
-    #Adjust the backing buffer first
-    $psWindow.BufferSize = $newSize
-
-    #Then adjust the window (Buffer must be adjusted first, or we throw an error)
-    $psWindow.WindowSize = $newSize
+    $psWindow.WindowSize.Height = $psWindow.BufferSize.Height = 60
 }
 Function Get-HD2ConfigPath {
     Param([switch]$All)
