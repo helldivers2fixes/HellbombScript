@@ -81,7 +81,7 @@ $script:Tests = @{
         Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
         Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
-        Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.theverge.com/2024/7/26/24206529/intel-13th-14th-gen-crashing-instability-cpu-voltage-q-a" -ForegroundColor Cyan
+        Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.tomsguide.com/computing/hardware/13th-and-14th-gen-intel-cpu-damage-could-be-permanent-despite-incoming-fix" -ForegroundColor Cyan
         Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press [SPACEBAR] to continue..." -ForegroundColor Yellow
 '@
         'TestPassedIntelMsg' = @'
