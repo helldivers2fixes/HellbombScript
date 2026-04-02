@@ -2419,8 +2419,8 @@ Function Switch-FullScreenOptimizations
 }
 Function Reset-HostabilityKey {
     $basePath = Get-HD2ConfigPath
-    $configPath = Join-Path $basePath "user_settings.config"
-    if(-Not (Test-Path $configPath))
+    $configPath = if ($basePath) { Join-Path $basePath "user_settings.config" }
+    if(-Not $basePath -Or -Not (Test-Path $configPath))
     {
         Write-Host '[WARN] ' -NoNewLine -ForegroundColor Yellow
         Write-Host 'Helldivers 2 config file not found.' -ForegroundColor Cyan
@@ -2445,8 +2445,8 @@ Function Reset-HostabilityKey {
 }
 Function Get-VSyncConfig {
     $basePath = Get-HD2ConfigPath
-    $configPath = Join-Path $basePath "user_settings.config"
-    if(-Not (Test-Path $configPath))
+    $configPath = if ($basePath) { Join-Path $basePath "user_settings.config" }
+    if(-Not $basePath -Or -Not (Test-Path $configPath))
     {
         $script:Tests.VSyncDisabled.TestPassed = $true
         Return
@@ -2465,9 +2465,9 @@ Function Get-VSyncConfig {
 }
 Function Get-GameResolution {
     $basePath = Get-HD2ConfigPath
-    $configPath = Join-Path $basePath "user_settings.config"
+    $configPath = if ($basePath) { Join-Path $basePath "user_settings.config" }
 
-    if(-Not (Test-Path $configPath))
+    if(-Not $basePath -Or -Not (Test-Path $configPath))
     {
         $script:Tests.GameResolution.TestPassed = $false
         $script:Tests.RenderResolution.TestPassed = $false
