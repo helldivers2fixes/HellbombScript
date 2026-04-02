@@ -35,7 +35,7 @@
  1. **Open** Terminal (Admin) or PowerShell (Admin) by pressing `Windows Key` + `X` and click `Terminal (Admin)` or `Windows PowerShell (Admin)`
  2. Copy (use the copy button on the far right) and paste the below line into Terminal/PowerShell and press ``Enter``
     ```powershell
-    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/alpha5/Hellbomb%20Script.ps1 | Invoke-Expression
+    Invoke-RestMethod https://raw.githubusercontent.com/helldivers2fixes/HellbombScript/refs/tags/v4.0alpha5r1/Hellbomb%20Script.ps1 | Invoke-Expression
     ```
     If you would like to use the latest code, feel free to try it! It will have the latest features, but may not work right, or be incomplete.
     ```powershell
