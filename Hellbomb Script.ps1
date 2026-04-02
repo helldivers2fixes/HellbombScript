@@ -1090,7 +1090,7 @@ Function Show-GameLaunchOptions {
 
     try
     {
-        $localconfigData = Get-Content -Path $script:localconfigVDF -Raw
+        $localconfigData = Get-Content -Path $script:localconfigVDF -Raw -Encoding UTF8
     }
     catch {
         Write-Host "[WARN] " -NoNewline -ForegroundColor Yellow
@@ -2264,7 +2264,7 @@ Function Test-BetaBranch
     }
     $AppManifestContent = Get-Content -Path $script:AppManifestPath -Raw
 
-    $ParsedAppManifest = Read-VDF $AppManifestContent
+    $ParsedAppManifest = Read-VDF $AppManifestContent -Encoding UTF8
     $SelectedBetaPath = @(
         "AppState",
         "UserConfig",
@@ -3282,7 +3282,7 @@ switch ($script:DetectedOS)
     "Windows"
     {
         $LibraryPath = Join-Path $script:SteamPath -ChildPath "steamapps\libraryfolders.vdf"
-        $LibraryData = Get-Content -Path $LibraryPath -Raw
+        $LibraryData = Get-Content -Path $LibraryPath -Raw -Encoding UTF8
         $ParsedLibrary = Read-VDF -Content $LibraryData
 
         ForEach($libraryEntry in $ParsedLibrary["libraryfolders"].GetEnumerator())
@@ -3296,7 +3296,7 @@ switch ($script:DetectedOS)
             $GameDataContent = $null
             Try
             {
-                $GameDataContent = Get-Content -Path $GameDataPath -Raw -ErrorAction Stop
+                $GameDataContent = Get-Content -Path $GameDataPath -Raw -Encoding UTF8 -ErrorAction Stop
             }
             Catch
             {
@@ -3323,7 +3323,7 @@ switch ($script:DetectedOS)
         $script:AppIDFound = $true
         $script:AppInstallPath = Join-Path $script:SteamPath -ChildPath "steamapps\common/Helldivers 2"
         $script:AppManifestPath = Join-Path $script:SteamPath -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
-        $GameData = Get-Content -Path $script:AppManifestPath
+        $GameData = Get-Content -Path $script:AppManifestPath -Encoding UTF8
         $ParsedGameData = Read-VDF $GameData
         $script:BuildID = $ParsedGameData["AppState"]["buildid"]
     }
