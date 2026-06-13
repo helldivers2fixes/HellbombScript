@@ -186,6 +186,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'cluster-a.playfabapi.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'gameguard.co.kr'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'gameguard.thehelldiversgame.com'; PassedTest = $null },
+			[PSCustomObject]@{ RequiredDomains = 'gameguard-v2.thehelldiversgame.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'mgr.gameguard.co.kr'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'ocsp.digicert.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'helldivers2.playfabapi.com'; PassedTest = $null },
@@ -196,7 +197,8 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'api.steampowered.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamstatic.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null }
+            [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null },
+			[PSCustomObject]@{ RequiredDomains = 'azure.com'; PassedTest = $null }
         )
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
