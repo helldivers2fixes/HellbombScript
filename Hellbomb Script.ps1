@@ -648,7 +648,7 @@ Function Install-VCRedist {
 
     Install-EXE -DownloadURL 'https://aka.ms/vc14/vc_redist.x64.exe' `
         -DownloadPath ((New-Object -ComObject Shell.Application).Namespace('shell:Downloads').Self.Path) -FileName 'VisualC++v14Redist.exe' `
-		-SignerCertificateThumbprint '3F56A45111684D454E231CFDC4DA5C8D370F9816' -CommonName 'Microsoft Visual C++ v14 Redistributable'
+		-SignerCertificateThumbprint '1D77A9B9E8FE2075D9AD15123257FB90DB0DA4A1' -CommonName 'Microsoft Visual C++ v14 Redistributable'
 
     Pause "$([Environment]::NewLine)Please restart the computer before continuing... [SPACEBAR] to continue" -ForegroundColor Yellow
     Exit
