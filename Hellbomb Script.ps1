@@ -2757,6 +2757,7 @@ Function RunAndPause
     & $ScriptBlock
     Write-Host "`n--- Paused ---"
     Write-Host "Copy any results you want to save, then press [SPACEBAR] to return to the menu."
+	Write-Host "Note: The Hellbomb Script output should not include any Sensitive Information and should be safe to share."
     Pause
 }
 Function Invoke-HD2StatusChecks {
