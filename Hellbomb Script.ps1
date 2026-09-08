@@ -677,40 +677,59 @@ Function Switch-GameInput {
 }
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
-    $FoundBlacklistedDevice = $false
-    Write-Host "$([Environment]::NewLine)Checking for devices that are known to cause issues..." -ForegroundColor Cyan -NoNewLine
-    $DeviceDatabase = Get-PnpDevice
-    # Check for blacklisted devices
-    ForEach ($device in $DeviceDatabase) {
-        ForEach ($badDevice in $BadDeviceList) {
-            If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
-                Write-Host ("$([Environment]::NewLine)⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red -NoNewLine
-                $FoundBlacklistedDevice = $true
-                Break # Exit the inner loop if a bad device is found
-            }
+    $BadDevicePattern = ($BadDeviceList | ForEach-Object { [regex]::Escape($_) }) -join '|'
+
+    $DisconnectedDriverThreshold = 2
+
+    function Write-Status
+    {
+        param(
+            [string]$Message,
+            [ConsoleColor]$Color = 'White',
+            [switch]$NoNewline
+        )
+        Write-Host "$([Environment]::NewLine)$Message" -ForegroundColor $Color -NoNewline:$NoNewline
+    }
+
+    Write-Status -Message 'Checking for devices that are known to cause issues... ' -Color Cyan -NoNewline
+
+    $PnPDevices = Get-PnpDevice
+    $BlacklistedDevices = $PnPDevices | Where-Object { $_.Status -eq 'OK' -and $_.FriendlyName -match "^(?:$BadDevicePattern)" }
+
+    if ($BlacklistedDevices)
+    {
+        foreach ($device in $BlacklistedDevices)
+        {
+            Write-Status -Message "⚠️ $($device.FriendlyName) device detected! Known compatibility issues! Please disable using Device Manager." -Color Red
         }
     }
-    If (-not $FoundBlacklistedDevice) {
-        Write-Host " no problematic devices found." -ForegroundColor Green
+    else
+    {
+        Write-Host 'no problematic devices found.' -ForegroundColor Green
     }
-    # Check for missing critical drivers (AMD and Intel only)
-    $MissingDriverPresentCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $true -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
-        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
-    } | Measure-Object).Count
-    $MissingDriverDisconnectedCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $false -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
-        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
-    } | Measure-Object).Count
-    If ( $MissingDriverPresentCounter -gt 0 ) {
-        Write-Host "$([Environment]::NewLine)⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
-        Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
+
+
+    $UnknownAmdIntelDevices = $PnPDevices | Where-Object `
+    {
+        $_.InstanceId -match 'VEN_1022|VEN_8086' -and
+        ($_.FriendlyName -match 'Base System Device|Unknown' -or $_.Status -eq 'Unknown')
     }
-    If ( $MissingDriverDisconnectedCounter -gt 2 ) {
-        Write-Host "$([Environment]::NewLine)ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
-        Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
+
+    $PresentMissingCount = @($UnknownAmdIntelDevices | Where-Object { $_.Present }).Count
+    $DisconnectedMissingCount = @($UnknownAmdIntelDevices | Where-Object { -not $_.Present }).Count
+
+    if ($PresentMissingCount -gt 0)
+    {
+        Write-Status -Message '⚠️ You are missing critical AMD and/or Intel drivers.' -Color Yellow
+        Write-Host 'Please install them from your motherboard manufacturer or OEM system support site.' -ForegroundColor Yellow
     }
-    Return
+
+    if ($DisconnectedMissingCount -gt $DisconnectedDriverThreshold)
+    {
+        Write-Status -Message 'ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows.' -Color Yellow
+        Write-Host 'If this applies to you, recommend using the Reset Windows feature or re-installing Windows.' -ForegroundColor Yellow
+    }
+
 }
 Function Test-BadPrinters {
     # Get the Print Spooler service status
