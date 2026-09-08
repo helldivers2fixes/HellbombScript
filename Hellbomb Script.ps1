@@ -876,12 +876,11 @@ Function Show-MotherboardInfo {
         $motherboardInfo = [ordered]@{
             Manufacturer = (Get-SafeString $baseBoard Manufacturer)
             Product      = (Get-SafeString $baseBoard Product)
-            Rev          = (Get-SafeString $baseboard Version)
         }
         
         Write-Host "`nMotherboard Info"
-        Write-Host "-----------------"
-        ([pscustomobject]$motherboardInfo | Format-List | Out-String).Trim() | Write-Host
+        Write-Host "-----------------" -NoNewline
+        [pscustomobject]$motherboardInfo | Format-List
 
         $uefiInfo = [ordered]@{
             Manufacturer = (Get-SafeString $bios Manufacturer)
@@ -890,9 +889,9 @@ Function Show-MotherboardInfo {
             "BIOS Release" = (Get-SafeDate $bios ReleaseDate)
         }
 
-        Write-Host "`nUEFI Info"
-        Write-Host "-----------------"
-        ([pscustomobject]$uefiInfo | Format-List | Out-String).Trim() | Write-Host
+        Write-Host "UEFI Info"
+        Write-Host "-----------------" -NoNewline
+        [pscustomobject]$uefiInfo | Format-List
     }
     If ($script:DetectedOS -eq 'Linux') {
         $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
