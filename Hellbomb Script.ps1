@@ -958,6 +958,10 @@ Function Show-ISPInfo {
 }
 Function Show-WindowsGPUInfo {
     $gpus = Get-CimInstance -ClassName Win32_VideoController
+    if($null -ne $gpus -and $gpus.Count -gt 0)
+    {
+        Write-Host "-------------------------------------"
+    }
     # Print GPU information
     ForEach ($gpu in $gpus) {
         $vendor = 'Generic'
@@ -1014,7 +1018,6 @@ Function Show-WindowsGPUInfo {
             driverVersion = $driverVersion
 			archCodename = $archCodename
         }
-        Write-Host "-------------------------------------"
         Write-Host "  GPU Model: $($gpu.Name)"
         Write-Host "   Codename: $($script:SystemInfo["GPUInfo"][-1].archCodename)"
         Write-Host "  Drvr Ver.: $($script:SystemInfo["GPUInfo"][-1].DriverVersion)"
