@@ -2595,7 +2595,7 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash -Path $configPath -Algorithm SHA256) ) {
-        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!" -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)Hostability key reset successfully" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
