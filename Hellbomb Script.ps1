@@ -1010,7 +1010,7 @@ Function Show-WindowsGPUInfo {
             Try {
                 $driverVersion = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\igfx\Parameters" -Name "DriverVersion").DriverVersion
             } Catch {
-                $driverVersion += " (Windows Format)"
+                $driverVersion += " (Windows Driver Version Format)"
             }
         }
         $script:systemInfo["GPUInfo"] += @{
