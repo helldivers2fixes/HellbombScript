@@ -434,7 +434,7 @@ ForEach ($generation in $NvidiaCodenames.Keys) {
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
-        Write-Host "AppID: $($script:AppID) is located in directory:" -ForegroundColor Green
+        Write-Host "AppID: $($script:AppID) is located in directory: " -ForegroundColor Green -NoNewline
         Write-Host $script:AppInstallPath -ForegroundColor White
         Write-Host "Current build of AppID $($script:AppID) is: $script:BuildID" -ForegroundColor Cyan
     }
