@@ -1216,7 +1216,7 @@ Function Show-WindowsPowerPlan {
 	Catch {
 		$script:PowerPlan = 'Error retrieving Power Plan'
 		}
-    Write-Host 'Active Windows Power Plan: ' -NoNewLine -ForegroundColor Cyan
+    Write-Host 'Active Power Plan: ' -NoNewLine -ForegroundColor Cyan
     Write-Host $script:PowerPlan
 }
 Function Show-LinuxPowerPlan {
