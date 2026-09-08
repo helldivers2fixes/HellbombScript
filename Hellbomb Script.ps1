@@ -936,9 +936,7 @@ Function Show-ISPInfo {
     $asn = ($ipInfo.as -split " ")[0] -replace "^AS",""
     $isp = $ipInfo.isp
     Write-Host "Your ISP is: " -NoNewLine -ForegroundColor Cyan
-    Write-Host $isp
-    Write-Host "Your ASN is: " -NoNewLine -ForegroundColor Cyan
-    Write-Host $asn
+    Write-Host "$isp (AS$asn)"
     # --- Spamhaus ASN DROP check ---
     Try {
         $raw = Invoke-WebRequest "https://www.spamhaus.org/drop/asndrop.json" -UseBasicParsing
