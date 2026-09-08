@@ -955,9 +955,6 @@ Function Show-ISPInfo {
     If ($isListed) {
         Write-Host "⚠ WARNING: Your ASN ($asn) appears in the Spamhaus ASN DROP list!" -ForegroundColor Red
     }
-    Else {
-        Write-Host "Your ASN is NOT listed in the Spamhaus ASN DROP list." -ForegroundColor Green
-    }
 }
 Function Show-WindowsGPUInfo {
     $gpus = Get-CimInstance -ClassName Win32_VideoController
