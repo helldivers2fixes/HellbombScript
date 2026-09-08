@@ -1142,7 +1142,7 @@ Function Show-LinuxGPUInfo {
     }
 }
 Function Show-OSInfo {
-    If ( $script:DetectedOS -eq 'Windows') { $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption }
+    If ( $script:DetectedOS -eq 'Windows') { $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption -replace "^Microsoft ", "" }
     If ( $script:DetectedOs -eq 'Linux' ) {
         $osRelease = Get-Content /etc/os-release |
         ForEach-Object {
