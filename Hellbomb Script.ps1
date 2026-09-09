@@ -976,7 +976,7 @@ Function Show-ISPInfo {
     }
 }
 Function Show-WindowsGPUInfo {
-    $gpus = Get-CimInstance -ClassName Win32_VideoController
+    $gpus = @(Get-CimInstance -ClassName Win32_VideoController)
     if($null -ne $gpus -and $gpus.Count -gt 0)
     {
         Write-Host "-------------------------------------"
