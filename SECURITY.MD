@@ -14,7 +14,7 @@ Builds are signed free of charge by [**SignPath.io**](https://signpath.org/), wi
 We strongly encourage you to verify any downloaded file before running it. Below are several independent ways to do that.
  
 ### 1. Scan Results
-We submit all our releases to VirusTotal and Hybrid Analysis for analysis which you can review below.
+We submit all our releases to VirusTotal and Hybrid Analysis for analysis. You can review the reports for the current release below.
  
 | Artifact | VirusTotal | Hybrid Analysis |
 |---|---|---|
@@ -50,7 +50,7 @@ foreach($resourceName in $resourceNames)
 }
 ```
  
-This writes `Hellbomb Script.ps1` and any other embedded resources to the current working directory, which you can then open and review directly.
+This writes `Hellbomb Script.ps1` and any other embedded resources, to the current working directory, where you can then open and review directly.
  
 ### 3. Verify the Script Hash
  
