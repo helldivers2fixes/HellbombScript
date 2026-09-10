@@ -20,6 +20,8 @@ We submit all our releases to VirusTotal and Hybrid Analysis for analysis which 
 |---|---|---|
 | `Hellbomb_Script_v4.0-signed.exe` | [Report](https://www.virustotal.com/gui/file/ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2) | [Report](https://www.hybrid-analysis.com/sample/ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2) |
 | `Hellbomb Script.ps1` | [Report](https://www.virustotal.com/gui/file/4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0) | [Report](https://www.hybrid-analysis.com/sample/4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0) |
+
+> **Note:** These hashes and reports correspond to the current release only. If you download a newer or older version, the hashes will differ.
  
 ### 2. Extract the Script from the signed executable
  
@@ -52,11 +54,8 @@ This writes `Hellbomb Script.ps1` and any other embedded resources to the curren
  
 ### 3. Verify the Script Hash
  
-The `Hellbomb Script.ps1` file should have a SHA-256 hash matching:
- 
-```
-4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0
-```
+The latest release `Hellbomb Script.ps1` file should have a SHA-256 hash matching:
+`4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0`
  
 **Steps:**
  
