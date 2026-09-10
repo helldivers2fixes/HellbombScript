@@ -6,8 +6,11 @@ Builds are signed free of charge by [**SignPath.io**](https://signpath.org/), wi
  
 | Role | GitHub User |
 |------|-------------|
-| Committers & Reviewers | `helldivers2fixes` |
+| Authors | `helldivers2fixes` |
+| Reviewers | `helldivers2fixes` |
 | Approvers | `helldivers2fixes` |
+
+> **Note** Note: This project currently has a single maintainer. All code changes, including those authored by the maintainer are submitted via pull request from a personal account and reviewed/merged under the dedicated `helldivers2fixes` account before release. This ensures every change passes through a deliberate review step, even though review and approval are currently performed by the same person.
  
 ## Verifying Your Download
  
