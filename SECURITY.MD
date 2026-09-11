@@ -26,36 +26,42 @@ We submit all our releases to VirusTotal and Hybrid Analysis for analysis. You c
 
 > **Note:** These hashes and reports correspond to the current release only. If you download a newer or older version, the hashes will differ.
  
-### 2. Extract the Script from the signed executable
+### 2. Verify the Executable's hash
+1. Download the [latest release](https://github.com/helldivers2fixes/HellbombScript/releases/latest) - `Hellbomb_Script_v4.0-signed.exe`
+2. Open Terminal or PowerShell and navigate to the folder containing the script:
+    ```powershell
+        cd (Join-Path $HOME "Downloads")
+    ```
+   *(Use this if you downloaded it to your Downloads folder. Otherwise, `cd` to the correct directory.)*
+3. Compute the file's hash and compare it to the value above:
+    ```powershell
+    Get-FileHash 'Hellbomb_Script_v4.0-signed.exe'
+    ```
+4. Confirm the output matches `ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2`.
+   To check this automatically instead of comparing by eye:
+    ```powershell
+    (Get-FileHash 'Hellbomb_Script_v4.0-signed.exe').Hash -eq 'ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2'
+    ```
+    This should return `True`.
+
+### 3. Extract the Script from the signed executable
  
 If you don't fully trust the compiled `.exe`, you can extract the underlying PowerShell script from it and compare the result against the source in this repository:
- 
-```powershell
-$assembly = [System.Reflection.Assembly]::LoadFile((Resolve-Path -Path "Hellbomb_Script_v4.0-signed.exe"))
 
-$resourceNames = $assembly.GetManifestResourceNames()
-foreach($resourceName in $resourceNames)
-{
-    $outputPath = Join-Path -Path $(Get-Location) -ChildPath $resourceName
-    Write-Host "Extracting: $resourceName -> $outputPath"
-
-    $resourceStream = $assembly.GetManifestResourceStream($resourceName)
-    $outputStream = [System.IO.File]::Create($outputPath)
-    try
-    {
-        $resourceStream.CopyTo($outputStream)
-    }
-    finally
-    {
-        $resourceStream.Dispose()
-        $outputStream.Dispose()
-    }
-}
-```
+1. Download the [latest release](https://github.com/helldivers2fixes/HellbombScript/releases/latest) -  `Hellbomb_Script_v4.0-signed.exe`
+2. Open Terminal or PowerShell and navigate to the folder containing the script:
+    ```powershell
+        cd (Join-Path $HOME "Downloads")
+    ```
+   *(Use this if you downloaded it to your Downloads folder. Otherwise, `cd` to the correct directory.)*
+3. Use the tool included in this repository [Extract-EmbeddedResources.ps1](https://github.com/Plootie/HellbombScript/blob/Plootie-SecurityInfo/tools/Extract-EmbeddedResources.ps1) to extract the embedded `Hellbomb Script.ps1` script, as well as any other embedded resources.
+    ```powershell
+    ./ Extract-EmbeddedResources.ps1 -AssemblyPath "Hellbomb_Script_v4.0-signed.exe" -OutputDir "extracted_resources"
+    ```
  
 This writes `Hellbomb Script.ps1` and any other embedded resources, to the current working directory, where you can then open and review directly.
  
-### 3. Verify the Script Hash
+### 4. Verify the Script Hash
  
 The latest release `Hellbomb Script.ps1` file should have a SHA-256 hash matching:
 `4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0`
