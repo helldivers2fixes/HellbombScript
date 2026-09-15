@@ -13,6 +13,7 @@
   [![Project Contributors][github-contributors-shield]][github-contributors-url]
   [![Project Last Commuit][github-lastcommit-shield]][github-lastcommit-url]
   [![Project Total Downloads][github-downloads-shield]][latest-release-url]
+  <br>
   [![PSScript Analyzer Workflow][github-workflows-psscriptanalyzer-shield]][github-psscriptanalyzer-url]
   [![Cross-platform PowerShell Tests Workflow][github-workflows-crossplatformtests-shield]][github-crossplatformtests-url]
   [![Executable Building][github-workflows-exebuilding-shield]][github-exebuilding-url]
