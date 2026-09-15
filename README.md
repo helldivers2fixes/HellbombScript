@@ -4,22 +4,15 @@
 <!-- Project Badges -->
 <div align="center">
 
-  <h4>Supported Platforms</h4>
-
   [![OS: Windows][os-windows-shield]][latest-release-url]
-  [![OS: Lindows][os-linux-shield]][latest-release-url]<br>
+  [![OS: Linux][os-linux-shield]][latest-release-url]
   [![Latest Release][github-release-shield]][latest-release-url]
-
-  <h4>Repository Information</h4>
-
+  <br>
   [![Project License][github-license-shield]][github-license-url]
   [![Project Forks][github-forks-shield]]()
   [![Project Contributors][github-contributors-shield]][github-contributors-url]
   [![Project Last Commuit][github-lastcommit-shield]][github-lastcommit-url]
   [![Project Total Downloads][github-downloads-shield]][latest-release-url]
-
-  <h4>Github Workflows</h4>
-
   [![PSScript Analyzer Workflow][github-workflows-psscriptanalyzer-shield]][github-psscriptanalyzer-url]
   [![Cross-platform PowerShell Tests Workflow][github-workflows-crossplatformtests-shield]][github-crossplatformtests-url]
   [![Executable Building][github-workflows-exebuilding-shield]][github-exebuilding-url]
