@@ -255,7 +255,7 @@ Distributed under the MIT License. See the [license][github-license-url] for det
   <!-- TODO: Replace with local asset -->
   <img src="https://github.com/user-attachments/assets/dc21811d-b124-4962-bf1f-773b45d5b69b" width="150" alt="CPU-Z logo">
 
-- Code signing courtesy of **[SignPath.io](https://github.com/signpath)**, certificate by SignPath Foundation.
+- Code signing courtesy of **[SignPath](https://signpath.org/)**, certificate by SignPath Foundation.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
