@@ -41,7 +41,7 @@
 </div>
 
 <!-- Table of Contents -->
-<details>
+<details open>
   <summary>Table of Contents</summary>
   <ol>
     <li>
@@ -54,6 +54,7 @@
     <li>
       <a href="#usage">Usage</a>
     </li>
+    <li><a href="#security">Security</a></li>
     <li><a href="#screenshots">Screenshots</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -64,7 +65,7 @@
 
 ## Getting Started
 
-<!-- TODO: Add a section about our security.md here -->
+> ⚠️ **Before you run anything**, especially with Admin/Root privileges: Know what you're downloading and how to validate it's safety. See the [Security](#security) section below for how we sign and verify releases of this project.
 
 ### Windows
 
@@ -185,7 +186,7 @@ Once you've run **H**, use the table below if you still have a specific issue.
 </details>
 
 <details>
-  <summary><strong>Audio Options (N)</strong></summary>
+  <summary><strong>Audio Options (A)</strong></summary>
 
   | Key | Opens |
   |---|---|
@@ -211,16 +212,27 @@ Once you've run **H**, use the table below if you still have a specific issue.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Security
+
+We want you to be able to trust this script, and to know how to ensure it is safe. See our full [SECURITY.md][github-security-url] for hashes, links and further instructions, but the short version:
+
+- **Code signing:** The Windows EXE is signed free of charge by **[SignPath](https://signpath.org/)**, with a certificate from the SignPath Foundation. A valid signature confirms the file hasn't been tampered with since it was built.
+
+- **Scanner results:** Every release is checked on VirusTotal and HybridAnalysis. You can check out the results found in the [SECURITY.md][github-security-url].
+
+- **Why Admin is needed:** the script reads firewall rules, installs Microsoft Visual C++ redistributables, and downloads/runs the zip version of [CPU-Z](https://www.cpuid.com/softwares/cpu-z.html) from CPUID. These actions require administrator permissions to be performed correctly.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Screenshots
 
 Formatting varies by terminal / PowerShell version.
 
-**Main Menu**
+### Main Menu
 ![Main-Menu-Image]
 
-**Running the HD2 status check (`H`) from the EXE**
-<!-- TODO: Add image/gif -->
-placeholder
+### Running the HD2 status check (`H`)
+![Status-Check-Image]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -276,6 +288,7 @@ Distributed under the MIT License. See the [license][github-license-url] for det
 [github-crossplatformtests-url]: https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml
 [github-exebuilding-url]: https://github.com/helldivers2fixes/HellbombScript/actions/workflows/ps2exe.yml
 [github-script-url]: https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1
+[github-security-url]: https://github.com/helldivers2fixes/HellbombScript/blob/main/SECURITY.MD
 
 <!-- images -->
 [unblock-executable-image]: assets/unblock-executable.png
