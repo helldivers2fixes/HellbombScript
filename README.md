@@ -9,9 +9,9 @@
   [![Latest Release][github-release-shield]][latest-release-url]
   <br>
   [![Project License][github-license-shield]][github-license-url]
-  [![Project Forks][github-forks-shield]]()
+  [![Project Forks][github-forks-shield]][github-forks-url]
   [![Project Contributors][github-contributors-shield]][github-contributors-url]
-  [![Project Last Commuit][github-lastcommit-shield]][github-lastcommit-url]
+  [![Project Last Commit][github-lastcommit-shield]][github-lastcommit-url]
   [![Project Total Downloads][github-downloads-shield]][latest-release-url]
   <br>
   [![PSScript Analyzer Workflow][github-workflows-psscriptanalyzer-shield]][github-psscriptanalyzer-url]
@@ -44,7 +44,6 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
@@ -54,9 +53,6 @@
     </li>
     <li>
       <a href="#usage">Usage</a>
-      <ul>
-        <li><a href="#troubleshooting-guide">Troubleshooting Guide</a></li>
-      </ul>
     </li>
     <li><a href="#screenshots">Screenshots</a></li>
     <li><a href="#contributing">Contributing</a></li>
@@ -64,6 +60,7 @@
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
+
 
 ## Getting Started
 
@@ -140,21 +137,77 @@ Start by pressing `Enter` to run the default option (**H**), or press **H** your
 
 Once you've run **H**, use the table below if you still have a specific issue.
 
-### Troubleshooting Guide
+### Main Menu Hotkeys
 
-<!-- TODO: Rework this table -->
-| Symptom | Recommended steps (after running `H`) |
+| Key | Opens/Runs |
 |---|---|
-| Controller / key binding issues | Option `M` |
-| Crashing | Address anything `H` flags, then `C`, then `S` |
-| Game won't start | Address anything `H` flags, then `C` → `G` → `U` (restart) → `I` |
-| Game Guard 114 error | Address anything `H` flags, then `U` (restart) → `I` |
-| Version mismatch despite an up-to-date game | Option `S`, then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB) |
-| Abnormally high CPU usage | Option `G` |
-| Memory leaks | Option `S` — for VRAM leaks instead, use [DDU](https://www.guru3d.com/download/display-driver-uninstaller-download/) |
-| Out of disk space | Option `S` (usually a memory leak overflowing into the page file) |
-| Total game reset, no progress loss | Options `C` and `M` |
-| WinLicense error: wrong DLL present | Option `S`, then [verify integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB) |
+| `H` | HD2 Status Checks |
+| `C` | Clear Data Options (Sub-Menu) |
+| `G` | Graphics Options (Sub-Menu) |
+| `N` | Network Options (Sub-Menu) |
+| `A` | Audio Options (Sub-Menu) |
+| `R` | Reset/Toggle Options (Sub-Menu) |
+---
+
+<details>
+  <summary><strong>Clear Data Options (C)</strong></summary>
+
+  | Key | Opens |
+  |---|---|
+  | `C` | Clear Settings (AppData) |
+  | `M` | Steam Cloud |
+  | `Z` | Hostability Key |
+  | `Q` | Quick Mod Removal |
+  | `B` | Back (Return to the previous menu) |
+  ---
+</details>
+
+<details>
+  <summary><strong>Graphics Options (G)</strong></summary>
+
+  | Key | Opens |
+  |---|---|
+  | `P` | Select Correct GPU |
+  | `O` | Fullscreen Optimizations Toggle |
+  | `B` | Back (Return to the previous menu) |
+  ---
+</details>
+
+<details>
+  <summary><strong>Network Options (N)</strong></summary>
+
+  | Key | Opens |
+  |---|---|
+  | `W` | Wi-Fi LAN Test (Windows Only) |
+  | `T` | NAT Test (Windows Only) |
+  | `B` | Back (Return to the previous menu) |
+  ---
+</details>
+
+<details>
+  <summary><strong>Audio Options (N)</strong></summary>
+
+  | Key | Opens |
+  |---|---|
+  | `B` | Toggle Bluetooth Telephony Service (Windows Only) |
+  | `T` | NAT Test (Windows Only) |
+  | `B` | Back (Return to the previous menu) (Linux Only) |
+  ---
+</details>
+
+<details>
+  <summary><strong>Reset/Toggle Options (R)</strong></summary>
+
+  | Key | Opens |
+  |---|---|
+  | `G` | GameGuard Reinstall (Windows Only) |
+  | `S` | Steam Reset (Windows Only) |
+  | `U` | Uninstall VC++ Redists (Windows Only) |
+  | `I` | Reinstall VC++ Redists (Windows Only) |
+  | `D` | Disable/Enable gameInput Service (Toggle) (Windows Only) |
+  | `B` | Back (Return to the previous menu) |
+  ---
+</details>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -163,8 +216,7 @@ Once you've run **H**, use the table below if you still have a specific issue.
 Formatting varies by terminal / PowerShell version.
 
 **Main Menu**
-<!-- TODO: Add image/gif -->
-placeholder
+![Main-Menu-Image]
 
 **Running the HD2 status check (`H`) from the EXE**
 <!-- TODO: Add image/gif -->
@@ -218,6 +270,7 @@ Distributed under the MIT License. See the [license][github-license-url] for det
 [latest-release-url]: https://github.com/helldivers2fixes/HellbombScript/releases/latest
 [github-license-url]: https://github.com/helldivers2fixes/HellbombScript?tab=MIT-1-ov-file
 [github-contributors-url]: https://github.com/helldivers2fixes/HellbombScript/graphs/contributors
+[github-forks-url]: https://github.com/helldivers2fixes/HellbombScript/forks
 [github-lastcommit-url]: https://github.com/helldivers2fixes/HellbombScript/commits/main/
 [github-psscriptanalyzer-url]: https://github.com/helldivers2fixes/HellbombScript/actions/workflows/powershell.yml
 [github-crossplatformtests-url]: https://github.com/helldivers2fixes/HellbombScript/actions/workflows/TestSuiteAction.yml
@@ -225,5 +278,7 @@ Distributed under the MIT License. See the [license][github-license-url] for det
 [github-script-url]: https://github.com/helldivers2fixes/HellbombScript/blob/main/Hellbomb%20Script.ps1
 
 <!-- images -->
-[unblock-executable-image]: assets/unblock_executable.png
+[unblock-executable-image]: assets/unblock-executable.png
 [copy-raw-image]: assets/copy-raw.png
+[main-menu-image]: assets/main-menu.png
+[status-check-image]: assets/status-check.gif
