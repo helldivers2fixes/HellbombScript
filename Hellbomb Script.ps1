@@ -3445,62 +3445,42 @@ $script:SteamPath = switch ($script:DetectedOS)
 
 Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
 #Library Parsing
-switch ($script:DetectedOS)
+$LibraryPath = Join-Path $script:SteamPath -ChildPath "steamapps\libraryfolders.vdf"
+$LibraryData = Get-Content -Path $LibraryPath -Raw -Encoding UTF8
+$ParsedLibrary = Read-VDF -Content $LibraryData
+
+ForEach($libraryEntry in $ParsedLibrary["libraryfolders"].GetEnumerator())
 {
-    "Windows"
+    $library = $libraryEntry.Value
+    if(-Not $library["apps"].ContainsKey($script:AppID)) { continue }
+
+    $script:AppIDFound = $true
+
+    $GameDataPath = Join-Path $library["path"] -ChildPath "steamapps\appmanifest_$script:AppID.acf"
+    $GameDataContent = $null
+    Try
     {
-        $LibraryPath = Join-Path $script:SteamPath -ChildPath "steamapps\libraryfolders.vdf"
-        $LibraryData = Get-Content -Path $LibraryPath -Raw -Encoding UTF8
-        $ParsedLibrary = Read-VDF -Content $LibraryData
-
-        ForEach($libraryEntry in $ParsedLibrary["libraryfolders"].GetEnumerator())
-        {
-            $library = $libraryEntry.Value
-            if(-Not $library["apps"].ContainsKey($script:AppID)) { continue }
-
-            $script:AppIDFound = $true
-
-            $GameDataPath = Join-Path $library["path"] -ChildPath "steamapps\appmanifest_$script:AppID.acf"
-            $GameDataContent = $null
-            Try
-            {
-                $GameDataContent = Get-Content -Path $GameDataPath -Raw -Encoding UTF8 -ErrorAction Stop
-            }
-            Catch
-            {
-                Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
-                Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
-                Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
-                Write-Host "Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
-                Write-Host "Press [SPACEBAR] to continue..."
-                pause
-                $script:AppInstallPath = $false
-                break
-            }
-
-            $ParsedGameData = Read-VDF $GameDataContent
-            $script:BuildID = $ParsedGameData["AppState"]["buildid"]
-            Write-Host "Parsed BuildID: $script:BuildID" -ForegroundColor Cyan
-            $script:AppInstallPath = [System.IO.Path]::Combine($library["path"], "steamapps\common", $ParsedGameData["AppState"]["installdir"])
-            $script:AppManifestPath = Join-Path $library["path"] -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
-        }
+        $GameDataContent = Get-Content -Path $GameDataPath -Raw -Encoding UTF8 -ErrorAction Stop
+    }
+    Catch
+    {
+        Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
+        Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
+        Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
+        Write-Host "Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
+        Write-Host "Press [SPACEBAR] to continue..."
+        pause
+        $script:AppInstallPath = $false
+        break
     }
 
-    "Linux"
-    {
-        $script:AppIDFound = $true
-        $script:AppInstallPath = Join-Path $script:SteamPath -ChildPath "steamapps\common/Helldivers 2"
-        $script:AppManifestPath = Join-Path $script:SteamPath -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
-        $GameData = Get-Content -Path $script:AppManifestPath -Encoding UTF8
-        $ParsedGameData = Read-VDF $GameData
-        $script:BuildID = $ParsedGameData["AppState"]["buildid"]
-    }
-
-    Default 
-    {
-
-    }
+    $ParsedGameData = Read-VDF $GameDataContent
+    $script:BuildID = $ParsedGameData["AppState"]["buildid"]
+    Write-Host "Parsed BuildID: $script:BuildID" -ForegroundColor Cyan
+    $script:AppInstallPath = [System.IO.Path]::Combine($library["path"], "steamapps\common", $ParsedGameData["AppState"]["installdir"])
+    $script:AppManifestPath = Join-Path $library["path"] -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
 }
+
 Get-MostRecentlyUsedSteamProfilePath
 $HelldiversProcess = [PSCustomObject]@{
     ProcessName = 'helldivers2'
