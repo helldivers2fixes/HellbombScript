@@ -74,28 +74,26 @@ $script:HellbombScriptDirectory = Join-Path $downloadsPath -ChildPath "HellbombS
 $script:Tests = @{
     "IntelMicrocodeCheck" = @{
         'TestPassed' = $null
-        'AffectedModels' = @("13900", "13790", "13700", "13600", "13500", "13490", "13400", "14900", "14790", "14700", "14600", "14500", "14490", "14400")
-        'LatestMicrocode' = @("0x12F", "0x3A")
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
-        Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host "$script:myCPU" -ForegroundColor White
+        Write-Host "CPU model with unpatched microcode detected!! " -ForegroundColor Yellow -NoNewLine; Write-Host $script:MachineCPU.Name -ForegroundColor White
         Write-Host "$([Environment]::NewLine)        WARNING: If you are NOT currently having stability issues, please update $([Environment]::NewLine)        your motherboard UEFI (BIOS) ASAP to prevent permanent damage to the CPU." -ForegroundColor Yellow
         Write-Host "$([Environment]::NewLine)        If you ARE experiencing stability issues, your CPU may be unstable$([Environment]::NewLine)        and permanently damaged." -ForegroundColor Red
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.tomsguide.com/computing/hardware/13th-and-14th-gen-intel-cpu-damage-could-be-permanent-despite-incoming-fix" -ForegroundColor Cyan
         Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press [SPACEBAR] to continue..." -ForegroundColor Yellow
 '@
         'TestPassedIntelMsg' = @'
-        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
+        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:MachineCPU.Name " -NoNewLine
         Write-Host "is running the latest " -NoNewLine -ForegroundColor Green
         Write-Host "$script:runningMicrocode " -NoNewLine -ForegroundColor Cyan
         Write-Host "microcode." -ForegroundColor Green
 '@
         'NotApplicableMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:myCPU " -NoNewLine
-        Write-Host "is not affected by the Intel CPU issues." -ForegroundColor Green
+        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host $script:MachineCPU.Name.Trim() -NoNewLine
+        Write-Host " is not affected by the Intel CPU issues." -ForegroundColor Green
 '@
         'ErrorMsg' = @'
-        Write-Host "Error occurred determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:myCPU "
+        Write-Host "Error occurred determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:MachineCPU.Name "
 '@
     }
     "PendingReboot" = @{
@@ -734,32 +732,117 @@ Function Test-BadPrinters {
     }
     Else { $script:Tests.BadPrinter.TestPassed = $true }
 }
-Function Find-CPUInfo {
-    If ($script:DetectedOS -eq 'Windows') { $script:myCPU = (Get-CimInstance -ClassName Win32_Processor).Name.Trim() }
-    If ($script:DetectedOS -eq 'Linux') {
-    $script:myCPU = (Get-Content /proc/cpuinfo | Where-Object { $_ -match '^model name' } |
-        Select-Object -First 1).Split(':')[1].Trim()
+Function Find-CPUInfo
+{
+    $script:MachineCPU = Get-CPUID
+    
+    Write-Host "Your CPU model: " -NoNewline -ForegroundColor Cyan
+    Write-Host $script:MachineCPU.Name.Trim() -NoNewline
+
+    if($script:MachineCPU.Vendor -eq "GenuineIntel" -and $script:MachineCPU.Family -eq 6 -and $script:MachineCPU.Model -eq 183 -and $script:MachineCPU.Stepping -eq 1 -and -not($script:MachineCPU.Name.Trim().EndsWith("HX")))
+    {
+        Write-Host " is potentially affected by Intel CPU issues" -ForegroundColor DarkYellow
+        Write-Host "Checking microcode revision... " -ForegroundColor Cyan
+
+        $hardwareInfoText = ($script:HardwareInfoText -join "`n")
+        $microcodeMatch = [regex]::Match($hardwareInfoText, "Microcode Revision\s+(0x[0-9A-Fa-f]+)")
+
+        if($microcodeMatch.Success)
+        {
+            $script:runningMicrocode = [Convert]::ToInt64($microcodeMatch.Groups[1].Value, 16)
+        }
+        else 
+        {
+            Write-Host "[Warning] " -NoNewline -ForegroundColor DarkYellow
+            Write-Host "Failed to detect microcode version. Cannot verify if microcode has been patched."
+
+            #Note: Technically they haven't passed the test, however setting this to false will give an unpatched microcode warning, which is worse
+            $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+            return
+        }
+
+        if($script:runningMicrocode -ge 0x12F)
+        {
+            Write-Host "Microcode is patched. No action is needed" -ForegroundColor Green
+            $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+        }
+        else
+        {
+            $script:Tests.IntelMicrocodeCheck.TestPassed = $false
+        }
     }
-    If ( $script:myCPU.Contains('Intel') ) {
-        ForEach ($cpuModel in $script:Tests.IntelMicrocodeCheck.AffectedModels) {
-            If (($script:myCPU).Contains($cpuModel)) {
-            $pattern = "Microcode Revision\s+(0x[0-9A-Fa-f]+)"
-            $script:runningMicrocode = ($script:HardwareInfoText | Select-String -Pattern $pattern | Select-Object -First 1).Matches[0].Groups[1].Value
-                If ( $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[0] -or $script:runningMicrocode -match $script:Tests.IntelMicrocodeCheck.LatestMicrocode[1] ) {
-                            $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-                            Invoke-Expression $script:Tests.IntelMicrocodeCheck.TestPassedIntelMsg
-                            Return
-                        }
-                        Else {
-                        $script:Tests.IntelMicrocodeCheck.TestPassed = $false
-                        Return
-                        }
-                    }
+    else
+    {
+        $script:Tests.IntelMicrocodeCheck.TestPassed = $true
+        Write-Host " is not affected by Intel CPU issues" -ForegroundColor Green
+        return
+    }
+}
+Function Get-CPUID
+{
+    $ret = [PSCustomObject]@{
+        Vendor = $null
+        Name = $null
+        Family = $null
+        Model = $null
+        Stepping = $null
+    }
+    if($script:DetectedOS -eq "Windows")
+    {
+        $cimProc = Get-CimInstance -Class CIM_Processor
+        $signature = [Convert]::ToUInt32($cimProc.ProcessorId.Substring(8,8), 16)
+
+        #See https://en.wikipedia.org/wiki/CPUID#EAX=1:_Processor_Info_and_Feature_Bits for information about how this works
+        $stepping   =  $signature -band 0xF
+        $baseModel  = ($signature -shr 4)  -band 0xF
+        $baseFamily = ($signature -shr 8)  -band 0xF
+        $extModel   = ($signature -shr 16) -band 0xF
+        $extFamily  = ($signature -shr 20) -band 0xFF
+
+        $family = if ($baseFamily -eq 0xF) { $baseFamily + $extFamily } else { $baseFamily }
+        $model  = if ($baseFamily -eq 0x6 -or $baseFamily -eq 0xF) { ($extModel -shl 4) -bor $baseModel } else { $baseModel }
+
+        
+        $ret.Vendor = $cimProc.Manufacturer
+        $ret.Name = $cimProc.Name.Trim()
+        $ret.Family = $family
+        $ret.Model = $model
+        $ret.Stepping = $stepping
+    }
+
+    if($script:DetectedOS -eq "Linux")
+    {
+        $cpuInfoPath = "/proc/cpuinfo"
+        if (-not (Test-Path $cpuInfoPath)) {
+            Throw "Unable to read $cpuInfoPath"
+        }
+
+
+        foreach ($line in Get-Content -Path $cpuInfoPath)
+        {
+            if ($line -match "^\s*$")
+            {
+                if ($ret.Vendor -and $null -ne $ret.Family) { break }
+                continue
+            }
+
+            $parts = $line -split ':', 2
+            if ($parts.Count -ne 2) { continue }
+
+            $key = $parts[0].Trim()
+            $val = $parts[1].Trim()
+
+            switch ($key) {
+                "vendor_id"   { $ret.Vendor   = $val.Trim() }
+                "model name"  { $ret.Name     = $val.Trim() }
+                "cpu family"  { $ret.Family   = [int]$val }
+                "model"       { $ret.Model    = [int]$val }
+                "stepping"    { $ret.Stepping = [int]$val }
             }
         }
-    $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-    Invoke-Expression $script:Tests.IntelMicrocodeCheck.NotApplicableMsg
-    Return
+    }
+
+    return $ret
 }
 Function Show-MotherboardInfo {
     If ($script:DetectedOS -eq 'Windows')
