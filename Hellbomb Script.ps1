@@ -1900,73 +1900,122 @@ Function Test-DnsResolution {
 }
 Function Test-ClientDnsConfig {
     # Define the hostname to test
-    $hostname = "www.google.com"
+    $hostname = "google.com"
     # Get the main network adapter with the default route
-    $mainAdapter = Get-NetRoute -DestinationPrefix '0.0.0.0/0' |
-    Sort-Object -Property { $_.InterfaceMetric + $_.RouteMetric } |
-    Select-Object -First 1 | Get-NetAdapter
-    $IPv6Status = Get-NetAdapterBinding -Name $mainAdapter.Name -ComponentID ms_tcpip6
-
-    # Get the DNS servers for IPv4
-    Try {
-            $dnsServersIPv4 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv4
-        } Catch {
-            # Will check if null or empty in next part of script
-        }
-        Write-Host "$([Environment]::NewLine)CHECKING IPv4 DNS..." -ForegroundColor Cyan
-        # Print and test DNS servers for IPv4
-        If (-not ([string]::IsNullOrEmpty(($dnsServersIPv4 | Get-Member -Name 'ServerAddresses')))) {
-            Write-Host "[PASS]" -ForegroundColor Green -NoNewLine
-            Write-Host " Detected IPv4 DNS servers:" -ForegroundColor Cyan
-            $dnsServersIPv4.ServerAddresses | ForEach-Object { Write-Host "       $_"
-            }
-            Write-Host "$([Environment]::NewLine)       Testing IPv4 DNS server(s)..." -ForegroundColor Cyan
-            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv4.ServerAddresses
-        }
-        Else {
-            Write-Host '[FAIL] No IPv4 DNS servers found!' -ForegroundColor Yellow
-            Write-Host '      Your internet is probably down right now.'
-        }
-
-    # Get the DNS servers for IPv6
-    If ($IPv6Status.Enabled) {
-        Try {
-                $dnsServersIPv6 = Get-DnsClientServerAddress -InterfaceIndex $mainAdapter.InterfaceIndex -AddressFamily IPv6
-            } Catch {
-                Write-Host '[FAIL] ' -ForegroundColor Red -NoNewLine
-                Write-Host 'IPv6 issues detected. Please disable IPv6 on your network adapter.' -ForegroundColor Yellow
-                Write-Host 'Opening the Network Adapters screen now...' -ForegroundColor Cyan
-                Start-Process 'ncpa.cpl'
-            }
-        # Print and test DNS servers for IPv6
-        Write-Host "$([Environment]::NewLine)CHECKING IPv6 DNS..." -ForegroundColor Cyan
-        If (-not ([string]::IsNullOrEmpty(($dnsServersIPv6 | Get-Member -Name 'ServerAddresses')))) {
-        Write-Host "[PASS]" -ForegroundColor Green -NoNewLine
-        Write-Host ' Detected IPv6 DNS server(s):' -ForegroundColor Cyan
-        $dnsServersIPv6.ServerAddresses | ForEach-Object { Write-Host "       $_"
-        }
-        Write-Host "$([Environment]::NewLine)       Testing IPv6 DNS servers..." -ForegroundColor Cyan
-        Try {
-            Test-DnsResolution -hostname $hostname -dnsServers $dnsServersIPv6.ServerAddresses
-        } Catch {
-            Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewLine
-            Write-Host 'No IPv6 DNS servers found!'
-            Write-Host 'Consider setting an IPv6 DNS server like'
-            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewLine
-            Write-Host ' on your network adapter.'
-        }
-
-        }
-        Else {
-            Write-Host '[FAIL] ' -ForegroundColor Yellow -NoNewLine
-            Write-Host 'No IPv6 DNS servers found!'
-            Write-Host 'Consider setting an IPv6 DNS server like'
-            Write-Host '2606:4700:4700::1111' -ForegroundColor Cyan -NoNewLine
-            Write-Host ' on your network adapter.'
-        }
+    $wildcardRoutes = @(Get-NetRoute -DestinationPrefix '0.0.0.0/0' -AddressFamily IPv4 -ErrorAction Stop)
+    if($wildcardRoutes.Count -le 0)
+    {
+        Write-Host "[FAIL] " -NoNewline -ForegroundColor Red
+        Write-Host "No network adapters with valid configuration. You probably don't have internet right now."
     }
-    Else { Write-Host "$([Environment]::NewLine)Skipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan }
+    $bestRoute = $wildcardRoutes | Sort-Object { $_.InterfaceMetric + $_.RouteMetric } | Select-Object -First 1
+    $mainAdapter = $bestRoute | Get-NetAdapter
+
+    Test-DnsFamily -AddressFamily IPv4 -Adapter $mainAdapter -Hostname $hostname
+    Test-DnsFamily -AddressFamily IPv6 -Adapter $mainAdapter -Hostname $hostname
 }
+
+Function Test-DnsFamily
+{
+    param(
+        [Parameter(Mandatory)][ValidateSet('IPv4', 'IPv6')][string]$AddressFamily,
+        [Parameter(Mandatory)]
+        [ValidateScript({
+            if ($_.CimClass.CimClassName -ne 'MSFT_NetAdapter') {
+                throw "Object must be a MSFT_NetAdapter instance (from Get-NetAdapter)."
+            }
+            $true
+        })]
+        [Microsoft.Management.Infrastructure.CimInstance]
+        $Adapter,
+        [Parameter(Mandatory)][string]$Hostname
+    )
+
+    $IPv6Enabled = Get-NetAdapterBinding -Name $Adapter.Name -ComponentID ms_tcpip6 | Select-Object -ExpandProperty Enabled
+    if($AddressFamily -eq "IPv6" -and -not $IPv6Enabled)
+    {
+        Write-Host "$([Environment]::NewLine)Skipping IPv6 checks because IPv6 is disabled." -ForegroundColor Cyan
+        return
+    }
+ 
+    Write-Host "`nCHECKING $AddressFamily DNS..." -ForegroundColor Cyan
+ 
+    $dnsServers = $null
+    try 
+    {
+        $dnsServers = Get-DnsClientServerAddress -InterfaceIndex $Adapter.InterfaceIndex -AddressFamily $AddressFamily -ErrorAction Stop
+    }
+    catch
+    {
+        Write-Host "[FAIL] " -NoNewline -ForegroundColor Red
+        Write-Host "Could not query $AddressFamily DNS servers: $($_.Exception.Message)"
+        if($AddressFamily -eq "IPv6")
+        {
+            Write-Host 'IPv6 issues detected. Please disable IPv6 on your network adapter.' -ForegroundColor Yellow
+            Write-Host "Opening the Network Adapters screen now..." -ForegroundColor Cyan
+            try
+            {
+                $NICPanel = (New-Object -com "Shell.Application").Namespace(0x31).Items() | Where-Object {$_.Name -eq $Adapter.Name} | Select-Object -First 1
+                $NICPanel.InvokeVerb("Properties")
+            }
+            catch
+            {
+                Write-Host "Failed to open adapter properties. Opening adapter panel instead..."
+                Start-Process "ncpa.cpl"
+            }
+        }
+        return
+    }
+ 
+    $servers = $dnsServers.ServerAddresses
+ 
+    if (-not $servers -or $servers.Count -le 0)
+    {
+        $noServerFoundMessage = "No $AddressFamily DNS servers found!"
+        switch($AddressFamily)
+        {
+            "IPv4"
+            {
+                Write-Host "[FAIL] " -NoNewline -ForegroundColor Red
+                Write-Host "$noServerFoundMessage Your internet is probably down right now."
+            }
+            "IPv6"
+            {
+                Write-Host "[FAIL] " -NoNewline -ForegroundColor Yellow
+                Write-Host "$noServerFoundMessage"
+
+                if($Adapter.Virtual)
+                {
+                    Write-Host "Ensure IPv6 is disabled on the virtual network adapter or.."
+                }
+                Write-Host "Consider setting an IPv6 DNS server like " -NoNewline
+                Write-Host "2606:4700:4700::1111" -ForegroundColor Cyan -NoNewLine
+                Write-Host " on your network adapter."
+                Write-Host "Opening the Network Adapters screen now..." -ForegroundColor Cyan
+                try
+                {
+                    $NICPanel = (New-Object -com "Shell.Application").Namespace(0x31).Items() | Where-Object {$_.Name -eq $Adapter.Name} | Select-Object -First 1
+                    $NICPanel.InvokeVerb("Properties")
+                }
+                catch
+                {
+                    Write-Host "Failed to open adapter properties. Opening adapter panel instead..."
+                    Start-Process "ncpa.cpl"
+                }
+            }
+        }
+
+        return
+    }
+ 
+    Write-Host "[PASS] " -NoNewline -ForegroundColor Green
+    Write-Host "Detected $AddressFamily DNS Server(s):" -ForegroundColor Cyan
+    $servers | ForEach-Object { Write-Host "$_" }
+ 
+    Write-Host "`nTesting $AddressFamily DNS server(s)..." -ForegroundColor Cyan
+    Test-DnsResolution -hostname $Hostname -dnsServers $servers
+}
+
 Function Test-Wifi {
     # Ping the default gateway for 30 seconds and collect statistics
     $mainAdapter = Get-NetIPConfiguration | Where-Object { $null -ne $_.IPv4DefaultGateway -or $null -ne $_.IPv6DefaultGateway }
