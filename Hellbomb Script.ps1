@@ -2830,7 +2830,7 @@ Function Get-MenuTitle {
 
     $Title = @(
         "-------------------------------------------------------------------------------------------------------",
-        "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.0",
+        "💣 Hellbomb 💣 Script for Troubleshooting Helldivers 2       ||      Version 4.2",
         "-------------------------------------------------------------------------------------------------------",
         $LinuxWarning,
         $AdminBanner
