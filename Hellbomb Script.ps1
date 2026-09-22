@@ -159,8 +159,7 @@ $script:Tests = @{
 	    Write-Host 'RAM Information not found.' -ForegroundColor Cyan
         } Else {
         $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
-        $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
-        $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+        $formattedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
         }
 '@
     }
