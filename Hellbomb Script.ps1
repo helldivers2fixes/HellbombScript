@@ -897,8 +897,8 @@ Function Show-MotherboardInfo {
         }
         
         Write-Host "`nMotherboard Info"
-        Write-Host "-----------------" -NoNewline
-        [pscustomobject]$motherboardInfo | Format-List
+        Write-Host "-----------------"
+        ([pscustomobject]$motherboardInfo | Format-List | Out-String).Trim() | Write-Host
 
         $uefiInfo = [ordered]@{
             Manufacturer = (Get-SafeString $bios Manufacturer)
@@ -908,8 +908,8 @@ Function Show-MotherboardInfo {
         }
 
         Write-Host "UEFI Info"
-        Write-Host "-----------------" -NoNewline
-        [pscustomobject]$uefiInfo | Format-List
+        Write-Host "-----------------"
+        ([pscustomobject]$uefiInfo | Format-List | Out-String).Trim() | Write-Host
     }
     If ($script:DetectedOS -eq 'Linux') {
         $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
