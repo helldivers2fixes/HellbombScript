@@ -158,8 +158,8 @@ $script:Tests = @{
             Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
 	    Write-Host 'RAM Information not found.' -ForegroundColor Cyan
         } Else {
-        $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
-        $formattedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+        $formattedTable = ($script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String).Trim()
+        Write-Host $formattedTable -ForegroundColor White
         }
 '@
     }
