@@ -220,7 +220,7 @@ We want you to be able to trust this script, and to know how to ensure it is saf
 
 - **Scanner results:** Every release is checked on VirusTotal and HybridAnalysis. You can check out the results found in the [SECURITY.md][github-security-url].
 
-- **Why Admin is needed:** the script reads firewall rules, installs Microsoft Visual C++ redistributables, and downloads/runs the zip version of [CPU-Z](https://www.cpuid.com/softwares/cpu-z.html) from CPUID. These actions require administrator permissions to be performed correctly.
+- **Why admin is needed:** the script reads firewall rules, installs Microsoft Visual C++ Redistributables, and downloads/runs the zip version of [CPU-Z](https://www.cpuid.com/softwares/cpu-z.html) from CPUID. These actions require administrator permissions to be performed correctly.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
