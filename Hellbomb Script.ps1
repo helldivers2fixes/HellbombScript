@@ -907,7 +907,7 @@ Function Show-MotherboardInfo {
             "BIOS Release" = (Get-SafeDate $bios ReleaseDate)
         }
 
-        Write-Host "UEFI Info"
+        Write-Host "`nUEFI Info"
         Write-Host "-----------------"
         ([pscustomobject]$uefiInfo | Format-List | Out-String).Trim() | Write-Host
     }
