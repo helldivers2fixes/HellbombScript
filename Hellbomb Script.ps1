@@ -82,19 +82,6 @@ $script:Tests = @{
         Write-Host "$([Environment]::NewLine)        For more information, visit: $([Environment]::NewLine)        https://www.tomsguide.com/computing/hardware/13th-and-14th-gen-intel-cpu-damage-could-be-permanent-despite-incoming-fix" -ForegroundColor Cyan
         Pause "$([Environment]::NewLine)        Any proposed fixes by this tool may fail to work if your CPU is damaged.$([Environment]::NewLine)Press [SPACEBAR] to continue..." -ForegroundColor Yellow
 '@
-        'TestPassedIntelMsg' = @'
-        Write-Host "Your CPU: " -ForegroundColor Cyan -NoNewLine ; Write-Host "$script:MachineCPU.Name " -NoNewLine
-        Write-Host "is running the latest " -NoNewLine -ForegroundColor Green
-        Write-Host "$script:runningMicrocode " -NoNewLine -ForegroundColor Cyan
-        Write-Host "microcode." -ForegroundColor Green
-'@
-        'NotApplicableMsg' = @'
-        Write-Host "Your CPU model: " -ForegroundColor Cyan -NoNewLine ; Write-Host $script:MachineCPU.Name.Trim() -NoNewLine
-        Write-Host " is not affected by the Intel CPU issues." -ForegroundColor Green
-'@
-        'ErrorMsg' = @'
-        Write-Host "Error occurred determining microcode version for CPU model: " -ForegroundColor Red -NoNewLine ; Write-Host "$script:MachineCPU.Name "
-'@
     }
     "PendingReboot" = @{
         'TestPassed' = $null
@@ -741,7 +728,7 @@ Function Find-CPUInfo
     if($script:MachineCPU.Vendor -eq "GenuineIntel" -and $script:MachineCPU.Family -eq 6 -and $script:MachineCPU.Model -eq 183 -and $script:MachineCPU.Stepping -eq 1 -and -not($script:MachineCPU.Name.Trim().EndsWith("HX")))
     {
         Write-Host " is potentially affected by Intel CPU issues" -ForegroundColor DarkYellow
-        Write-Host "Checking microcode revision... " -ForegroundColor Cyan
+        Write-Host "Checking microcode revision... " -ForegroundColor Cyan -NoNewline
 
         $hardwareInfoText = ($script:HardwareInfoText -join "`n")
         $microcodeMatch = [regex]::Match($hardwareInfoText, "Microcode Revision\s+(0x[0-9A-Fa-f]+)")
@@ -752,7 +739,7 @@ Function Find-CPUInfo
         }
         else 
         {
-            Write-Host "[Warning] " -NoNewline -ForegroundColor DarkYellow
+            Write-Host "`n[Warning] " -NoNewline -ForegroundColor DarkYellow
             Write-Host "Failed to detect microcode version. Cannot verify if microcode has been patched."
 
             #Note: Technically they haven't passed the test, however setting this to false will give an unpatched microcode warning, which is worse
@@ -762,18 +749,18 @@ Function Find-CPUInfo
 
         if($script:runningMicrocode -ge 0x12F)
         {
-            Write-Host "Microcode is patched. No action is needed" -ForegroundColor Green
+            Write-Host "Microcode 0x$($script:runningMicrocode.ToString("X")) is patched. No action is needed" -ForegroundColor Green
             $script:Tests.IntelMicrocodeCheck.TestPassed = $true
         }
         else
         {
+            Write-Host "0x$($script:runningMicrocode.ToString("X"))" -ForegroundColor Red
             $script:Tests.IntelMicrocodeCheck.TestPassed = $false
         }
     }
     else
     {
         $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-        Write-Host " is not affected by Intel CPU issues" -ForegroundColor Green
         return
     }
 }
