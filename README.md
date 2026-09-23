@@ -76,9 +76,9 @@ Pick whichever option you're most comfortable with. (They fold down!)
   <summary><strong>Option 1: EXE (Recommended)</strong></summary>
 
   1. [Download][latest-release-url] the latest **EXE**.
-  2. Right click the EXE → **Properties** → Check **Unblock** → **OK**.
+  2. Right click the **EXE** → **Properties** → Check **Unblock** → **OK**.
     ![Unblock EXE properties dialog][unblock-executable-image]
-  3. Run the EXE.
+  3. Run the **EXE**.
   4. Head to [Usage](#usage) for instructions on how to use the tool.
 </details>
 
