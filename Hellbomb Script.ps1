@@ -861,25 +861,26 @@ Function Show-MotherboardInfo {
             $Object.$Property.ToString("yyyy-MM-dd")
         }
 
-        $motherboardInfo = @(
-            [pscustomobject]@{
-                "Motherboard Info" = "Manufacturer: " + (Get-SafeString $baseBoard Manufacturer)
-                "UEFI Info"        = "SMBIOS Version: " + (Get-SafeString $bios SMBIOSBIOSVersion)
-            }
-            [pscustomobject]@{
-                "Motherboard Info" = "Product: " + (Get-SafeString $baseBoard Product)
-                "UEFI Info"        = "Manufacturer: " + (Get-SafeString $bios Manufacturer)
-            }
-            [pscustomobject]@{
-                "Motherboard Info" = ""
-                "UEFI Info"        = "BIOS Version: " + (Get-SafeString $bios Name)
-            }
-            [pscustomobject]@{
-                "Motherboard Info" = ""
-                "UEFI Info"        = "BIOS Release Date: " + (Get-SafeDate $bios ReleaseDate)
-            }
-        )
-        $motherboardInfo | Format-Table "Motherboard Info", "UEFI Info" -AutoSize
+        $motherboardInfo = [ordered]@{
+            Manufacturer = (Get-SafeString $baseBoard Manufacturer)
+            Product      = (Get-SafeString $baseBoard Product)
+            Rev          = (Get-SafeString $baseboard Version)
+        }
+        
+        Write-Host "`nMotherboard Info"
+        Write-Host "-----------------" -NoNewline
+        [pscustomobject]$motherboardInfo | Format-List
+
+        $uefiInfo = [ordered]@{
+            Manufacturer = (Get-SafeString $bios Manufacturer)
+            "SMBIOS Version" = (Get-SafeString $bios SMBIOSBIOSVersion)
+            "BIOS Version" = (Get-SafeString $bios Name)
+            "BIOS Release" = (Get-SafeDate $bios ReleaseDate)
+        }
+
+        Write-Host "UEFI Info"
+        Write-Host "-----------------" -NoNewline
+        [pscustomobject]$uefiInfo | Format-List
     }
     If ($script:DetectedOS -eq 'Linux') {
         $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
