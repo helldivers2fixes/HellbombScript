@@ -145,9 +145,8 @@ $script:Tests = @{
             Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
 	    Write-Host 'RAM Information not found.' -ForegroundColor Cyan
         } Else {
-        $formattedTable = $script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String
-        $indentedTable = $formattedTable -split "$([Environment]::NewLine)" | ForEach-Object { "       $_" }
-        $indentedTable | ForEach-Object { Write-Host $_ -ForegroundColor White }
+        $formattedTable = ($script:Tests.MatchingMemory.RAMInfo | Format-Table -AutoSize | Out-String).Trim()
+        Write-Host $formattedTable -ForegroundColor White
         }
 '@
     }
@@ -421,7 +420,7 @@ ForEach ($generation in $NvidiaCodenames.Keys) {
 Function Show-Variables {
     If ($script:AppIDFound -eq $true) {
         Clear-Host
-        Write-Host "AppID: $($script:AppID) is located in directory:" -ForegroundColor Green
+        Write-Host "AppID: $($script:AppID) is located in directory: " -ForegroundColor Green -NoNewline
         Write-Host $script:AppInstallPath -ForegroundColor White
         Write-Host "Current build of AppID $($script:AppID) is: $script:BuildID" -ForegroundColor Cyan
     }
@@ -664,40 +663,59 @@ Function Switch-GameInput {
 }
 Function Find-BlacklistedDrivers {
     $BadDeviceList = @('A-Volute', 'Hamachi', 'Nahimic', 'LogMeIn Hamachi', 'Sonic')
-    $FoundBlacklistedDevice = $false
-    Write-Host "$([Environment]::NewLine)Checking for devices that are known to cause issues..." -ForegroundColor Cyan -NoNewLine
-    $DeviceDatabase = Get-PnpDevice
-    # Check for blacklisted devices
-    ForEach ($device in $DeviceDatabase) {
-        ForEach ($badDevice in $BadDeviceList) {
-            If ($device.FriendlyName -like "$badDevice*" -and $device.Status -eq "OK") {
-                Write-Host ("$([Environment]::NewLine)⚠️ " + $device.FriendlyName + " device detected! Known compatibility issues! Please disable using Device Manager.") -ForegroundColor Red -NoNewLine
-                $FoundBlacklistedDevice = $true
-                Break # Exit the inner loop if a bad device is found
-            }
+    $BadDevicePattern = ($BadDeviceList | ForEach-Object { [regex]::Escape($_) }) -join '|'
+
+    $DisconnectedDriverThreshold = 2
+
+    function Write-Status
+    {
+        param(
+            [string]$Message,
+            [ConsoleColor]$Color = 'White',
+            [switch]$NoNewline
+        )
+        Write-Host "$([Environment]::NewLine)$Message" -ForegroundColor $Color -NoNewline:$NoNewline
+    }
+
+    Write-Status -Message 'Checking for devices that are known to cause issues... ' -Color Cyan -NoNewline
+
+    $PnPDevices = Get-PnpDevice
+    $BlacklistedDevices = $PnPDevices | Where-Object { $_.Status -eq 'OK' -and $_.FriendlyName -match "^(?:$BadDevicePattern)" }
+
+    if ($BlacklistedDevices)
+    {
+        foreach ($device in $BlacklistedDevices)
+        {
+            Write-Status -Message "⚠️ $($device.FriendlyName) device detected! Known compatibility issues! Please disable using Device Manager." -Color Red
         }
     }
-    If (-not $FoundBlacklistedDevice) {
-        Write-Host " no problematic devices found." -ForegroundColor Green
+    else
+    {
+        Write-Host 'no problematic devices found.' -ForegroundColor Green
     }
-    # Check for missing critical drivers (AMD and Intel only)
-    $MissingDriverPresentCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $true -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
-        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
-    } | Measure-Object).Count
-    $MissingDriverDisconnectedCounter = ($DeviceDatabase | Where-Object {
-        $_.Present -eq $false -and $_.InstanceId -match "VEN_1022|VEN_8086" -and
-        ( $_.FriendlyName -match "Base System Device|Unknown" -or $_.Status -eq 'Unknown' )
-    } | Measure-Object).Count
-    If ( $MissingDriverPresentCounter -gt 0 ) {
-        Write-Host "$([Environment]::NewLine)⚠️You are missing critical AMD and/or Intel drivers." -ForegroundColor Yellow
-        Write-Host "Please install them from your motherboard manufacturer or OEM system support site." -ForegroundColor Yellow
+
+
+    $UnknownAmdIntelDevices = $PnPDevices | Where-Object `
+    {
+        $_.InstanceId -match 'VEN_1022|VEN_8086' -and
+        ($_.FriendlyName -match 'Base System Device|Unknown' -or $_.Status -eq 'Unknown')
     }
-    If ( $MissingDriverDisconnectedCounter -gt 2 ) {
-        Write-Host "$([Environment]::NewLine)ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows." -ForegroundColor Yellow
-        Write-Host "If this applies to you, recommend using the Reset Windows feature or re-installing Windows." -ForegroundColor Yellow
+
+    $PresentMissingCount = @($UnknownAmdIntelDevices | Where-Object { $_.Present }).Count
+    $DisconnectedMissingCount = @($UnknownAmdIntelDevices | Where-Object { -not $_.Present }).Count
+
+    if ($PresentMissingCount -gt 0)
+    {
+        Write-Status -Message '⚠️ You are missing critical AMD and/or Intel drivers.' -Color Yellow
+        Write-Host 'Please install them from your motherboard manufacturer or OEM system support site.' -ForegroundColor Yellow
     }
-    Return
+
+    if ($DisconnectedMissingCount -gt $DisconnectedDriverThreshold)
+    {
+        Write-Status -Message 'ℹ️ It appears your motherboard/CPU was upgraded without re-installing Windows.' -Color Yellow
+        Write-Host 'If this applies to you, recommend using the Reset Windows feature or re-installing Windows.' -ForegroundColor Yellow
+    }
+
 }
 Function Test-BadPrinters {
     # Get the Print Spooler service status
@@ -868,8 +886,8 @@ Function Show-MotherboardInfo {
         }
         
         Write-Host "`nMotherboard Info"
-        Write-Host "-----------------" -NoNewline
-        [pscustomobject]$motherboardInfo | Format-List
+        Write-Host "-----------------"
+        ([pscustomobject]$motherboardInfo | Format-List | Out-String).Trim() | Write-Host
 
         $uefiInfo = [ordered]@{
             Manufacturer = (Get-SafeString $bios Manufacturer)
@@ -878,9 +896,9 @@ Function Show-MotherboardInfo {
             "BIOS Release" = (Get-SafeDate $bios ReleaseDate)
         }
 
-        Write-Host "UEFI Info"
-        Write-Host "-----------------" -NoNewline
-        [pscustomobject]$uefiInfo | Format-List
+        Write-Host "`nUEFI Info"
+        Write-Host "-----------------"
+        ([pscustomobject]$uefiInfo | Format-List | Out-String).Trim() | Write-Host
     }
     If ($script:DetectedOS -eq 'Linux') {
         $boardVendor  = (Get-Content "/sys/devices/virtual/dmi/id/board_vendor" -ErrorAction SilentlyContinue).Trim()
@@ -925,9 +943,7 @@ Function Show-ISPInfo {
     $asn = ($ipInfo.as -split " ")[0] -replace "^AS",""
     $isp = $ipInfo.isp
     Write-Host "Your ISP is: " -NoNewLine -ForegroundColor Cyan
-    Write-Host $isp
-    Write-Host "Your ASN is: " -NoNewLine -ForegroundColor Cyan
-    Write-Host $asn
+    Write-Host "$isp (AS$asn)"
     # --- Spamhaus ASN DROP check ---
     Try {
         $raw = Invoke-WebRequest "https://www.spamhaus.org/drop/asndrop.json" -UseBasicParsing
@@ -946,17 +962,18 @@ Function Show-ISPInfo {
     If ($isListed) {
         Write-Host "⚠ WARNING: Your ASN ($asn) appears in the Spamhaus ASN DROP list!" -ForegroundColor Red
     }
-    Else {
-        Write-Host "Your ASN is NOT listed in the Spamhaus ASN DROP list." -ForegroundColor Green
-    }
 }
 Function Show-WindowsGPUInfo {
-    $gpus = Get-CimInstance -ClassName Win32_VideoController
+    $gpus = @(Get-CimInstance -ClassName Win32_VideoController)
+    if($null -ne $gpus -and $gpus.Count -gt 0)
+    {
+        Write-Host "-------------------------------------"
+    }
     # Print GPU information
     ForEach ($gpu in $gpus) {
         $vendor = 'Generic'
         $driverVersion = $gpu.DriverVersion
-        $archCodename = 'Not Identified'
+        $archCodename = 'Udentified'
         If ( $gpu.Name.Contains( 'AMD' ) ) {
             $vendor = 'AMD'
             If ( [bool]($script:Tests.NoVegaGPUs.VegaPCIDevIDs | Where-Object { $gpu.PNPDeviceID -match "DEV_$_" } | Select-Object -First 1) ) {
@@ -965,7 +982,7 @@ Function Show-WindowsGPUInfo {
             Try {
                 $driverVersion = (Get-ItemProperty -Path "HKLM:\SOFTWARE\ATI Technologies\Install" -Name RadeonSoftwareVersion).RadeonSoftwareVersion
             } Catch {
-                $driverVersion = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+                $driverVersion = $gpu.DriverVersion + ' (Windows Driver Version Format)'
             }
         }
         ElseIf ( $gpu.Name.Contains( 'NVIDIA' ) ) {
@@ -992,7 +1009,7 @@ Function Show-WindowsGPUInfo {
                     $driverVersion = (New-Object System.IO.StreamReader($process.StandardOutput.BaseStream, [System.Text.Encoding]::UTF8)).ReadToEnd().Trim()
                     $process.WaitForExit()
                 } Catch {
-                    $driverVersion = $gpu.DriverVersion + ' ( Windows Driver Version Format ) '
+                    $driverVersion = $gpu.DriverVersion + " (Windows Driver Version Format)"
                 }
         }
         ElseIf ( $gpu.Name.Contains( 'INTEL(R)' ) ) {
@@ -1000,7 +1017,7 @@ Function Show-WindowsGPUInfo {
             Try {
                 $driverVersion = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\igfx\Parameters" -Name "DriverVersion").DriverVersion
             } Catch {
-                $driverVersion += " (Windows Format)"
+                $driverVersion += " (Windows Driver Version Format)"
             }
         }
         $script:systemInfo["GPUInfo"] += @{
@@ -1008,11 +1025,11 @@ Function Show-WindowsGPUInfo {
             driverVersion = $driverVersion
 			archCodename = $archCodename
         }
-        Write-Host "-------------------------------------"
-        Write-Host "  GPU Model: $($gpu.Name)"
-        Write-Host "   Codename: $($script:SystemInfo["GPUInfo"][-1].archCodename)"
-        Write-Host "  Drvr Ver.: $($script:SystemInfo["GPUInfo"][-1].DriverVersion)"
-        Write-Host "     Status: " -NoNewLine
+        
+        Write-Host "GPU Model: $($gpu.Name)"
+        Write-Host "Codename : $($script:SystemInfo["GPUInfo"][-1].archCodename)"
+        Write-Host "Drvr Ver.: $($script:SystemInfo["GPUInfo"][-1].DriverVersion)"
+        Write-Host "Status   : " -NoNewLine
         If ( $gpu.Status -ne 'OK' ) {
                 Write-Host $gpu.Status -ForegroundColor Red
             }
@@ -1136,7 +1153,7 @@ Function Show-LinuxGPUInfo {
     }
 }
 Function Show-OSInfo {
-    If ( $script:DetectedOS -eq 'Windows') { $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption }
+    If ( $script:DetectedOS -eq 'Windows') { $script:OSVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption -replace "^Microsoft ", "" }
     If ( $script:DetectedOs -eq 'Linux' ) {
         $osRelease = Get-Content /etc/os-release |
         ForEach-Object {
@@ -1193,7 +1210,7 @@ Function Show-GameLaunchOptions {
         $HD2LaunchOptions = $HD2ConfigData["LaunchOptions"]
         if([string]::IsNullOrWhiteSpace($HD2LaunchOptions))
         {
-            Write-Host "No launch options currently in use."
+            Write-Host "No launch options detected."
         }
         Else
         {
@@ -1210,7 +1227,7 @@ Function Show-WindowsPowerPlan {
 	Catch {
 		$script:PowerPlan = 'Error retrieving Power Plan'
 		}
-    Write-Host 'Active Windows Power Plan: ' -NoNewLine -ForegroundColor Cyan
+    Write-Host 'Active Power Plan: ' -NoNewLine -ForegroundColor Cyan
     Write-Host $script:PowerPlan
 }
 Function Show-LinuxPowerPlan {
@@ -2585,7 +2602,7 @@ Function Reset-HostabilityKey {
     $content = $content -replace 'hostability\s*=.*', 'hostability = ""'
     Set-Content $configPath -Value $content
     If ( $OriginalHash -ne (Get-FileHash -Path $configPath -Algorithm SHA256) ) {
-        Write-Host "$([Environment]::NewLine)Hostability key removed successfully!" -ForegroundColor Green
+        Write-Host "$([Environment]::NewLine)Hostability key reset successfully" -ForegroundColor Green
     }
     Else {
         Write-Host '[FAIL] ' -NoNewLine -ForegroundColor Red
