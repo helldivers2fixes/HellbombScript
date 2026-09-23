@@ -35,18 +35,18 @@ We submit every release to VirusTotal and Hybrid Analysis. You can review the re
  
 > **Note:** These hashes and reports correspond to the current release only. Hashes will differ for any other version.
  
-### 2. Verify the Executable's Hash
+### 2. Verify the Executable's Signature
  
-Compute the file's hash and compare it to the value above (`ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2`):
+Check that the status of the signature is valid:
  
 ```powershell
-Get-FileHash 'Hellbomb_Script_v4.0-signed.exe'
+Get-AuthenticodeSignature .\Hellbomb_Script_v4.0-signed.exe | Select-Object -Property Status, StatusMessage
 ```
  
 To check automatically instead of comparing by eye:
  
 ```powershell
-(Get-FileHash 'Hellbomb_Script_v4.0-signed.exe').Hash -eq 'ED0EE2CA907A17B96A98167495555228CCE1A2579AFF8CC5569B68DCF0D892B2'
+(Get-AuthenticodeSignature .\Hellbomb_Script_v4.0-signed.exe).Status -eq "Valid"
 ```
  
 This should return `True`.
