@@ -761,8 +761,9 @@ Function Find-CPUInfo
     else
     {
         $script:Tests.IntelMicrocodeCheck.TestPassed = $true
-        return
     }
+
+    Write-Host ''
 }
 Function Get-CPUID
 {
