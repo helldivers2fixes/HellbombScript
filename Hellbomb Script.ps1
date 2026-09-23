@@ -3196,11 +3196,11 @@ Function ResetToggleComponentsMenu
 }
 Function Show-TestResults {
     $keyDisplayOrderWindows = @(
+    "IntelMicrocodeCheck"
     "GameResolution",
     "RenderResolution",
     "SecureBootEnabled",
-    "VSyncDisabled",
-    "IntelMicrocodeCheck",
+    "VSyncDisabled",,
     "AVX2",
 	"NoVegaGPUs",
     "LongSysUptime",
