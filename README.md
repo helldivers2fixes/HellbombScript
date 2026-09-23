@@ -226,7 +226,7 @@ We want you to be able to trust this script, and to know how to ensure it is saf
 
 ## Screenshots
 
-Formatting varies by terminal / PowerShell version.
+Formatting varies by Script version. Yours may look slightly different.
 
 ### Main Menu
 ![Main-Menu-Image]
