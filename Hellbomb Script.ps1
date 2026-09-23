@@ -876,6 +876,7 @@ Function Show-MotherboardInfo {
         $motherboardInfo = [ordered]@{
             Manufacturer = (Get-SafeString $baseBoard Manufacturer)
             Product      = (Get-SafeString $baseBoard Product)
+            Rev          = (Get-SafeString $baseboard Version)
         }
         
         Write-Host "`nMotherboard Info"
