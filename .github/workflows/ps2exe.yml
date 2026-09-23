@@ -49,6 +49,9 @@ jobs:
 
       - name: Build & Sign
         shell: pwsh
+        env:
+          HELLBOMB_VERSION: ${{ steps.vars.outputs.version }}
+          HELLBOMB_COMMIT: ${{ steps.vars.outputs.commithash }}
         run: |
           # A. Setup Environment
           Write-Host "Starting Build Process..."
@@ -56,18 +59,10 @@ jobs:
           
           # Trust Gallery & Install Modules
           Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module -Name PS2EXE -Force -SkipPublisherCheck -Scope CurrentUser
+          Install-Module -Name ps12exe -Force -SkipPublisherCheck -Scope CurrentUser
 
-          # B. Compile (Unsigned)
-          Invoke-PS2EXE `
-            -inputFile $env:PS1_SCRIPT_NAME `
-            -outputFile ${{ steps.vars.outputs.filename }} `
-            -x64 -requireAdmin -UNICODEEncoding `
-            -version "${{ steps.vars.outputs.version }}" `
-            -description "Troubleshoots Helldivers 2 Issues. Commit hash ${{ steps.vars.outputs.commithash }}" `
-            -copyright "© 2025" `
-            -title "Hellbomb Script" `
-            -iconFile "./Bomb.ico"
+          # B. Compile (Unsigned); packaging options live as #_pragma in the script
+          ps12exe -inputFile $env:PS1_SCRIPT_NAME -outputFile ${{ steps.vars.outputs.filename }} -NoUpdateCheck
             
       - name: Upload unsigned EXE
         id: upload-unsigned

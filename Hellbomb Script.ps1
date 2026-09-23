@@ -1,6 +1,18 @@
 ﻿using namespace System.Management.Automation.Host
 # Hellbomb Script
 # Requires -RunAsAdministrator
+
+# Packaging directives (plain comments when the script is run directly;
+# resolved by ps12exe at compile time).
+#_pragma Os.Admin
+#_pragma Build.Platform x64
+#_pragma App.OutputEncoding UTF16LE
+#_pragma Resources.Title 'Hellbomb Script'
+#_pragma Resources.Copyright '© 2025'
+#_pragma Resources.Description "Troubleshoots Helldivers 2 Issues. Commit hash $env:HELLBOMB_COMMIT"
+#_pragma Resources.Version $env:HELLBOMB_VERSION
+#_pragma Resources.Icon $PSScriptRoot/Bomb.ico
+
 $ErrorActionPreference = 'Continue'
 Set-StrictMode -Version Latest
 $script:DetectedOS = $null
