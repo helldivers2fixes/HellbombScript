@@ -216,11 +216,20 @@ $script:Tests = @{
     }
 "GameMods" = @{
     'TestPassed' = $null
+    'LuaModsPresent' = $false
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host 'Mods were detected!' -ForegroundColor Yellow
-    Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
-    Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
+    if($script:Tests.GameMods.LuaModsPresent)
+    {
+        Write-Host "--------------------------------"
+        Write-Host "⚠️ Lua mod detected ⚠️" -Foreground Red
+        Write-Host "These mods are potential security risks." -Foreground Yellow
+        Write-Host "Expect unintended gameplay behaviour/bugs that may affect everyone in your lobby." -Foreground Yellow
+        Write-Host "--------------------------------"
+    }
+    Write-Host ' Use option ' -ForegroundColor Cyan -NoNewLine
+    Write-Host 'Q (Quick Mod Removal)'-ForegroundColor White -BackgroundColor Black -NoNewLine
     Write-Host ' under the Clear Data menu to attempt removal.' -ForegroundColor Cyan
 '@
     }
@@ -2688,6 +2697,7 @@ Function Find-Mods {
     }
     $modsFound = Test-Path -Path "$script:AppInstallPath\data\*.patch_*" -PathType Leaf
     $script:Tests.GameMods.TestPassed = -not $modsFound
+    $script:Tests.GameMods.LuaModsPresent = (Test-Path -Path "$script:AppInstallPath\data\9ba626afa44a3aa3.patch_*")
 }
 Function Show-ModRemovalWarning {
     Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewLine
