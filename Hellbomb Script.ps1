@@ -2695,9 +2695,53 @@ Function Find-Mods {
         Write-Host 'Helldivers 2 not found. Skipping mod detection.'
         Return
     }
-    $modsFound = Test-Path -Path "$script:AppInstallPath\data\*.patch_*" -PathType Leaf
-    $script:Tests.GameMods.TestPassed = -not $modsFound
-    $script:Tests.GameMods.LuaModsPresent = (Test-Path -Path "$script:AppInstallPath\data\9ba626afa44a3aa3.patch_*")
+
+    $patchFiles = @(Get-ChildItem "$script:AppInstallPath\data\*.patch_*" -File)
+    $script:Tests.GameMods.TestPassed = $patchFiles.Count -le 0
+
+    $luaTypeIDSignature = @(0xE2, 0x17, 0xD1, 0x2C, 0xFA, 0x8D, 0x4E, 0xA1)
+    foreach ($file in $patchFiles)
+    {
+        $stream = [System.IO.File]::OpenRead($file.FullName)
+        $buffer = New-Object byte[] 8
+        try
+        {
+            if ($stream.Length -ge (0x50 + 8))
+            {
+                $stream.Seek(0x50, [System.IO.SeekOrigin]::Begin) | Out-Null
+
+                $bytesRead = $stream.Read($buffer, 0, 8)
+
+                if ($bytesRead -eq 8)
+                {
+                    $match = $true
+                    for ($i = 0; $i -lt 8; $i++)
+                    {
+                        if ($buffer[$i] -ne $luaTypeIDSignature[$i])
+                        {
+                            $match = $false
+                            break
+                        }
+                    }
+
+                    if ($match)
+                    {
+                        $script:Tests.GameMods.LuaModsPresent = $true
+                        break;
+                    }
+                }
+            }
+
+            $stream.Close()
+        }
+        catch {
+            
+        }
+        finally
+        {
+            $stream.Dispose();   
+        }
+    }
 }
 Function Show-ModRemovalWarning {
     Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewLine
