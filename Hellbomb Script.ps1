@@ -216,11 +216,20 @@ $script:Tests = @{
     }
 "GameMods" = @{
     'TestPassed' = $null
+    'LuaModsPresent' = $false
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
     Write-Host 'Mods were detected!' -ForegroundColor Yellow
-    Write-Host '       Use option ' -ForegroundColor Cyan -NoNewLine
-    Write-Host 'Q'-ForegroundColor White -BackgroundColor Black -NoNewLine
+    if($script:Tests.GameMods.LuaModsPresent)
+    {
+        Write-Host "--------------------------------"
+        Write-Host "⚠️ Lua mod detected ⚠️" -Foreground Red
+        Write-Host "These mods are potential security risks." -Foreground Yellow
+        Write-Host "Expect unintended gameplay behaviour/bugs that may affect everyone in your lobby." -Foreground Yellow
+        Write-Host "--------------------------------"
+    }
+    Write-Host ' Use option ' -ForegroundColor Cyan -NoNewLine
+    Write-Host 'Q (Quick Mod Removal)'-ForegroundColor White -BackgroundColor Black -NoNewLine
     Write-Host ' under the Clear Data menu to attempt removal.' -ForegroundColor Cyan
 '@
     }
@@ -2686,8 +2695,54 @@ Function Find-Mods {
         Write-Host 'Helldivers 2 not found. Skipping mod detection.'
         Return
     }
-    $modsFound = Test-Path -Path "$script:AppInstallPath\data\*.patch_*" -PathType Leaf
-    $script:Tests.GameMods.TestPassed = -not $modsFound
+
+    $patchFiles = @(Get-ChildItem "$script:AppInstallPath\data\*.patch_*" -File)
+    $script:Tests.GameMods.TestPassed = $patchFiles.Count -le 0
+
+    #MurMur64 hash of "lua"
+    $luaTypeIDSignature = @(0xE2, 0x17, 0xD1, 0x2C, 0xFA, 0x8D, 0x4E, 0xA1)
+    foreach ($file in $patchFiles)
+    {
+        $stream = [System.IO.File]::OpenRead($file.FullName)
+        $buffer = New-Object byte[] 8
+        try
+        {
+            if ($stream.Length -ge (0x50 + 8))
+            {
+                $stream.Seek(0x50, [System.IO.SeekOrigin]::Begin) | Out-Null
+
+                $bytesRead = $stream.Read($buffer, 0, 8)
+
+                if ($bytesRead -eq 8)
+                {
+                    $match = $true
+                    for ($i = 0; $i -lt 8; $i++)
+                    {
+                        if ($buffer[$i] -ne $luaTypeIDSignature[$i])
+                        {
+                            $match = $false
+                            break
+                        }
+                    }
+
+                    if ($match)
+                    {
+                        $script:Tests.GameMods.LuaModsPresent = $true
+                        break;
+                    }
+                }
+            }
+
+            $stream.Close()
+        }
+        catch {
+            
+        }
+        finally
+        {
+            $stream.Dispose();   
+        }
+    }
 }
 Function Show-ModRemovalWarning {
     Write-Host "$([Environment]::NewLine)WARNING: " -ForegroundColor Red -NoNewLine
