@@ -2699,6 +2699,7 @@ Function Find-Mods {
     $patchFiles = @(Get-ChildItem "$script:AppInstallPath\data\*.patch_*" -File)
     $script:Tests.GameMods.TestPassed = $patchFiles.Count -le 0
 
+    #MurMur64 hash of "lua"
     $luaTypeIDSignature = @(0xE2, 0x17, 0xD1, 0x2C, 0xFA, 0x8D, 0x4E, 0xA1)
     foreach ($file in $patchFiles)
     {
