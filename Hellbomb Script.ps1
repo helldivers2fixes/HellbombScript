@@ -2699,48 +2699,52 @@ Function Find-Mods {
     $patchFiles = @(Get-ChildItem "$script:AppInstallPath\data\*.patch_*" -File)
     $script:Tests.GameMods.TestPassed = $patchFiles.Count -le 0
 
-    #MurMur64 hash of "lua"
-    $luaTypeIDSignature = @(0xE2, 0x17, 0xD1, 0x2C, 0xFA, 0x8D, 0x4E, 0xA1)
+    #MurmurHash64 of "lua" (little endian bytes E2 17 D1 2C FA 8D 4E A1)
+    $luaTypeId = [uint64]"0xA14E8DFA2CD117E2"
+    #Magic bytes of patch files
+    $patchMagic = [uint64]"0xF0000011"
+
+    $headerSize    = 0x48
+    $typeEntrySize = 32
+    $typeIdOffset  = 0x08 #Offset of the TyepeID within each type table entry
+
+    $script:Tests.GameMods.LuaModsPresent = $false
     foreach ($file in $patchFiles)
     {
-        $stream = [System.IO.File]::OpenRead($file.FullName)
-        $buffer = New-Object byte[] 8
+        $stream = $null
         try
         {
-            if ($stream.Length -ge (0x50 + 8))
+            $stream = [System.IO.File]::OpenRead($file.FullName)
+            if ($stream.Length -lt $headerSize) { continue }
+
+            $reader = New-Object System.IO.BinaryReader($stream)
+
+            #Header: u32 magic at 0x00, u32 type count at 0x04
+            $magic     = $reader.ReadUInt32()
+            $typeCount = $reader.ReadUInt32()
+            if ($magic -ne $patchMagic) { continue }
+
+            #Bail if the type table would run past EOF (Malformed patch or parsing error)
+            if ($headerSize + ($typeCount * $typeEntrySize) -gt $stream.Length) { continue }
+
+            for ($t = 0; $t -lt $typeCount; $t++)
             {
-                $stream.Seek(0x50, [System.IO.SeekOrigin]::Begin) | Out-Null
-
-                $bytesRead = $stream.Read($buffer, 0, 8)
-
-                if ($bytesRead -eq 8)
+                $stream.Seek($headerSize + ($t * $typeEntrySize) + $typeIdOffset, [System.IO.SeekOrigin]::Begin) | Out-Null
+                if ($reader.ReadUInt64() -eq $luaTypeId)
                 {
-                    $match = $true
-                    for ($i = 0; $i -lt 8; $i++)
-                    {
-                        if ($buffer[$i] -ne $luaTypeIDSignature[$i])
-                        {
-                            $match = $false
-                            break
-                        }
-                    }
-
-                    if ($match)
-                    {
-                        $script:Tests.GameMods.LuaModsPresent = $true
-                        break;
-                    }
+                    $script:Tests.GameMods.LuaModsPresent = $true
+                    break;
                 }
             }
-
-            $stream.Close()
         }
-        catch {
-            
+        catch
+        {
+            Write-Host "[WARN] " -NoNewline -ForegroundColor Yellow
+            Write-Host "Potentially malformed .patch file or parsing error."
         }
         finally
         {
-            $stream.Dispose();   
+            if ($stream) { $stream.Dispose() }
         }
     }
 }
