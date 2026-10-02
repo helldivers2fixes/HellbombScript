@@ -1173,8 +1173,8 @@ Function Show-OSInfo {
         }
         $script:OSVersion = ($osRelease | Where-Object { $_.Key -eq "PRETTY_NAME" }).Value
     }
-    Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
-    Write-Host '' $script:OSversion
+    Write-Host "$([Environment]::NewLine)Operating System: " -NoNewLine -ForegroundColor Cyan
+    Write-Host "$script:OSversion ($((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").DisplayVersion))"
 
 }
 Function Show-GameLaunchOptions {
