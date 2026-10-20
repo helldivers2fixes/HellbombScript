@@ -246,9 +246,9 @@ $script:Tests = @{
     'TestFailMsg' = @'
     Write-Host "$([Environment]::NewLine)[WARN] " -ForegroundColor Yellow -NoNewLine
     If ( $script:Tests.SecureBootEnabled.SecureBootNotSupported -eq $true ) {
-    	Write-Host 'Secure Boot is not supported on this platform. If you experience constant GameGuard errors, ensure that no unverified drivers are loaded at boot.'
+    	Write-Host 'Secure Boot is not supported on this platform. If you experience constant EAC errors, ensure that no unverified drivers are loaded at boot.'
     }
-    Write-Host 'Secure Boot is disabled! Can cause GameGuard errors & disables Above 4G Decoding/Nvidia Resizable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
+    Write-Host 'Secure Boot is disabled! Can cause EAC errors & disables Above 4G Decoding/Nvidia Resizable BAR/AMD SAM on Windows 11.' -ForegroundColor Cyan
 '@
     }
 "SystemClockAccurate" = @{
@@ -533,26 +533,100 @@ Function Install-EXE {
 	}
     Remove-Item -Path $downloadedFile
 }
-Function Reset-GameGuard {
-    # Delete GameGuard files
-    $Error.Clear()
-    Try { Remove-Item -Path $script:AppInstallPath\bin\GameGuard\*.* }
-    Catch {
-        Write-Host ("Error occurred deleting GameGuard files in " +
-            $script:AppInstallPath + "\bin\GameGuard") -ForegroundColor Red
+Function Reset-EAC
+{
+    if ([string]::IsNullOrWhiteSpace($script:AppInstallPath))
+    {
+        Write-Host "[ERROR] " -ForegroundColor Red -NoNewline
+        Write-Host "Cannot determine game install location. Cannot progress..."
+        return
     }
-    If (!$Error) { Write-Host "Helldivers 2\bin\GameGuard cleared successfully!" -ForegroundColor Green }
-    # Uninstall GameGuard
-    $Error.Clear()
-    Try { Start-Process $script:AppInstallPath\tools\gguninst.exe -Wait }
-    Catch { Write-Host "Error occurred uninstalling GameGuard" -ForegroundColor Red }
-    If (!$Error) { Write-Host "GameGuard Uninstalled Successfully" -ForegroundColor Green }
-    # Install GameGuard
-    $Error.Clear()
-    Try { Start-Process $script:AppInstallPath\tools\GGSetup.exe -Wait }
-    Catch { Write-Host "Error occurred installing GameGuard" -ForegroundColor Red }
-    If (!$Error) { Write-Host "GameGuard installed successfully"$([Environment]::NewLine) -ForegroundColor Green }
-    Return
+
+    Write-Host 'Uninstalling EAC...'
+    $installerPath = Join-Path $script:AppInstallPath 'EasyAntiCheat\installer.exe'
+
+    if (-not (Test-Path -LiteralPath $installerPath -PathType Leaf))
+    {
+        Write-Host "[WARN] " -ForegroundColor Yellow -NoNewline
+        Write-Host "EAC uninstaller is missing. Skipping uninstall..."
+    }
+    else
+    {
+        try
+        {
+            $proc = Start-Process -FilePath $installerPath -Wait -Verb RunAs -WindowStyle Hidden -ArgumentList "uninstall" -PassThru -ErrorAction Stop
+        }
+        catch
+        {
+            Write-Host "[FAIL] " -ForegroundColor Red -NoNewline
+            Write-Host "Could not launch EAC uninstaller: $($_.Exception.Message)"
+        }
+        
+        if ($proc.ExitCode -ne 0)
+        {
+            Write-Host "Failed to uninstall EAC. Exit code $($proc.ExitCode)"
+            return
+        }
+        else
+        {
+            Write-Host "Successfully uninstalled EAC"    
+        }
+    }
+
+    Write-Host "Setting EAC to be installed on next boot..."
+    $subKeyPath = "SOFTWARE\Valve\Steam\Apps\$($script:AppID)\EAC_Installed"
+    $valueName = "eac_install"
+    $views = if ([Environment]::Is64BitOperatingSystem) { "Registry32", "Registry64" } else { "Registry32" }
+    $configured = $false
+
+    foreach ($view in $views)
+    {
+        $base = $null
+        $key  = $null
+        try
+        {
+            $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, [Microsoft.Win32.RegistryView]$view)
+
+            $key = $base.OpenSubKey($subKeyPath, $true)
+            if (-not $key)
+            {
+                continue
+            }
+
+            $existing = $key.GetValue($valueName, $null)
+            if ($null -ne $existing -and $key.GetValueKind($valueName) -ne [Microsoft.Win32.RegistryValueKind]::DWord)
+            {
+                continue
+            }
+
+            $key.SetValue($valueName, 0, [Microsoft.Win32.RegistryValueKind]::DWord)
+
+            if ($key.GetValue($valueName) -eq 0)
+            {
+                $configured = $true
+            }
+        }
+        catch
+        {
+            Write-Host "[Error] " -ForegroundColor Red -NoNewline
+            Write-Host "Registry error: $($_.Exception.Message)"
+        }
+        finally
+        {
+            if ($key)  { $key.Dispose() }
+            if ($base) { $base.Dispose() }
+        }
+    }
+
+    if($configured)
+    {
+        Write-Host "Steam will install EAC on next game launch"
+    }
+    else
+    {
+        Write-Host "[FAIL] " -ForegroundColor Red -NoNewline:$NoNewline
+        Write-Host "Failed to configure Steam to install EAC on next game launch"
+    }
 }
 Function Remove-HD2AppData {
     $paths = @( Get-HD2ConfigPath -All )
@@ -3228,9 +3302,9 @@ Function ResetToggleComponentsMenu
 {
     $menu = @(
         @{
-            Label  = "🔁 |G|ameGuard Re-install"
-            Hotkey = "G"
-            Action = { RunAndPause { Reset-GameGuard } }
+            Label  = "🔁 |E|AC Re-install"
+            Hotkey = "E"
+            Action = { RunAndPause { Reset-EAC } }
 			OS = 'Windows'
         }
 
