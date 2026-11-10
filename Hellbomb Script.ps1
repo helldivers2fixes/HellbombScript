@@ -168,10 +168,9 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamcdn-a.akamaihd.net'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'api.live.prod.thehelldiversgame.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'cluster-a.playfabapi.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'gameguard.co.kr'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'gameguard.thehelldiversgame.com'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'gameguard-v2.thehelldiversgame.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'mgr.gameguard.co.kr'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = '974a9.playfabapi.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'modules-cdn.eac-prod.on.epicgames.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'api.epicgames.dev'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'ocsp.digicert.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'helldivers2.playfabapi.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'pss-cloud.net'; PassedTest = $null },
@@ -182,7 +181,8 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamstatic.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'azure.com'; PassedTest = $null }
+			[PSCustomObject]@{ RequiredDomains = 'crs.api.wwsga.me'; PassedTest = $null },
+			[PSCustomObject]@{ RequiredDomains = 'clientconfig.api.wwsga.me'; PassedTest = $null }
         )
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
