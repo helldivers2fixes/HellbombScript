@@ -182,9 +182,7 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null },
 			[PSCustomObject]@{ RequiredDomains = 'crs.api.wwsga.me'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'clientconfig.api.wwsga.me'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'azure.com'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'signalr.net'; PassedTest = $null }
+			[PSCustomObject]@{ RequiredDomains = 'clientconfig.api.wwsga.me'; PassedTest = $null }
         )
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
