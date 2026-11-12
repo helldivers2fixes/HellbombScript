@@ -30,8 +30,8 @@ We submit every release to VirusTotal and Hybrid Analysis. You can review the re
  
 | Artifact | VirusTotal | Hybrid Analysis |
 |---|---|---|
-| `Hellbomb_Script_v4.0-signed.exe` | [Report](https://www.virustotal.com/gui/file/67829572c8f89764e76760d54048f7c211e570466da90c3b7189c7e64e7f0a3b) | [Report](https://hybrid-analysis.com/sample/67829572c8f89764e76760d54048f7c211e570466da90c3b7189c7e64e7f0a3b) |
-| `Hellbomb Script.ps1` | [Report](https://www.virustotal.com/gui/file/b24668ea96bff5385baf62e6fc4851f93aee86ec44ce99b770e3ce702fc33d81) | [Report](https://hybrid-analysis.com/sample/b24668ea96bff5385baf62e6fc4851f93aee86ec44ce99b770e3ce702fc33d81) |
+| `Hellbomb_Script_v4.0-signed.exe` | [Report](https://www.virustotal.com/gui/file/fc601fd294db41aac0587dac3ebba319d1018bce0b1409bdebbf4d3b3792636a) | [Report](https://hybrid-analysis.com/sample/fc601fd294db41aac0587dac3ebba319d1018bce0b1409bdebbf4d3b3792636a) |
+| `Hellbomb Script.ps1` | [Report](https://www.virustotal.com/gui/file/f8a0e0ed0133776e7b76dd6bc9e1ad879f87e3d4b072cccbf19491627b1038cb) | [Report](https://hybrid-analysis.com/sample/f8a0e0ed0133776e7b76dd6bc9e1ad879f87e3d4b072cccbf19491627b1038cb) |
  
 > **Note:** These hashes and reports correspond to the current release only. Hashes will differ for any other version.
  
