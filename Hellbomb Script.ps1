@@ -224,8 +224,8 @@ $script:Tests = @{
     {
         Write-Host "--------------------------------"
         Write-Host "⚠️ Lua mod detected ⚠️" -Foreground Red
-        Write-Host "These mods are potential security risks." -Foreground Yellow
-        Write-Host "Expect unintended gameplay behaviour/bugs that may affect everyone in your lobby." -Foreground Yellow
+        Write-Host "These type of mods may lead to an account ban." -Foreground Yellow
+        Write-Host "You can read more about this here https://store.steampowered.com/news/app/553850/view/708913968494674980" -Foreground Yellow
         Write-Host "--------------------------------"
     }
     Write-Host ' Use option ' -ForegroundColor Cyan -NoNewLine
