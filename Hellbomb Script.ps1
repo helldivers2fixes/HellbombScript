@@ -168,10 +168,9 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamcdn-a.akamaihd.net'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'api.live.prod.thehelldiversgame.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'cluster-a.playfabapi.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'gameguard.co.kr'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'gameguard.thehelldiversgame.com'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'gameguard-v2.thehelldiversgame.com'; PassedTest = $null },
-            [PSCustomObject]@{ RequiredDomains = 'mgr.gameguard.co.kr'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = '974a9.playfabapi.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'modules-cdn.eac-prod.on.epicgames.com'; PassedTest = $null },
+            [PSCustomObject]@{ RequiredDomains = 'api.epicgames.dev'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'ocsp.digicert.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'helldivers2.playfabapi.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'pss-cloud.net'; PassedTest = $null },
@@ -182,7 +181,8 @@ $script:Tests = @{
             [PSCustomObject]@{ RequiredDomains = 'steamstatic.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'steamusercontent.com'; PassedTest = $null },
             [PSCustomObject]@{ RequiredDomains = 'testament.api.wwsga.me'; PassedTest = $null },
-			[PSCustomObject]@{ RequiredDomains = 'azure.com'; PassedTest = $null }
+			[PSCustomObject]@{ RequiredDomains = 'crs.api.wwsga.me'; PassedTest = $null },
+			[PSCustomObject]@{ RequiredDomains = 'clientconfig.api.wwsga.me'; PassedTest = $null }
         )
         'TestFailMsg' = @'
         Write-Host "$([Environment]::NewLine)[FAIL] " -ForegroundColor Red -NoNewLine
@@ -1247,8 +1247,8 @@ Function Show-OSInfo {
         }
         $script:OSVersion = ($osRelease | Where-Object { $_.Key -eq "PRETTY_NAME" }).Value
     }
-    Write-Host ($([Environment]::NewLine)+'Operating System:').Trim() -NoNewLine -ForegroundColor Cyan
-    Write-Host '' $script:OSversion
+    Write-Host "$([Environment]::NewLine)Operating System: " -NoNewLine -ForegroundColor Cyan
+    Write-Host "$script:OSversion ($((Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").DisplayVersion))"
 
 }
 Function Show-GameLaunchOptions {
@@ -3498,27 +3498,65 @@ function Get-VDFValue {
 
     return $current
 }
-function Split-VDFPath
+function ConvertFrom-VDFEscape
 {
-    param([string]$Path)
+    param([string]$Text)
 
-    $regex = '"((?:\\.|[^"\\])*)"|[^.]+'
-    $parts = @()
+    if ($Text.IndexOf('\') -lt 0) { return $Text }
 
-    foreach ($m in [regex]::Matches($Path, $regex))
+    $sb = [System.Text.StringBuilder]::new($Text.Length)
+    for ($i = 0; $i -lt $Text.Length; $i++)
     {
-        if ($m.Groups[1].Success)
+        $c = $Text[$i]
+        if ($c -eq '\' -and ($i + 1) -lt $Text.Length)
         {
-            $parts += [regex]::Unescape($m.Groups[1].Value)
+            $i++
+            switch -CaseSensitive ([string]$Text[$i])
+            {
+                'n'     { [void]$sb.Append("`n") }
+                't'     { [void]$sb.Append("`t") }
+                '\'     { [void]$sb.Append('\') }
+                '"'     { [void]$sb.Append('"') }
+                default { [void]$sb.Append('\').Append($Text[$i]) }  #unknown escape
+            }
         }
         else
         {
-            $parts += $m.Value
+            [void]$sb.Append($c)
         }
     }
-
-    return $parts
+    return $sb.ToString()
 }
+
+function Get-VDFValue
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0)][AllowNull()]
+        $Root,
+
+        [Parameter(Mandatory, Position = 1)]
+        [string[]]$Path,
+
+        [string]$Separator = ':',
+
+        $Default = $null
+    )
+
+    $current = $Root
+
+    foreach ($segment in ($Path -split [regex]::Escape($Separator)))
+    {
+        if ($current -isnot [System.Collections.IDictionary] -or -not $current.Contains($segment))
+        {
+            return $Default
+        }
+        $current = $current[$segment]
+    }
+
+    $current
+}
+
 Write-Host 'Locating Steam...' -ForegroundColor Cyan
 # Set AppID
 $script:AppID = "553850"
@@ -3582,42 +3620,57 @@ $script:SteamPath = switch ($script:DetectedOS)
     }
 }
 
-Write-Host 'Locating Steam Library Data...' -ForegroundColor Cyan
-#Library Parsing
-$LibraryPath = Join-Path $script:SteamPath -ChildPath "steamapps\libraryfolders.vdf"
-$LibraryData = Get-Content -Path $LibraryPath -Raw -Encoding UTF8
-$ParsedLibrary = Read-VDF -Content $LibraryData
-
-ForEach($libraryEntry in $ParsedLibrary["libraryfolders"].GetEnumerator())
+Function Find-SteamApp
 {
-    $library = $libraryEntry.Value
-    if(-Not $library["apps"].ContainsKey($script:AppID)) { continue }
+    param(
+        [Parameter(Mandatory)][string]$SteamPath,
+        [Parameter(Mandatory)][int]$AppID
+    )
 
+    $vdfPath = Join-Path $SteamPath "steamapps\libraryfolders.vdf"
+    $parsed = Read-VDF -Content (Get-Content -LiteralPath $vdfPath -Raw -Encoding UTF8 -ErrorAction Stop)
+
+    foreach ($entry in $parsed["libraryfolders"].GetEnumerator())
+    {
+        $library = $entry.Value
+        $libraryPath  = $library["path"]
+        $manifestPath = Join-Path $libraryPath "steamapps\appmanifest_$AppID.acf"
+        Write-Host "Scanning $(Join-Path $libraryPath "steamapps\") for appmanifest_$AppID.acf"
+
+        if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { continue }
+
+        $manifest = Read-VDF -Content (Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 -ErrorAction Stop)
+        $buildID = Get-VDFValue $manifest "AppState:buildid"
+        $installDir = Get-VDFValue $manifest "AppState:installdir"
+
+        return [pscustomobject]@{
+            AppID        = $AppID
+            BuildID      = $buildID
+            ManifestPath = $manifestPath
+            InstallPath  = Join-Path $libraryPath "steamapps\common\$installDir"
+        }
+    }
+}
+
+$steamAppInfo = Find-SteamApp -SteamPath $script:SteamPath -AppID $script:AppID
+if($null -eq $steamAppInfo)
+{
+    Write-Host "[WARN] " -NoNewline -ForegroundColor Yellow
+    Write-Host "Failed to find Helldivers 2"
+
+    Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
+    Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
+    Write-Host "Several options will crash the script including mod deletion, resetting GameGuard, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
+    Write-Host "Press [SPACEBAR] to continue..."
+    pause
+}
+else
+{
+    #Replacing this is outside the scope of this change
     $script:AppIDFound = $true
-
-    $GameDataPath = Join-Path $library["path"] -ChildPath "steamapps\appmanifest_$script:AppID.acf"
-    $GameDataContent = $null
-    Try
-    {
-        $GameDataContent = Get-Content -Path $GameDataPath -Raw -Encoding UTF8 -ErrorAction Stop
-    }
-    Catch
-    {
-        Write-Host "Error retrieving $GameDataPath" -ForegroundColor Yellow
-        Write-Host "If you moved Helldivers 2 without telling Steam, this can cause problems." -ForegroundColor Cyan
-        Write-Host "See https://help.steampowered.com/en/faqs/view/4578-18A7-C819-8620." -ForegroundColor Cyan
-        Write-Host "Several options will crash the script including mod deletion, resetting EAC, Full Screen Optimizations toggle and setting GPU options." -ForegroundColor Yellow
-        Write-Host "Press [SPACEBAR] to continue..."
-        pause
-        $script:AppInstallPath = $false
-        break
-    }
-
-    $ParsedGameData = Read-VDF $GameDataContent
-    $script:BuildID = $ParsedGameData["AppState"]["buildid"]
-    Write-Host "Parsed BuildID: $script:BuildID" -ForegroundColor Cyan
-    $script:AppInstallPath = [System.IO.Path]::Combine($library["path"], "steamapps\common", $ParsedGameData["AppState"]["installdir"])
-    $script:AppManifestPath = Join-Path $library["path"] -ChildPath "\steamapps\appmanifest_$script:AppID.acf"
+    $script:AppManifestPath = $steamAppInfo.ManifestPath
+    $script:BuildID = $steamAppInfo.BuildID
+    $script:AppInstallPath = $steamAppInfo.InstallPath
 }
 
 Get-MostRecentlyUsedSteamProfilePath
