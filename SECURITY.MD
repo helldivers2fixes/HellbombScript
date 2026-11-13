@@ -114,7 +114,7 @@ If you do not trust anything provided by this repository there are 3rd party too
  
 ### 4. Verify the Script Hash
  
-After extracting the script, check its hash the same way as the executable. The latest release's `Hellbomb Script.ps1` should have a SHA-256 hash matching `4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0`:
+After extracting the script, check its hash the same way as the executable. The latest release's `Hellbomb Script.ps1` should have a SHA-256 hash matching `F8A0E0ED0133776E7B76DD6BC9E1AD879F87E3D4B072CCCBF19491627B1038CB`:
  
 ```powershell
 Get-FileHash 'Hellbomb Script.ps1'
@@ -123,7 +123,7 @@ Get-FileHash 'Hellbomb Script.ps1'
 To check automatically instead of comparing by eye:
  
 ```powershell
-(Get-FileHash 'Hellbomb Script.ps1').Hash -eq '4DF39AA22EF24565E3AE4F259894BF889ACE7665B7FB1F44E04D9FD9AA7311A0'
+(Get-FileHash 'Hellbomb Script.ps1').Hash -eq 'F8A0E0ED0133776E7B76DD6BC9E1AD879F87E3D4B072CCCBF19491627B1038CB'
 ```
  
 This should return `True`.
